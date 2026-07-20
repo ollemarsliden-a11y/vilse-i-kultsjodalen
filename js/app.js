@@ -284,6 +284,7 @@ function openPlaceSheet(poi, marker) {
         <button class="ps-btn ps-btn-ghost" id="ps-center">Visa på kartan</button>
       </div>
       ${ownerCtl}
+      ${community ? `<div class="ps-comments" id="ps-comments"></div>` : ""}
       ${poi.source ? `<div class="ps-src">Källa: ${escapeHtml(poi.source)}</div>` : ""}
       ${reportBtn}
     </div>`;
@@ -316,7 +317,7 @@ function openPlaceSheet(poi, marker) {
   const reportBtnEl = document.getElementById("ps-report");
   if (reportBtnEl) reportBtnEl.onclick = () => reportTip(poi.id);
 
-  if (community) loadReactions(poi.id);
+  if (community) { loadReactions(poi.id); loadComments(poi.id); }
 
   // väder för platsen
   Weather.get(poi.coord[0], poi.coord[1])
@@ -603,6 +604,41 @@ async function reportTip(tipId) {
   if (!reason) return;
   try { await Storage.report(tipId, reason.slice(0, 60), null); toast("Tack, rapporten är skickad."); }
   catch { toast("Kunde inte skicka rapport."); }
+}
+
+function fmtDate(iso) {
+  try { return new Date(iso).toLocaleDateString("sv-SE", { day: "numeric", month: "short" }); }
+  catch { return ""; }
+}
+async function loadComments(tipId) {
+  const el = document.getElementById("ps-comments");
+  if (!el) return;
+  let rows = [];
+  try { rows = await Storage.commentsFor(tipId); } catch { return; }
+  const uid = Storage.auth.userId();
+  const list = rows.map((c) => {
+    const own = uid && c.user_id === uid;
+    return `<div class="cm"><div class="cm-body">${escapeHtml(c.body)}</div>
+      <div class="cm-meta">${own ? "Du · " : ""}${fmtDate(c.created_at)}${own ? ` · <button class="cm-del" data-del="${c.id}">ta bort</button>` : ""}</div></div>`;
+  }).join("");
+  const composer = uid
+    ? `<div class="cm-composer"><input id="cm-input" type="text" placeholder="Skriv en kommentar…" maxlength="1000" />
+         <button id="cm-send" class="btn-primary btn-secondary">Skicka</button></div>`
+    : `<button class="cm-login" id="cm-login">Logga in för att kommentera</button>`;
+  el.innerHTML = `<h4 class="cm-h">Kommentarer${rows.length ? ` (${rows.length})` : ""}</h4>
+    ${list || `<p class="cm-empty">Inga kommentarer än — bli först!</p>`}${composer}`;
+  el.querySelectorAll(".cm-del").forEach((b) => b.onclick = async () => {
+    try { await Storage.deleteComment(b.dataset.del); loadComments(tipId); } catch { toast("Kunde inte ta bort."); }
+  });
+  const send = document.getElementById("cm-send");
+  if (send) send.onclick = async () => {
+    const inp = document.getElementById("cm-input"), body = inp.value.trim();
+    if (!body) return;
+    try { await Storage.addComment(tipId, body); inp.value = ""; loadComments(tipId); }
+    catch { toast("Kunde inte spara kommentaren."); }
+  };
+  const login = document.getElementById("cm-login");
+  if (login) login.onclick = openAccountSheet;
 }
 
 // ===================================================================

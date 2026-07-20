@@ -246,6 +246,19 @@ body.picking::after {
   background: transparent; color: var(--ink-2); font-size: 12.5px; cursor: pointer;
   text-decoration: underline;
 }
+/* Kommentarer */
+.ps-comments { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
+.cm-h { margin: 0 0 10px; font-size: 12.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--brand-2); }
+.cm { margin-bottom: 10px; }
+.cm-body { font-size: 14px; line-height: 1.45; }
+.cm-meta { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; }
+.cm-del { border: none; background: none; color: #d1495b; font-size: 11.5px; cursor: pointer; padding: 0; }
+.cm-empty { font-size: 13px; color: var(--ink-2); }
+.cm-composer { display: flex; gap: 8px; margin-top: 10px; }
+.cm-composer input { flex: 1; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font-size: 14px; }
+.cm-composer .btn-primary { width: auto; padding: 10px 16px; }
+.cm-login { width: 100%; margin-top: 8px; padding: 10px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); font-weight: 650; cursor: pointer; }
+
 .account-lead { font-size: 14px; color: var(--ink-2); line-height: 1.5; margin: 0 0 14px; }
 .icon-btn.signed-in { background: var(--brand-2); color: #fff; }
 .google-btn {

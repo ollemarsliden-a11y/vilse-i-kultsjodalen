@@ -142,6 +142,25 @@ const Storage = (() => {
         return data || [];
       },
 
+      // Kommentarer
+      async commentsFor(tipId) {
+        const { data } = await sb.from("vik_comments")
+          .select("id,body,user_id,created_at").eq("tip_id", tipId)
+          .order("created_at", { ascending: true });
+        return data || [];
+      },
+      async addComment(tipId, body) {
+        if (!currentUser) throw new Error("Inte inloggad");
+        const { data, error } = await sb.from("vik_comments")
+          .insert({ tip_id: tipId, user_id: currentUser.id, body }).select().single();
+        if (error) throw error;
+        return data;
+      },
+      async deleteComment(id) {
+        const { error } = await sb.from("vik_comments").delete().eq("id", id);
+        if (error) throw error;
+      },
+
       // Rapportering
       async report(tipId, reason, note) {
         if (!currentUser) throw new Error("Inte inloggad");
