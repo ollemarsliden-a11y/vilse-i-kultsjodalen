@@ -73,6 +73,17 @@ const OVERLAYS = {
     toast: "Laddar vandringsleder…",
     create: () => buildTrailLayer(),
   },
+  statligaleder: {
+    label: "Statliga leder",
+    icon: "led",
+    sub: "Officiella leder & anordningar i skyddade områden (Länsstyrelsen)",
+    toast: "Laddar statliga leder från Länsstyrelsen…",
+    create: () =>
+      L.tileLayer.wms("https://geodata.naturvardsverket.se/leder_friluftsliv/wms", {
+        layers: "LED", format: "image/png", transparent: true, version: "1.3.0",
+        attribution: "Leder © Naturvårdsverket / Länsstyrelserna",
+      }),
+  },
   fornlamningar: {
     label: "Fornlämningar",
     icon: "kultur",
@@ -559,6 +570,8 @@ function wireAccount() {
   document.getElementById("account-signout").addEventListener("click", async () => {
     await Storage.auth.signOut(); toast("Utloggad."); closeSheet("account-sheet");
   });
+  document.getElementById("account-admin").addEventListener("click", openAdminSheet);
+  document.getElementById("admin-cancel").addEventListener("click", () => closeSheet("admin-sheet"));
   Storage.auth.onChange(updateAccountUI);
 }
 function updateAccountUI(user) {
@@ -570,6 +583,69 @@ function renderAccount(user) {
   document.getElementById("account-signedin").hidden = !user;
   document.getElementById("account-title").textContent = user ? "Konto" : "Logga in";
   if (user) document.getElementById("account-who").textContent = user.email || "inloggad";
+  document.getElementById("account-admin").hidden = !(user && Storage.auth.isAdmin && Storage.auth.isAdmin());
+}
+
+// ===================================================================
+//  Moderering (admin)
+// ===================================================================
+async function openAdminSheet() {
+  closeSheet("account-sheet");
+  const body = document.getElementById("admin-body");
+  body.innerHTML = `<p class="panel-hint">Laddar…</p>`;
+  openSheet("admin-sheet");
+  try {
+    const [reports, flagged] = await Promise.all([Storage.adminReports(), Storage.adminFlagged()]);
+    renderAdmin(reports, flagged);
+  } catch (e) {
+    body.innerHTML = `<p class="panel-hint">Kunde inte läsa moderationsdata: ${escapeHtml(e.message)}.<br>Har du kört <b>supabase/admin.sql</b>?</p>`;
+  }
+}
+
+function renderAdmin(reports, flagged) {
+  const body = document.getElementById("admin-body");
+  const repHtml = reports.length
+    ? reports.map((r) => {
+        const t = r.tip || {};
+        return `<div class="adm-row" data-tip="${t.id}" data-lat="${t.lat}" data-lng="${t.lng}">
+          <div class="adm-main">
+            <div class="adm-name">${escapeHtml(t.name || "(borttaget tips)")} ${t.status && t.status !== "visible" ? `<span class="adm-flag">${t.status}</span>` : ""}</div>
+            <div class="adm-reason">⚑ ${escapeHtml(r.reason)}${r.note ? " — " + escapeHtml(r.note) : ""}</div>
+          </div>
+          <div class="adm-actions">
+            ${t.id ? `<button data-act="hide" data-id="${t.id}">Dölj</button>
+                      <button data-act="show" data-id="${t.id}">Visa</button>
+                      <button data-act="del" data-id="${t.id}" class="adm-del">Radera</button>` : ""}
+            <button data-act="resolve" data-rid="${r.id}">Klar</button>
+          </div>
+        </div>`;
+      }).join("")
+    : `<p class="panel-hint">Inga öppna rapporter. 👍</p>`;
+
+  const flagHtml = flagged.length
+    ? flagged.map((p) => `<div class="adm-row">
+        <div class="adm-main"><div class="adm-name">${escapeHtml(p.name)} <span class="adm-flag">${p.status}</span></div></div>
+        <div class="adm-actions">
+          <button data-act="show" data-id="${p.id}">Återställ</button>
+          <button data-act="del" data-id="${p.id}" class="adm-del">Radera</button>
+        </div></div>`).join("")
+    : `<p class="panel-hint">Inga dolda/flaggade tips.</p>`;
+
+  body.innerHTML = `
+    <h3 class="panel-subhead">Öppna rapporter</h3>${repHtml}
+    <h3 class="panel-subhead">Dolda / flaggade</h3>${flagHtml}`;
+
+  body.querySelectorAll("[data-act]").forEach((b) => b.onclick = async () => {
+    const act = b.dataset.act;
+    try {
+      if (act === "hide") await Storage.adminSetStatus(b.dataset.id, "hidden");
+      else if (act === "show") await Storage.adminSetStatus(b.dataset.id, "visible");
+      else if (act === "del") { if (!confirm("Radera tipset permanent?")) return; await Storage.deleteUserPoi(b.dataset.id); removeMarkerById(b.dataset.id); }
+      else if (act === "resolve") await Storage.adminResolve(b.dataset.rid);
+      toast("Klart.");
+      openAdminSheet();
+    } catch (e) { toast("Fel: " + e.message); }
+  });
 }
 function openAccountSheet() { renderAccount(Storage.auth.user()); openSheet("account-sheet"); }
 async function sendMagicLink() {

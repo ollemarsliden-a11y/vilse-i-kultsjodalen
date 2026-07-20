@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=10" />
+  <link rel="stylesheet" href="css/styles.css?v=11" />
 </head>
 <body>
 
@@ -169,24 +169,34 @@
     </div>
     <div id="account-signedin" hidden>
       <p class="account-lead">Inloggad som <b id="account-who"></b>.</p>
+      <button id="account-admin" class="btn-primary btn-secondary" hidden>🛡️ Moderering</button>
       <div class="sheet-actions">
         <button id="account-signout" class="btn-primary">Logga ut</button>
       </div>
     </div>
   </div>
 
+  <!-- Moderering (admin) -->
+  <div id="admin-sheet" class="sheet">
+    <div class="panel-head">
+      <h2>Moderering</h2>
+      <button id="admin-cancel" class="panel-close" aria-label="Stäng">✕</button>
+    </div>
+    <div id="admin-body"></div>
+  </div>
+
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=10"></script>
-  <script src="js/data.js?v=10"></script>
-  <script src="js/leder.js?v=10"></script>
-  <script src="js/services.js?v=10"></script>
-  <script src="js/routes.js?v=10"></script>
-  <script src="js/winter.js?v=10"></script>
-  <script src="js/icons.js?v=10"></script>
-  <script src="js/weather.js?v=10"></script>
-  <script src="js/storage.js?v=10"></script>
-  <script src="js/app.js?v=10"></script>
+  <script src="js/config.js?v=11"></script>
+  <script src="js/data.js?v=11"></script>
+  <script src="js/leder.js?v=11"></script>
+  <script src="js/services.js?v=11"></script>
+  <script src="js/routes.js?v=11"></script>
+  <script src="js/winter.js?v=11"></script>
+  <script src="js/icons.js?v=11"></script>
+  <script src="js/weather.js?v=11"></script>
+  <script src="js/storage.js?v=11"></script>
+  <script src="js/app.js?v=11"></script>
 </body>
 </html>

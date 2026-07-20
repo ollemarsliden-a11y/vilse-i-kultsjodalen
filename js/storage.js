@@ -32,7 +32,7 @@ const Storage = (() => {
     return {
       id: r.id, name: r.name, category: r.category, description: r.description || "",
       image: r.image_url || "", coord: [r.lat, r.lng], season: r.season || "all",
-      user_id: r.user_id, userAdded: true, createdAt: r.created_at,
+      user_id: r.user_id, userAdded: true, createdAt: r.created_at, status: r.status,
     };
   }
 
@@ -76,6 +76,8 @@ const Storage = (() => {
           if (error) throw error;
         },
         async signOut() { await sb.auth.signOut(); },
+        isAdmin: () => !!currentUser &&
+          (CONFIG.ADMIN_EMAILS || []).includes(currentUser.email),
       },
 
       async getUserPois() {
@@ -167,6 +169,29 @@ const Storage = (() => {
         return sb.from("vik_reports").insert({
           tip_id: tipId, reporter_id: currentUser.id, reason, note: note || null,
         });
+      },
+
+      // Moderering (kräver admin.sql + admin-e-post)
+      async adminReports() {
+        const { data, error } = await sb.from("vik_reports")
+          .select("id,reason,note,created_at,resolved,tip:vik_tips(id,name,status,category,lat,lng)")
+          .eq("resolved", false).order("created_at", { ascending: false });
+        if (error) throw error;
+        return data || [];
+      },
+      async adminFlagged() {
+        const { data, error } = await sb.from("vik_tips").select("*")
+          .neq("status", "visible").order("created_at", { ascending: false });
+        if (error) throw error;
+        return (data || []).map(rowToPoi);
+      },
+      async adminSetStatus(tipId, status) {
+        const { error } = await sb.from("vik_tips").update({ status }).eq("id", tipId);
+        if (error) throw error;
+      },
+      async adminResolve(reportId) {
+        const { error } = await sb.from("vik_reports").update({ resolved: true }).eq("id", reportId);
+        if (error) throw error;
       },
     };
   }

@@ -15,9 +15,14 @@ const _isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
 // här så dyker "Fjällkarta" upp som kartunderlag. Registrering: se README.
 const LM_TOKEN = "";
 
+// Moderatorer (matchar admin.sql). Endast för att visa admin-vyn i klienten —
+// den faktiska behörigheten styrs av säkerhetsreglerna i Supabase.
+const ADMIN_EMAILS = ["olle.marsliden@gmail.com"];
+
 const CONFIG = {
   API_BASE: _isLocal ? "http://localhost:8787" : "",
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
   LM_TOKEN,
+  ADMIN_EMAILS,
 };

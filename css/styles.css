@@ -261,6 +261,23 @@ body.picking::after {
 
 .account-lead { font-size: 14px; color: var(--ink-2); line-height: 1.5; margin: 0 0 14px; }
 .icon-btn.signed-in { background: var(--brand-2); color: #fff; }
+#account-admin { margin-bottom: 10px; }
+
+/* Moderering */
+.adm-row {
+  display: flex; align-items: center; gap: 10px; justify-content: space-between;
+  padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 12px; margin-bottom: 8px;
+}
+.adm-main { min-width: 0; }
+.adm-name { font-weight: 700; font-size: 14px; }
+.adm-flag { font-size: 11px; color: #a8621b; background: #fdf2e2; padding: 1px 6px; border-radius: 5px; }
+.adm-reason { font-size: 12.5px; color: var(--ink-2); }
+.adm-actions { display: flex; flex-wrap: wrap; gap: 5px; flex: 0 0 auto; }
+.adm-actions button {
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 9px; padding: 6px 9px; font-size: 12px; font-weight: 650; cursor: pointer;
+}
+.adm-actions .adm-del { color: #d1495b; border-color: color-mix(in srgb, #d1495b 40%, var(--line)); }
 .google-btn {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
   padding: 13px; border: 1.5px solid var(--line); border-radius: 12px;
