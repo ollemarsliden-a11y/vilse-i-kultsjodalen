@@ -20,9 +20,15 @@ const ICON_GLYPHS = {
   // Sevärt (öga/utsikt)
   sevart:
     '<path d="M12 5C6.4 5 2.3 9.6 1 12c1.3 2.4 5.4 7 11 7s9.7-4.6 11-7c-1.3-2.4-5.4-7-11-7zm0 11.2A4.2 4.2 0 1112 7.8a4.2 4.2 0 010 8.4z"/><circle cx="12" cy="12" r="2.1" fill="#fff"/>',
-  // Boende & mat (säng)
+  // Boende (säng)
   boende:
     '<path d="M2 9a2 2 0 012-2h6a3 3 0 013 3v2h6a2 2 0 012 2v5h-2.2v-2.2H4.2V19H2zm2.4 1.6a1.9 1.9 0 103.8 0 1.9 1.9 0 00-3.8 0z"/>',
+  // Mat & fik (gaffel + kniv)
+  mat:
+    '<path d="M6 2v6a2.2 2.2 0 001.6 2.1V22H9V10.1A2.2 2.2 0 0010.6 8V2H9.3v5H8.3V2H7.3v5H6.3V2zm10.4 0c-1.4 0-2.4 2.1-2.4 5.2 0 2.4 1 3.4 1.9 3.7V22h1.4V2z"/>',
+  // Affär & service (kasse)
+  service:
+    '<path d="M6.5 7V6a3.5 3.5 0 017 0v1H20l-1 13H5L4 7zm2 0h4V6a1.5 1.5 0 00-3 0zm-.5 4a1 1 0 102 0h1a2 2 0 01-4 0zm6 0a1 1 0 102 0h1a2 2 0 01-4 0z"/>',
 };
 
 // SVG-sträng för en glyf i given färg och storlek.

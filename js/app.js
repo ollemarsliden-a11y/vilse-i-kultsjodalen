@@ -35,7 +35,27 @@ const BASEMAPS = {
 const RAA_WMS = "https://pub.raa.se/visning/lamningar_v1/wms";
 const RAA_LAYERS = "fornlamning,mojligfornlamning,ovrkulthistlamning";
 
+const SERVICE_KINDS = {
+  boende:  { label: "Boende", color: "#e0872b" },
+  mat:     { label: "Mat & fik", color: "#c1524a" },
+  service: { label: "Affär & service", color: "#4f8a8b" },
+};
+const SERVICE_SUB = {
+  hotel: "Hotell", guest_house: "Gästgiveri", hostel: "Vandrarhem", chalet: "Stuga",
+  motel: "Motell", apartment: "Lägenhet", camp_site: "Camping", caravan_site: "Ställplats",
+  wilderness_hut: "Fjällstuga", alpine_hut: "Fjällstuga", cabin: "Stuga",
+  restaurant: "Restaurang", cafe: "Café", fast_food: "Snabbmat", pub: "Pub", bar: "Bar",
+  fuel: "Drivmedel", butik: "Butik",
+};
+
 const OVERLAYS = {
+  service: {
+    label: "Boende & service",
+    icon: "boende",
+    sub: "Hotell, stugor, camping, mat, affärer & mackar (OpenStreetMap)",
+    toast: "Laddar boende & service…",
+    create: () => buildServiceLayer(),
+  },
   leder: {
     label: "Vandringsleder",
     icon: "led",
@@ -62,6 +82,37 @@ function TRAIL_STYLE(f) {
   if (r === "hiking") return { color: "#1f6b2e", weight: 4, opacity: 0.9 };
   return { color: "#2f8f4e", weight: 3, opacity: 0.85 };
 }
+function buildServiceLayer() {
+  if (typeof SERVICES === "undefined") return L.layerGroup();
+  const group = L.layerGroup();
+  for (const s of SERVICES) {
+    const k = SERVICE_KINDS[s.kind] || SERVICE_KINDS.service;
+    const icon = L.divIcon({
+      className: "svc-pin",
+      html: `<div class="svc-dot" style="--c:${k.color}">${iconSvg(s.kind, "#fff", 13)}</div>`,
+      iconSize: [26, 26],
+      iconAnchor: [13, 13],
+    });
+    const sub = SERVICE_SUB[s.sub] || s.sub || k.label;
+    const rows = [];
+    if (s.hours) rows.push(`<div class="svc-row">🕑 ${escapeHtml(s.hours)}</div>`);
+    if (s.phone) rows.push(`<div class="svc-row">📞 <a href="tel:${escapeHtml(s.phone)}">${escapeHtml(s.phone)}</a></div>`);
+    if (s.website) rows.push(`<div class="svc-row"><a href="${encodeURI(s.website)}" target="_blank" rel="noopener">Hemsida ↗</a></div>`);
+    L.marker([s.lat, s.lng], { icon })
+      .bindPopup(
+        `<div class="mini-pop">
+           <div class="svc-cat" style="color:${k.color}">${escapeHtml(sub)}</div>
+           <b>${escapeHtml(s.name)}</b>
+           ${rows.join("")}
+           <div class="mini-sub">Källa: OpenStreetMap</div>
+         </div>`,
+        { maxWidth: 240 }
+      )
+      .addTo(group);
+  }
+  return group;
+}
+
 function buildTrailLayer() {
   if (typeof TRAILS === "undefined") return L.layerGroup();
   const routeLabel = { hiking: "Vandringsled", foot: "Gångled/fjälled", ski: "Skidled" };
