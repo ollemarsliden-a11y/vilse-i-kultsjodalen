@@ -232,6 +232,23 @@ body.picking::after {
 .forn-block { padding: 12px 0; border-top: 1px solid var(--line); }
 .forn-block:first-of-type { border-top: none; }
 
+/* Reaktioner, rapport, konto */
+.ps-reactions { display: flex; gap: 8px; margin: 12px 0 2px; }
+.ps-react {
+  flex: 1; padding: 9px; border: 1.5px solid var(--line); border-radius: 12px;
+  background: var(--surface); color: var(--ink-2); font-size: 13px; font-weight: 650; cursor: pointer;
+}
+.ps-react.on { background: color-mix(in srgb, var(--brand-2) 16%, transparent); color: var(--brand-2); border-color: var(--brand-2); }
+.ps-react b { color: inherit; }
+.ps-danger { background: color-mix(in srgb, #d1495b 15%, transparent) !important; color: #d1495b !important; }
+.ps-report {
+  margin-top: 14px; width: 100%; padding: 10px; border: none; border-radius: 12px;
+  background: transparent; color: var(--ink-2); font-size: 12.5px; cursor: pointer;
+  text-decoration: underline;
+}
+.account-lead { font-size: 14px; color: var(--ink-2); line-height: 1.5; margin: 0 0 14px; }
+.icon-btn.signed-in { background: var(--brand-2); color: #fff; }
+
 /* ---- Paneler / formulär ---- */
 .panel, .sheet { padding: 16px 18px calc(26px + var(--safe-b)); }
 .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }

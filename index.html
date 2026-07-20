@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=4" />
+  <link rel="stylesheet" href="css/styles.css?v=5" />
 </head>
 <body>
 
@@ -39,6 +39,9 @@
     </div>
     <div class="topbar-right">
       <button id="weather-pill" class="weather-pill" title="Väder just nu (SMHI)"></button>
+      <button id="btn-account" class="icon-btn" title="Konto" aria-label="Konto">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 2.7-9 6v2h18v-2c0-3.3-4-6-9-6z"/></svg>
+      </button>
       <button id="btn-layers" class="icon-btn" title="Kartlager" aria-label="Kartlager">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2 1 8l11 6 11-6zM3.5 11 1 12.4l11 6 11-6-2.5-1.4L12 15.6z"/></svg>
       </button>
@@ -113,15 +116,40 @@
     <p class="panel-hint" id="add-hint">Ditt tips delas med andra via molnet.</p>
   </div>
 
+  <!-- Konto / inloggning -->
+  <div id="account-sheet" class="sheet">
+    <div class="panel-head">
+      <h2 id="account-title">Logga in</h2>
+      <button id="account-cancel" class="panel-close" aria-label="Stäng">✕</button>
+    </div>
+    <div id="account-signedout">
+      <p class="account-lead">Logga in för att dela tips och foton med andra i dalen. Ingen lösenord — du får en inloggningslänk på mejlen.</p>
+      <label>E-post
+        <input id="account-email" type="email" inputmode="email" placeholder="din@epost.se" />
+      </label>
+      <div class="sheet-actions">
+        <button id="account-send" class="btn-primary">Skicka inloggningslänk</button>
+      </div>
+      <p class="panel-hint">Genom att bidra godkänner du att bilder du laddar upp visas i appen, att du har rätt till dem, och att inga identifierbara personer syns utan medgivande.</p>
+    </div>
+    <div id="account-signedin" hidden>
+      <p class="account-lead">Inloggad som <b id="account-who"></b>.</p>
+      <div class="sheet-actions">
+        <button id="account-signout" class="btn-primary">Logga ut</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 
-  <script src="js/config.js?v=4"></script>
-  <script src="js/data.js?v=4"></script>
-  <script src="js/leder.js?v=4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js?v=5"></script>
+  <script src="js/data.js?v=5"></script>
+  <script src="js/leder.js?v=5"></script>
   <script src="js/services.js?v=5"></script>
-  <script src="js/icons.js?v=4"></script>
-  <script src="js/weather.js?v=4"></script>
-  <script src="js/storage.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/icons.js?v=5"></script>
+  <script src="js/weather.js?v=5"></script>
+  <script src="js/storage.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>

@@ -1,16 +1,18 @@
 // ===================================================================
 //  App-konfiguration
 // ===================================================================
-//  API_BASE styr var användarnas egna tips lagras.
-//  Automatik: lokalt (localhost) används dev-backenden på :8787.
-//  Publikt (t.ex. GitHub Pages) används lokalt läge tills vi kopplat
-//  på en molnbackend — byt då PROD_API nedan till backendens URL.
+//  Community-backend: Supabase (delas med frågesport-projektet, men våra
+//  tabeller är vik_-prefixade + egen bucket vik-photos → ingen krock).
+//  Publishable-nyckeln är gjord för frontend och är säker att ha här.
 // ===================================================================
+const SUPABASE_URL = "https://ackvaaavkrxcemmixloh.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_59097m0ExGRyMzSGCqbArw_yjk4WqJk";
+
 const _isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
 
-// Sätt denna till din hostade backend när den finns (annars "" = lokalt läge):
-const PROD_API = "";
-
+// Gammal Node-backend (endast fallback om Supabase inte är laddat).
 const CONFIG = {
-  API_BASE: _isLocal ? "http://localhost:8787" : PROD_API,
+  API_BASE: _isLocal ? "http://localhost:8787" : "",
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
 };

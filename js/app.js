@@ -137,6 +137,8 @@ const state = {
   currentBasemap: null,
   layers: {},
   overlays: {},
+  markers: {},        // poi.id -> marker
+  editingId: null,    // id på tips som redigeras
   activeCategories: new Set(Object.keys(CATEGORIES)),
   meMarker: null,
   meCircle: null,
@@ -175,6 +177,7 @@ async function init() {
   wireIdentify();
   wireSplash();
   wireWeather();
+  wireAccount();
   registerServiceWorker();
 }
 
@@ -206,7 +209,15 @@ function addPoiMarker(poi) {
   marker.poi = poi;
   marker.on("click", () => openPlaceSheet(poi, marker));
   (state.layers[cat] || state.layers.sevart).addLayer(marker);
+  state.markers[poi.id] = marker;
   return marker;
+}
+
+function removeMarkerById(id) {
+  const m = state.markers[id];
+  if (!m) return;
+  (state.layers[m.poi.category] || state.layers.sevart).removeLayer(m);
+  delete state.markers[id];
 }
 
 // ===================================================================
@@ -237,9 +248,19 @@ function openPlaceSheet(poi, marker) {
     ? `<div class="ps-dist">📍 ${formatDist(state.map.distance(state.meLatLng, poi.coord))} härifrån</div>`
     : "";
 
-  const del = poi.userAdded
-    ? `<button class="ps-del" data-del="${poi.id}">Ta bort tips</button>`
-    : "";
+  const uid = Storage.auth ? Storage.auth.userId() : null;
+  const isOwner = poi.userAdded && uid && poi.user_id === uid;
+  const community = poi.userAdded && Storage.mode === "supabase";
+
+  const reactRow = community
+    ? `<div class="ps-reactions" id="ps-reactions"></div>` : "";
+  const ownerCtl = isOwner
+    ? `<div class="ps-actions"><button class="ps-btn ps-btn-ghost" id="ps-edit">Redigera</button>
+         <button class="ps-btn ps-danger" id="ps-delete">Ta bort</button></div>`
+    : poi.userAdded && Storage.mode !== "supabase"
+      ? `<button class="ps-del" id="ps-delete-local">Ta bort tips</button>` : "";
+  const reportBtn = community && !isOwner
+    ? `<button class="ps-report" id="ps-report">⚑ Rapportera</button>` : "";
 
   body.innerHTML = `
     ${header}
@@ -251,6 +272,7 @@ function openPlaceSheet(poi, marker) {
       ${poi.blurb ? `<p class="ps-blurb">${escapeHtml(poi.blurb)}</p>` : ""}
       ${dist}
       <div class="ps-weather" id="ps-weather"><span class="ps-weather-load">Hämtar väder…</span></div>
+      ${reactRow}
       ${facts ? `<div class="ps-facts">${facts}</div>` : ""}
       ${poi.description ? `<div class="ps-section"><p>${escapeHtml(poi.description)}</p></div>` : ""}
       ${history}
@@ -258,8 +280,9 @@ function openPlaceSheet(poi, marker) {
         <button class="ps-btn" id="ps-directions">🧭 Vägbeskrivning</button>
         <button class="ps-btn ps-btn-ghost" id="ps-center">Visa på kartan</button>
       </div>
+      ${ownerCtl}
       ${poi.source ? `<div class="ps-src">Källa: ${escapeHtml(poi.source)}</div>` : ""}
-      ${del}
+      ${reportBtn}
     </div>`;
 
   sheet.classList.add("open");
@@ -272,14 +295,25 @@ function openPlaceSheet(poi, marker) {
     state.map.setView(poi.coord, Math.max(state.map.getZoom(), 13));
     if (marker) marker.openPopup?.();
   };
-  const delBtn = body.querySelector("[data-del]");
-  if (delBtn)
-    delBtn.onclick = async () => {
+  const doDelete = async () => {
+    if (!confirm("Ta bort det här tipset?")) return;
+    try {
       await Storage.deleteUserPoi(poi.id);
-      if (marker) state.layers[poi.category]?.removeLayer(marker);
+      removeMarkerById(poi.id);
       closePlaceSheet();
       toast("Tips borttaget.");
-    };
+    } catch (e) { toast("Kunde inte ta bort: " + e.message); }
+  };
+  const delLocal = document.getElementById("ps-delete-local");
+  if (delLocal) delLocal.onclick = doDelete;
+  const delOwner = document.getElementById("ps-delete");
+  if (delOwner) delOwner.onclick = doDelete;
+  const editBtn = document.getElementById("ps-edit");
+  if (editBtn) editBtn.onclick = () => startEditFlow(poi);
+  const reportBtnEl = document.getElementById("ps-report");
+  if (reportBtnEl) reportBtnEl.onclick = () => reportTip(poi.id);
+
+  if (community) loadReactions(poi.id);
 
   // väder för platsen
   Weather.get(poi.coord[0], poi.coord[1])
@@ -430,6 +464,79 @@ async function updateWeatherPill() {
 }
 
 // ===================================================================
+//  Konto / inloggning (magic link)
+// ===================================================================
+function openSheet(id) { document.getElementById(id).classList.add("open"); }
+function closeSheet(id) { document.getElementById(id).classList.remove("open"); }
+
+function wireAccount() {
+  const btn = document.getElementById("btn-account");
+  if (!Storage.auth || Storage.mode !== "supabase") { btn.style.display = "none"; return; }
+  btn.addEventListener("click", openAccountSheet);
+  document.getElementById("account-cancel").addEventListener("click", () => closeSheet("account-sheet"));
+  document.getElementById("account-send").addEventListener("click", sendMagicLink);
+  document.getElementById("account-signout").addEventListener("click", async () => {
+    await Storage.auth.signOut(); toast("Utloggad."); closeSheet("account-sheet");
+  });
+  Storage.auth.onChange(updateAccountUI);
+}
+function updateAccountUI(user) {
+  document.getElementById("btn-account").classList.toggle("signed-in", !!user);
+  if (document.getElementById("account-sheet").classList.contains("open")) renderAccount(user);
+}
+function renderAccount(user) {
+  document.getElementById("account-signedout").hidden = !!user;
+  document.getElementById("account-signedin").hidden = !user;
+  document.getElementById("account-title").textContent = user ? "Konto" : "Logga in";
+  if (user) document.getElementById("account-who").textContent = user.email || "inloggad";
+}
+function openAccountSheet() { renderAccount(Storage.auth.user()); openSheet("account-sheet"); }
+async function sendMagicLink() {
+  const email = document.getElementById("account-email").value.trim();
+  if (!email || !email.includes("@")) return toast("Ange din e-post.");
+  try { await Storage.auth.signIn(email); toast("Kolla mejlen — inloggningslänk skickad!"); }
+  catch (e) { toast("Kunde inte skicka länk: " + e.message); }
+}
+function requireLogin() {
+  if (Storage.mode === "supabase" && !Storage.auth.userId()) {
+    toast("Logga in för att dela tips."); openAccountSheet(); return false;
+  }
+  return true;
+}
+
+// ===================================================================
+//  Reaktioner & rapportering
+// ===================================================================
+async function loadReactions(tipId) {
+  const el = document.getElementById("ps-reactions");
+  if (!el) return;
+  let rows = [];
+  try { rows = await Storage.reactionsFor(tipId); } catch { return; }
+  const uid = Storage.auth.userId();
+  const kinds = [["been_here", "✓ Varit här"], ["favorite", "❤ Favorit"]];
+  el.innerHTML = kinds.map(([k, label]) => {
+    const count = rows.filter((r) => r.kind === k).length;
+    const mine = uid && rows.some((r) => r.kind === k && r.user_id === uid);
+    return `<button class="ps-react${mine ? " on" : ""}" data-k="${k}">${label}${count ? ` <b>${count}</b>` : ""}</button>`;
+  }).join("");
+  el.querySelectorAll(".ps-react").forEach((btn) => {
+    btn.onclick = async () => {
+      if (!Storage.auth.userId()) { toast("Logga in för att reagera."); openAccountSheet(); return; }
+      const k = btn.dataset.k, mine = btn.classList.contains("on");
+      try { mine ? await Storage.unreact(tipId, k) : await Storage.react(tipId, k); loadReactions(tipId); }
+      catch { toast("Kunde inte spara reaktion."); }
+    };
+  });
+}
+async function reportTip(tipId) {
+  if (!Storage.auth.userId()) { toast("Logga in för att rapportera."); openAccountSheet(); return; }
+  const reason = prompt("Varför rapporterar du?\n(t.ex. olämpligt, fel plats, personuppgifter, upphovsrätt)");
+  if (!reason) return;
+  try { await Storage.report(tipId, reason.slice(0, 60), null); toast("Tack, rapporten är skickad."); }
+  catch { toast("Kunde inte skicka rapport."); }
+}
+
+// ===================================================================
 //  GPS
 // ===================================================================
 function locateMe() {
@@ -535,6 +642,8 @@ function openFornSheet(features) {
 //  Lägg till eget tips
 // ===================================================================
 function startAddFlow() {
+  if (!requireLogin()) return;
+  state.editingId = null;
   state.pickingLocation = true;
   document.body.classList.add("picking");
   toast("Tryck på kartan där platsen ligger.");
@@ -542,8 +651,26 @@ function startAddFlow() {
     state.pendingCoord = [e.latlng.lat, e.latlng.lng];
     state.pickingLocation = false;
     document.body.classList.remove("picking");
+    setAddFormMode(false);
     document.getElementById("add-form").classList.add("open");
   });
+}
+
+function startEditFlow(poi) {
+  state.editingId = poi.id;
+  state.pendingCoord = poi.coord;
+  clearPhoto();
+  document.getElementById("add-name").value = poi.name;
+  document.getElementById("add-desc").value = poi.description || "";
+  document.getElementById("add-category").value = poi.category;
+  setAddFormMode(true);
+  closePlaceSheet();
+  document.getElementById("add-form").classList.add("open");
+}
+
+function setAddFormMode(editing) {
+  document.querySelector("#add-form .panel-head h2").textContent = editing ? "Redigera tips" : "Nytt tips";
+  document.getElementById("add-save").textContent = editing ? "Spara ändringar" : "Spara tips";
 }
 
 function closeAddForm() {
@@ -551,6 +678,8 @@ function closeAddForm() {
   document.getElementById("add-name").value = "";
   document.getElementById("add-desc").value = "";
   state.pendingCoord = null;
+  state.editingId = null;
+  setAddFormMode(false);
   clearPhoto();
 }
 
@@ -602,21 +731,34 @@ function compressImage(file, maxDim = 1600, quality = 0.82) {
 async function saveNewPoi() {
   const name = document.getElementById("add-name").value.trim();
   if (!name) return toast("Ge platsen ett namn.");
+  const category = document.getElementById("add-category").value;
+  const description = document.getElementById("add-desc").value.trim();
   try {
-    let image = "";
+    let image;
     if (state.pendingImage) { toast("Laddar upp foto…"); image = await Storage.uploadImage(state.pendingImage); }
-    const poi = {
-      name, category: document.getElementById("add-category").value,
-      description: document.getElementById("add-desc").value.trim(),
-      image, coord: state.pendingCoord,
-    };
-    const saved = await Storage.addUserPoi(poi);
+
+    if (state.editingId) {
+      const patch = { name, category, description };
+      if (image !== undefined) patch.image = image;
+      const updated = await Storage.updateUserPoi(state.editingId, patch);
+      removeMarkerById(state.editingId);
+      addPoiMarker(updated);
+      closeAddForm();
+      toast("Ändringar sparade.");
+      openPlaceSheet(updated);
+      return;
+    }
+
+    const saved = await Storage.addUserPoi({
+      name, category, description, image: image || "", coord: state.pendingCoord,
+    });
     addPoiMarker(saved);
     closeAddForm();
-    toast(Storage.mode === "cloud" ? "Tips delat! Nu syns det för alla." : "Tips sparat lokalt.");
+    toast(Storage.mode === "supabase" ? "Tips delat! Nu syns det för alla."
+      : Storage.mode === "cloud" ? "Tips delat!" : "Tips sparat lokalt.");
     openPlaceSheet(saved);
-  } catch {
-    toast("Kunde inte spara — kontrollera anslutningen.");
+  } catch (e) {
+    toast("Kunde inte spara: " + (e.message || "fel"));
   }
 }
 
