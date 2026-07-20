@@ -1,0 +1,11 @@
+# Runtime-data (delade tips + uppladdade foton) ska inte checkas in
+server/data/
+
+# Node
+node_modules/
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db

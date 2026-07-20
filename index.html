@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0f1a14" />
+  <title>Vilse i Kultsjödalen</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon.svg" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <link rel="stylesheet" href="css/styles.css?v=4" />
+</head>
+<body>
+
+  <!-- Välkomstsplash -->
+  <div id="splash" class="splash">
+    <div class="splash-bg"></div>
+    <div class="splash-content">
+      <div class="splash-mark">▲</div>
+      <h1 class="splash-title">Vilse i Kultsjödalen</h1>
+      <p class="splash-tagline">Upptäck dalen och byarna — leder, smultronställen,<br>fiske, kultur och fornlämningar på kartan.</p>
+      <button id="splash-enter" class="splash-btn">Utforska kartan</button>
+    </div>
+    <div class="splash-credit">Foto: Kultsjödalen</div>
+  </div>
+
+  <!-- Toppbar -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">▲</span>
+      <div class="brand-text">
+        <div class="brand-title">Kultsjödalen</div>
+        <div class="brand-sub">Din guide till dalen</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button id="weather-pill" class="weather-pill" title="Väder just nu (SMHI)"></button>
+      <button id="btn-layers" class="icon-btn" title="Kartlager" aria-label="Kartlager">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2 1 8l11 6 11-6zM3.5 11 1 12.4l11 6 11-6-2.5-1.4L12 15.6z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Kategorifilter -->
+  <div id="category-chips" class="category-chips"></div>
+
+  <!-- Karta -->
+  <div id="map"></div>
+
+  <!-- Flytande knappar -->
+  <div class="fab-stack">
+    <button id="btn-gpx" class="fab" title="Importera GPX-rutt" aria-label="Importera GPX">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+    </button>
+    <button id="btn-add" class="fab" title="Lägg till tips" aria-label="Lägg till tips">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M11 5v6H5v2h6v6h2v-6h6v-2h-6V5z"/></svg>
+    </button>
+    <button id="btn-locate" class="fab fab-primary" title="Min position" aria-label="Min position">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm9 3h-2.06A7 7 0 0 0 13 5.06V3h-2v2.06A7 7 0 0 0 5.06 11H3v2h2.06A7 7 0 0 0 11 18.94V21h2v-2.06A7 7 0 0 0 18.94 13H21z"/></svg>
+    </button>
+  </div>
+  <input type="file" id="gpx-input" accept=".gpx,application/gpx+xml" hidden />
+
+  <!-- Platskort (bottom sheet) -->
+  <div id="place-sheet" class="place-sheet">
+    <button id="place-close" class="place-close" aria-label="Stäng">✕</button>
+    <div class="place-handle"></div>
+    <div id="place-body" class="place-body"></div>
+  </div>
+
+  <!-- Lagerpanel -->
+  <div id="panel-layers" class="panel">
+    <div class="panel-head">
+      <h2>Kartunderlag</h2>
+      <button data-close="panel-layers" class="panel-close" aria-label="Stäng">✕</button>
+    </div>
+    <div id="basemap-buttons" class="segmented"></div>
+    <h3 class="panel-subhead">Datalager</h3>
+    <div id="overlay-toggles"></div>
+  </div>
+
+  <!-- Lägg till-formulär -->
+  <div id="add-form" class="sheet">
+    <div class="panel-head">
+      <h2>Nytt tips</h2>
+      <button id="add-cancel" class="panel-close" aria-label="Stäng">✕</button>
+    </div>
+    <label>Namn
+      <input id="add-name" type="text" placeholder="T.ex. Fin badvik" />
+    </label>
+    <label>Kategori
+      <select id="add-category"></select>
+    </label>
+    <label>Beskrivning
+      <textarea id="add-desc" rows="3" placeholder="Berätta om platsen…"></textarea>
+    </label>
+    <label>Foto (valfritt)</label>
+    <div class="photo-picker">
+      <button type="button" id="add-photo-btn" class="photo-btn">📷 Ta foto eller välj bild</button>
+      <input id="add-photo" type="file" accept="image/*" capture="environment" hidden />
+      <div id="add-photo-preview" class="photo-preview" hidden>
+        <img id="add-photo-img" alt="Förhandsvisning" />
+        <button type="button" id="add-photo-clear" class="photo-clear" title="Ta bort foto">✕</button>
+      </div>
+    </div>
+    <div class="sheet-actions">
+      <button id="add-save" class="btn-primary">Spara tips</button>
+    </div>
+    <p class="panel-hint" id="add-hint">Ditt tips delas med andra via molnet.</p>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/config.js?v=4"></script>
+  <script src="js/data.js?v=4"></script>
+  <script src="js/leder.js?v=4"></script>
+  <script src="js/icons.js?v=4"></script>
+  <script src="js/weather.js?v=4"></script>
+  <script src="js/storage.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
+</body>
+</html>

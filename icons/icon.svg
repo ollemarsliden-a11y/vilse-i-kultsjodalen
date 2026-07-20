@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#2f4a3c"/>
+  <!-- sjö -->
+  <path d="M40 372 q120 40 216 8 q120 -40 216 8 v124 H40 Z" fill="#2f6fb0" opacity="0.9"/>
+  <!-- fjäll -->
+  <path d="M96 380 L214 168 L286 288 L330 220 L430 380 Z" fill="#cfe3c9"/>
+  <path d="M214 168 L246 226 L214 246 L182 226 Z" fill="#ffffff"/>
+  <!-- pin -->
+  <circle cx="256" cy="150" r="20" fill="#c0455f" stroke="#fff" stroke-width="8"/>
+</svg>

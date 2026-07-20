@@ -1,0 +1,351 @@
+/* ===================================================================
+   Vilse i Kultsjödalen — design (2026)
+   Inspiration: AllTrails / Naturkartan / Komoot. Ljust + mörkt läge.
+   =================================================================== */
+:root {
+  --bg: #f5f4ef;
+  --surface: #ffffff;
+  --surface-2: #f2f1ea;
+  --ink: #17201a;
+  --ink-2: #55605a;
+  --line: #e6e3d9;
+  --brand: #234b39;      /* mörk mossgrön */
+  --brand-2: #2f8f4e;
+  --accent: #2f6fb0;     /* sjöblå */
+  --radius: 18px;
+  --radius-lg: 24px;
+  --shadow-s: 0 2px 8px rgba(20,30,24,.10);
+  --shadow-m: 0 8px 24px rgba(20,30,24,.16);
+  --shadow-l: 0 -10px 40px rgba(15,20,17,.22);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1512;
+    --surface: #18201b;
+    --surface-2: #202a24;
+    --ink: #eef2ee;
+    --ink-2: #a4b0a8;
+    --line: #2b352e;
+    --brand: #3f7d57;
+    --shadow-s: 0 2px 8px rgba(0,0,0,.4);
+    --shadow-m: 0 8px 24px rgba(0,0,0,.5);
+    --shadow-l: 0 -10px 40px rgba(0,0,0,.55);
+  }
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; height: 100%;
+  font-family: -apple-system, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+  color: var(--ink); background: var(--bg); overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; }
+
+/* ---- Toppbar (glasig) ---- */
+.topbar {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: calc(10px + var(--safe-t)) 14px 10px;
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+}
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand-mark {
+  font-size: 20px; line-height: 1; color: var(--brand-2);
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
+}
+.brand-title { font-weight: 750; font-size: 17px; letter-spacing: -.2px; }
+.brand-sub { font-size: 11px; color: var(--ink-2); margin-top: -1px; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+
+.icon-btn {
+  border: none; background: var(--surface-2); color: var(--ink);
+  width: 42px; height: 42px; border-radius: 13px; cursor: pointer;
+  display: grid; place-items: center; box-shadow: var(--shadow-s);
+}
+.icon-btn:active { transform: scale(.93); }
+
+.weather-pill {
+  display: none; align-items: center; gap: 5px;
+  height: 42px; padding: 0 13px; border: none; cursor: pointer;
+  background: var(--surface-2); color: var(--ink);
+  border-radius: 13px; box-shadow: var(--shadow-s);
+}
+.weather-pill.show { display: inline-flex; }
+.wp-emoji { font-size: 17px; }
+.wp-temp { font-weight: 750; font-size: 15px; }
+
+/* ---- Kategori-chips ---- */
+.category-chips {
+  position: absolute; left: 0; right: 0; z-index: 900;
+  top: calc(62px + var(--safe-t));
+  display: flex; gap: 8px; padding: 10px 12px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.category-chips::-webkit-scrollbar { display: none; }
+.chip {
+  --chip-color: #666;
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px 8px 11px; border-radius: 22px; cursor: pointer;
+  font-size: 13px; font-weight: 650; white-space: nowrap;
+  background: var(--surface); color: var(--ink-2);
+  border: 1.5px solid var(--line); box-shadow: var(--shadow-s);
+  transition: transform .08s, background .15s, color .15s, border-color .15s;
+}
+.chip .chip-ic { display: inline-flex; opacity: .6; }
+.chip:active { transform: scale(.95); }
+.chip.active {
+  color: #fff; background: var(--chip-color);
+  border-color: var(--chip-color);
+}
+.chip.active .chip-ic { opacity: 1; }
+
+/* ---- Karta ---- */
+#map { position: absolute; inset: 0; z-index: 1; background: var(--surface-2); }
+body.picking #map { cursor: crosshair; }
+body.picking::after {
+  content: "Tryck på kartan för att placera platsen";
+  position: absolute; z-index: 1500; left: 50%; top: calc(120px + var(--safe-t));
+  transform: translateX(-50%); background: var(--brand); color: #fff;
+  padding: 9px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  box-shadow: var(--shadow-m);
+}
+
+/* Nålar */
+.poi-pin { background: none; border: none; }
+.pin2 { position: relative; width: 36px; height: 46px; }
+.pin2-body {
+  position: absolute; top: 0; left: 1px; width: 34px; height: 34px;
+  background: var(--pin); border: 2.5px solid #fff;
+  border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+  box-shadow: 0 4px 8px rgba(0,0,0,.35);
+  display: grid; place-items: center;
+}
+.pin2-body svg { transform: rotate(45deg); }
+
+/* ---- Flytande knappar ---- */
+.fab-stack {
+  position: absolute; right: 14px; z-index: 900;
+  bottom: calc(26px + var(--safe-b));
+  display: flex; flex-direction: column; gap: 12px;
+}
+.fab {
+  width: 52px; height: 52px; border-radius: 16px; border: none;
+  background: var(--surface); color: var(--brand); cursor: pointer;
+  box-shadow: var(--shadow-m); display: grid; place-items: center;
+}
+.fab:active { transform: scale(.92); }
+.fab-primary { background: var(--accent); color: #fff; }
+
+/* ---- Platskort (bottom sheet) ---- */
+.place-sheet, .panel, .sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 1100;
+  background: var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-l);
+  transform: translateY(110%); transition: transform .34s cubic-bezier(.22,1,.36,1);
+  max-height: 88vh; overflow-y: auto; overscroll-behavior: contain;
+  padding-bottom: var(--safe-b);
+}
+.place-sheet.open, .panel.open, .sheet.open { transform: translateY(0); }
+.place-handle {
+  width: 40px; height: 4px; border-radius: 3px; background: var(--line);
+  margin: 9px auto 2px; position: sticky; top: 0;
+}
+.place-close {
+  position: absolute; top: 14px; right: 14px; z-index: 3;
+  width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(0,0,0,.35); color: #fff; font-size: 15px;
+  backdrop-filter: blur(4px);
+}
+.place-body { padding-bottom: 22px; }
+
+.ps-hero {
+  height: 200px; background-size: cover; background-position: center;
+  position: relative; margin-top: -13px;
+}
+.ps-hero-plain {
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 55%, #000));
+}
+.ps-hero-tag {
+  position: absolute; bottom: 10px; right: 12px;
+  background: rgba(15,20,17,.72); color: #fff; font-size: 11px;
+  padding: 4px 9px; border-radius: 6px;
+}
+.ps-content { padding: 16px 18px 4px; }
+.ps-cat {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 750; color: var(--c);
+  text-transform: uppercase; letter-spacing: .4px;
+}
+.ps-title { margin: 6px 0 4px; font-size: 23px; letter-spacing: -.4px; }
+.ps-blurb { margin: 0; color: var(--ink-2); font-size: 15px; }
+.ps-dist { margin-top: 10px; font-size: 13px; color: var(--ink-2); font-weight: 600; }
+
+.ps-weather {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin: 14px 0; padding: 12px 14px; border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.ps-weather-load { color: var(--ink-2); font-size: 13px; }
+.ps-w-emoji { font-size: 26px; }
+.ps-w-temp { font-size: 24px; font-weight: 800; letter-spacing: -1px; }
+.ps-w-meta { font-size: 13px; color: var(--ink-2); }
+
+.ps-facts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0;
+}
+.ps-fact {
+  background: var(--surface-2); border-radius: 13px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.ps-fact span { font-size: 11px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .3px; }
+.ps-fact b { font-size: 14.5px; }
+
+.ps-section { margin: 16px 0; }
+.ps-section h4 {
+  margin: 0 0 6px; font-size: 12.5px; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--brand-2);
+}
+.ps-section p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--ink); }
+
+.ps-actions { display: flex; gap: 10px; margin: 18px 0 8px; }
+.ps-btn {
+  flex: 1; padding: 13px; border: none; border-radius: 14px; cursor: pointer;
+  font-size: 14.5px; font-weight: 700; background: var(--brand); color: #fff;
+  text-align: center; text-decoration: none; display: inline-block;
+}
+.ps-btn:active { transform: scale(.98); }
+.ps-btn-ghost { background: var(--surface-2); color: var(--ink); }
+.ps-src { font-size: 11.5px; color: var(--ink-2); margin-top: 6px; }
+.ps-del {
+  margin-top: 14px; width: 100%; padding: 12px; border: none; border-radius: 14px;
+  background: color-mix(in srgb, #d1495b 15%, transparent); color: #d1495b;
+  font-weight: 700; cursor: pointer;
+}
+.forn-block { padding: 12px 0; border-top: 1px solid var(--line); }
+.forn-block:first-of-type { border-top: none; }
+
+/* ---- Paneler / formulär ---- */
+.panel, .sheet { padding: 16px 18px calc(26px + var(--safe-b)); }
+.panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.panel-head h2 { margin: 0; font-size: 19px; }
+.panel-close {
+  border: none; background: var(--surface-2); width: 34px; height: 34px;
+  border-radius: 50%; font-size: 15px; cursor: pointer; color: var(--ink);
+}
+.panel-hint { font-size: 12px; color: var(--ink-2); margin: 12px 0 0; }
+.panel-subhead {
+  font-size: 12px; text-transform: uppercase; letter-spacing: .6px;
+  color: var(--ink-2); margin: 22px 0 10px;
+}
+
+.segmented {
+  display: flex; gap: 4px; padding: 4px; border-radius: 15px;
+  background: var(--surface-2);
+}
+.seg-btn {
+  flex: 1; padding: 11px 8px; border-radius: 11px; cursor: pointer; border: none;
+  background: transparent; font-weight: 650; font-size: 13.5px; color: var(--ink-2);
+  transition: background .15s, color .15s;
+}
+.seg-btn.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-s); }
+
+.overlay-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border: 1.5px solid var(--line); border-radius: 15px;
+  background: var(--surface); cursor: pointer; margin-bottom: 10px;
+}
+.overlay-ic {
+  width: 38px; height: 38px; border-radius: 11px; flex: 0 0 auto;
+  display: grid; place-items: center; background: var(--surface-2); color: var(--brand-2);
+}
+.overlay-text { flex: 1; min-width: 0; }
+.overlay-title { display: block; font-weight: 700; font-size: 14.5px; }
+.overlay-sub { display: block; font-size: 12px; color: var(--ink-2); }
+.overlay-row input { width: 20px; height: 20px; accent-color: var(--brand-2); }
+
+/* ---- Formulärfält ---- */
+.sheet label { display: block; font-size: 13px; font-weight: 650; color: var(--ink-2); margin-bottom: 12px; }
+.sheet input, .sheet select, .sheet textarea {
+  width: 100%; margin-top: 6px; padding: 12px 13px;
+  border: 1.5px solid var(--line); border-radius: 12px; font-size: 15px;
+  font-family: inherit; background: var(--surface); color: var(--ink);
+}
+.sheet textarea { resize: vertical; }
+.sheet-actions { margin-top: 4px; }
+.btn-primary {
+  width: 100%; padding: 14px; border: none; border-radius: 14px;
+  background: var(--brand-2); color: #fff; font-size: 15px; font-weight: 750; cursor: pointer;
+}
+.btn-primary:active { transform: scale(.98); }
+
+.photo-picker { margin-bottom: 12px; }
+.photo-btn {
+  width: 100%; padding: 13px; border: 1.5px dashed color-mix(in srgb, var(--brand-2) 45%, var(--line));
+  border-radius: 12px; background: var(--surface-2); color: var(--brand); font-size: 14px;
+  font-weight: 650; cursor: pointer;
+}
+.photo-btn:active { transform: scale(.98); }
+.photo-preview { position: relative; margin-top: 10px; }
+.photo-preview img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; display: block; }
+.photo-clear {
+  position: absolute; top: 8px; right: 8px; width: 30px; height: 30px;
+  border-radius: 50%; border: none; background: rgba(15,20,17,.72); color: #fff;
+  font-size: 14px; cursor: pointer;
+}
+
+/* ---- Splash ---- */
+.splash {
+  position: fixed; inset: 0; z-index: 2000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; color: #fff; overflow: hidden; transition: opacity .5s ease;
+}
+.splash.hide { opacity: 0; pointer-events: none; }
+.splash-bg {
+  position: absolute; inset: 0; z-index: -2;
+  background: #14201a url("../images/kultsjon-winter.webp") center/cover no-repeat;
+  animation: splashZoom 16s ease-out forwards;
+}
+.splash::after {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, rgba(15,20,17,.3), rgba(15,20,17,.8));
+}
+@keyframes splashZoom { from { transform: scale(1.08); } to { transform: scale(1); } }
+.splash-content { padding: 24px; max-width: 500px; animation: splashUp .7s ease .1s both; }
+@keyframes splashUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.splash-mark { font-size: 42px; color: #cfe3c9; filter: drop-shadow(0 2px 8px rgba(0,0,0,.5)); }
+.splash-title { font-size: 34px; margin: 8px 0 12px; letter-spacing: -.5px; text-shadow: 0 2px 16px rgba(0,0,0,.55); }
+.splash-tagline { font-size: 15px; line-height: 1.55; opacity: .92; margin: 0 0 28px; text-shadow: 0 1px 8px rgba(0,0,0,.5); }
+.splash-btn {
+  padding: 15px 32px; border: none; border-radius: 30px; cursor: pointer;
+  background: var(--accent); color: #fff; font-size: 16px; font-weight: 750;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.splash-btn:active { transform: scale(.96); }
+.splash-credit { position: absolute; bottom: calc(14px + var(--safe-b)); font-size: 11px; opacity: .55; }
+
+/* ---- Toast ---- */
+.toast {
+  position: absolute; left: 50%; z-index: 1600;
+  bottom: calc(104px + var(--safe-b));
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink); color: var(--bg); padding: 12px 20px; border-radius: 24px;
+  font-size: 13.5px; font-weight: 600; max-width: 86%; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+  box-shadow: var(--shadow-m);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---- Leaflet ---- */
+.leaflet-popup-content-wrapper { border-radius: 14px; }
+.mini-pop { font-size: 13px; }
+.mini-sub { color: var(--ink-2); font-size: 12px; }
+.leaflet-control-attribution { font-size: 10px; opacity: .7; }
+.leaflet-bar a { border-radius: 8px !important; }
