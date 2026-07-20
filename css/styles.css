@@ -279,6 +279,16 @@ svg.elev { width: 100%; height: 90px; display: block; }
 .elev-fill { fill: color-mix(in srgb, var(--brand-2) 22%, transparent); stroke: none; }
 .elev-line { fill: none; stroke: var(--brand-2); stroke-width: 2; vector-effect: non-scaling-stroke; }
 
+/* Vinter-kort */
+.winter-card {
+  margin: 4px 0 6px; padding: 14px; border-radius: 15px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border: 1.5px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+}
+.winter-card h4 { margin: 0 0 8px; font-size: 14px; }
+.winter-card a { display: block; color: var(--accent); font-weight: 650; font-size: 13.5px; margin-bottom: 6px; text-decoration: none; }
+.winter-card p { margin: 6px 0 0; font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+
 /* ---- Paneler / formulär ---- */
 .panel, .sheet { padding: 16px 18px calc(26px + var(--safe-b)); }
 .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }

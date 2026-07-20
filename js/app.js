@@ -144,6 +144,8 @@ const state = {
   meCircle: null,
   meLatLng: null,
   routeLayer: null,
+  winterLayer: null,
+  season: "summer",
   pickingLocation: false,
   pendingCoord: null,
   pendingImage: null,
@@ -173,6 +175,7 @@ async function init() {
   buildBasemapButtons();
   buildOverlayToggles();
   fillCategorySelect();
+  wireSeason();
   wireControls();
   wireIdentify();
   wireSplash();
@@ -440,6 +443,68 @@ function togglePanel(id, force) {
 }
 
 // ===================================================================
+//  Säsong (sommar / vinter)
+// ===================================================================
+function wireSeason() {
+  const stored = localStorage.getItem("vik_season");
+  const m = new Date().getMonth(); // 0–11
+  state.season = stored || ([10, 11, 0, 1, 2, 3].includes(m) ? "winter" : "summer");
+  document.querySelectorAll("#season-toggle .seg-btn").forEach((b) =>
+    b.addEventListener("click", () => setSeason(b.dataset.season)));
+  applySeason();
+}
+function setSeason(s) {
+  state.season = s;
+  localStorage.setItem("vik_season", s);
+  applySeason();
+  toast(s === "winter" ? "Vinterläge — skid/skoterleder & lavininfo." : "Sommarläge.");
+}
+function seasonMatch(poi) {
+  const s = poi.season || "all";
+  return s === "all" || s === state.season;
+}
+function applySeason() {
+  document.querySelectorAll("#season-toggle .seg-btn").forEach((b) =>
+    b.classList.toggle("active", b.dataset.season === state.season));
+  const card = document.getElementById("winter-card");
+  if (state.season === "winter") {
+    if (!state.winterLayer) state.winterLayer = buildWinterLayer();
+    if (!state.map.hasLayer(state.winterLayer)) state.winterLayer.addTo(state.map);
+    state.winterLayer.bringToBack?.();
+    if (card) card.hidden = false;
+  } else {
+    if (state.winterLayer && state.map.hasLayer(state.winterLayer)) state.map.removeLayer(state.winterLayer);
+    if (card) card.hidden = true;
+  }
+  applySeasonToMarkers();
+}
+function applySeasonToMarkers() {
+  for (const id in state.markers) {
+    const m = state.markers[id];
+    const layer = state.layers[m.poi.category];
+    if (!layer) continue;
+    const show = seasonMatch(m.poi);
+    if (show && !layer.hasLayer(m)) layer.addLayer(m);
+    if (!show && layer.hasLayer(m)) layer.removeLayer(m);
+  }
+}
+function buildWinterLayer() {
+  const g = L.layerGroup();
+  if (typeof TRAILS !== "undefined")
+    L.geoJSON(TRAILS, {
+      filter: (f) => f.properties.route === "ski",
+      style: { color: "#2f6fb0", weight: 3, dashArray: "4 6", opacity: 0.9 },
+      onEachFeature: (f, l) => l.bindPopup(`<div class="mini-pop"><b>${escapeHtml(f.properties.name)}</b><br><span class="mini-sub">Skidled · OpenStreetMap</span></div>`),
+    }).addTo(g);
+  if (typeof SNOWMOBILE !== "undefined")
+    L.geoJSON(SNOWMOBILE, {
+      style: { color: "#7b4fb0", weight: 3, opacity: 0.9 },
+      onEachFeature: (f, l) => l.bindPopup(`<div class="mini-pop"><b>${escapeHtml(f.properties.name)}</b><br><span class="mini-sub">Skoterled · OpenStreetMap</span></div>`),
+    }).addTo(g);
+  return g;
+}
+
+// ===================================================================
 //  Väder-pill (kartans mitt)
 // ===================================================================
 function wireWeather() {
@@ -667,6 +732,7 @@ function startEditFlow(poi) {
   document.getElementById("add-name").value = poi.name;
   document.getElementById("add-desc").value = poi.description || "";
   document.getElementById("add-category").value = poi.category;
+  document.getElementById("add-season").value = poi.season || "all";
   setAddFormMode(true);
   closePlaceSheet();
   document.getElementById("add-form").classList.add("open");
@@ -681,6 +747,7 @@ function closeAddForm() {
   document.getElementById("add-form").classList.remove("open");
   document.getElementById("add-name").value = "";
   document.getElementById("add-desc").value = "";
+  document.getElementById("add-season").value = "all";
   state.pendingCoord = null;
   state.editingId = null;
   setAddFormMode(false);
@@ -736,13 +803,14 @@ async function saveNewPoi() {
   const name = document.getElementById("add-name").value.trim();
   if (!name) return toast("Ge platsen ett namn.");
   const category = document.getElementById("add-category").value;
+  const season = document.getElementById("add-season").value;
   const description = document.getElementById("add-desc").value.trim();
   try {
     let image;
     if (state.pendingImage) { toast("Laddar upp foto…"); image = await Storage.uploadImage(state.pendingImage); }
 
     if (state.editingId) {
-      const patch = { name, category, description };
+      const patch = { name, category, description, season };
       if (image !== undefined) patch.image = image;
       const updated = await Storage.updateUserPoi(state.editingId, patch);
       removeMarkerById(state.editingId);
@@ -754,7 +822,7 @@ async function saveNewPoi() {
     }
 
     const saved = await Storage.addUserPoi({
-      name, category, description, image: image || "", coord: state.pendingCoord,
+      name, category, description, season, image: image || "", coord: state.pendingCoord,
     });
     addPoiMarker(saved);
     closeAddForm();

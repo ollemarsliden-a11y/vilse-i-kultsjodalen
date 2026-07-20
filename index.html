@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=7" />
+  <link rel="stylesheet" href="css/styles.css?v=8" />
 </head>
 <body>
 
@@ -81,6 +81,20 @@
       <h2>Kartunderlag</h2>
       <button data-close="panel-layers" class="panel-close" aria-label="Stäng">✕</button>
     </div>
+    <h3 class="panel-subhead">Säsong</h3>
+    <div id="season-toggle" class="segmented">
+      <button class="seg-btn" data-season="summer">☀️ Sommar</button>
+      <button class="seg-btn" data-season="winter">❄️ Vinter</button>
+    </div>
+
+    <div id="winter-card" class="winter-card" hidden>
+      <h4>❄️ Vinterinfo &amp; säkerhet</h4>
+      <a href="https://www.lavinprognoser.se/oversikt-alla-omraden/sodra_lapplandsfjallen/" target="_blank" rel="noopener">Lavinprognos — Södra Lapplandsfjällen ↗</a>
+      <a href="https://friak.se/guide/skoterleder-vilhelmina/" target="_blank" rel="noopener">Skoterledskarta — Vilhelmina ↗</a>
+      <p>Vildmarksvägen över Stekenjokk är vinterstängd (ca 15 okt–6 jun). Kontrollera alltid väder och lavinläge före fjällfärd.</p>
+    </div>
+
+    <h3 class="panel-subhead">Kartunderlag</h3>
     <div id="basemap-buttons" class="segmented"></div>
     <h3 class="panel-subhead">Datalager</h3>
     <div id="overlay-toggles"></div>
@@ -97,6 +111,13 @@
     </label>
     <label>Kategori
       <select id="add-category"></select>
+    </label>
+    <label>Säsong
+      <select id="add-season">
+        <option value="all">Året runt</option>
+        <option value="summer">☀️ Sommar</option>
+        <option value="winter">❄️ Vinter</option>
+      </select>
     </label>
     <label>Beskrivning
       <textarea id="add-desc" rows="3" placeholder="Berätta om platsen…"></textarea>
@@ -157,14 +178,15 @@
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=7"></script>
-  <script src="js/data.js?v=7"></script>
-  <script src="js/leder.js?v=7"></script>
-  <script src="js/services.js?v=7"></script>
-  <script src="js/routes.js?v=7"></script>
-  <script src="js/icons.js?v=7"></script>
-  <script src="js/weather.js?v=7"></script>
-  <script src="js/storage.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/config.js?v=8"></script>
+  <script src="js/data.js?v=8"></script>
+  <script src="js/leder.js?v=8"></script>
+  <script src="js/services.js?v=8"></script>
+  <script src="js/routes.js?v=8"></script>
+  <script src="js/winter.js?v=8"></script>
+  <script src="js/icons.js?v=8"></script>
+  <script src="js/weather.js?v=8"></script>
+  <script src="js/storage.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>
