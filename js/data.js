@@ -92,7 +92,7 @@ const SEED_POIS = [
     id: "marsfjallet",
     name: "Marsfjället (1589 m)",
     category: "led",
-    coord: [65.1402, 15.5206],
+    coord: [65.1066, 15.3798],
     blurb: "Södra Lapplands högsta topp",
     description:
       "Marsfjället reser sig 1589 m över havet och är det högsta fjället mellan " +
@@ -257,5 +257,105 @@ const SEED_POIS = [
     ],
     image: "images/kultsjon-winter.webp",
     source: "Wikipedia",
+  },
+
+  // ---- Fler sevärdheter (koordinater från OpenStreetMap) ----
+  {
+    id: "stekenjokkgruvan",
+    name: "Stekenjokkgruvan",
+    category: "kultur",
+    coord: [65.0902, 14.4576],
+    blurb: "Lämningar efter koppargruvan",
+    description:
+      "Rester efter koppargruvan uppe på Stekenjokks kalfjällsplatå. Det var för " +
+      "gruvan som Vildmarksvägen en gång byggdes.",
+    history:
+      "Gruvan bröt koppar och zink 1969–1988 men blev aldrig något samhälle — " +
+      "arbetarna pendlade. I dag återstår spår i landskapet nära norska gränsen.",
+    facts: [["Drift", "1969–1988"], ["Höjd", "ca 800 m ö.h."]],
+    image: "", source: "OpenStreetMap",
+  },
+  {
+    id: "stalonberget-utsikt",
+    name: "Stalonbergets utsiktsplats",
+    category: "sevart",
+    coord: [64.9492, 15.8293],
+    blurb: "Vy över Kultsjöåns dalgång",
+    description:
+      "Utsiktsplats vid Stalon med vidsträckt vy över Kultsjöåns dalgång och " +
+      "kraftverksmiljön österut i dalen.",
+    facts: [], image: "", source: "OpenStreetMap",
+  },
+  {
+    id: "fiskonfallet",
+    name: "Fiskonfallet",
+    category: "sevart",
+    coord: [64.9903, 15.2247],
+    blurb: "Vattenfall med utsiktsplats",
+    description:
+      "Vattenfall med utsiktsplats i trakten nordväst om Saxnäs — ett stopp värt " +
+      "en rast längs vägen.",
+    facts: [], image: "", source: "OpenStreetMap",
+  },
+  {
+    id: "dimforsen",
+    name: "Dimforsen",
+    category: "sevart",
+    coord: [64.9397, 15.7566],
+    blurb: "Fors öster i dalen",
+    description: "Vattenfall i den östra delen av dalen, nära Stalon.",
+    facts: [], image: "", source: "OpenStreetMap",
+  },
+  {
+    id: "litsjoforsen",
+    name: "Litsjöforsen",
+    category: "sevart",
+    coord: [64.923, 15.6479],
+    blurb: "Fors och utsiktsplats",
+    description: "Fors med utsiktsplats söder om Kultsjön.",
+    facts: [], image: "", source: "OpenStreetMap",
+  },
+  {
+    id: "tjuvbruforsen",
+    name: "Tjuvbruforsen",
+    category: "sevart",
+    coord: [65.3224, 14.3723],
+    blurb: "Vattenfall nära gränsen",
+    description:
+      "Vattenfall i dalens nordvästra hörn, nära Stekenjokk och norska gränsen.",
+    facts: [], image: "", source: "OpenStreetMap",
+  },
+  {
+    id: "kullafallet",
+    name: "Kullafallet — 7 forsar",
+    category: "sevart",
+    coord: [65.0763, 14.7854],
+    blurb: "Rastplats vid forsarna",
+    description:
+      "Rastplats med grillplats där Vildmarksvägen följer en rad forsar nära " +
+      "Klimpfjäll — flera fall på kort sträcka.",
+    facts: [], image: "", source: "OpenStreetMap",
+  },
+  {
+    id: "grytsjo-skvaltkvarn",
+    name: "Grytsjö skvaltkvarn",
+    category: "kultur",
+    coord: [65.002, 15.54],
+    blurb: "Gammal vattendriven kvarn",
+    description:
+      "En skvaltkvarn — en liten vattendriven kvarn — bevarad vid Grytsjö. " +
+      "Minne från självhushållets tid i dalen.",
+    facts: [], image: "", source: "OpenStreetMap",
+  },
+  {
+    id: "bjornknasen",
+    name: "Björnknäsen",
+    category: "sevart",
+    coord: [65.2604, 15.5041],
+    blurb: "Utsiktsplats vid Kittelfjäll",
+    description:
+      "Utsiktsplats i Kittelfjällsområdet nordost om Kultsjödalen, med vy över " +
+      "de omgivande fjällen.",
+    facts: [], image: "", source: "OpenStreetMap",
   },
 ];

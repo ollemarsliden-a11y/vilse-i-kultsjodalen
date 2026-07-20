@@ -177,8 +177,11 @@ const state = {
 //  Init
 // ===================================================================
 async function init() {
-  state.map = L.map("map", { zoomControl: false, attributionControl: false })
-    .setView(MAP_CENTER, MAP_ZOOM);
+  state.map = L.map("map", {
+    zoomControl: false, attributionControl: false,
+    rotate: true, touchRotate: true, shiftKeyRotate: true, // rotera med två fingrar (mobil) / shift+drag (dator)
+    rotateControl: { closeOnZeroBearing: false, position: "bottomright" },
+  }).setView(MAP_CENTER, MAP_ZOOM);
   L.control.attribution({ position: "bottomleft", prefix: false }).addTo(state.map);
   L.control.zoom({ position: "bottomright" }).addTo(state.map);
 
