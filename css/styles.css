@@ -248,6 +248,18 @@ body.picking::after {
 }
 .account-lead { font-size: 14px; color: var(--ink-2); line-height: 1.5; margin: 0 0 14px; }
 .icon-btn.signed-in { background: var(--brand-2); color: #fff; }
+.google-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 13px; border: 1.5px solid var(--line); border-radius: 12px;
+  background: #fff; color: #1f1f1f; font-size: 15px; font-weight: 650; cursor: pointer;
+}
+.google-btn:active { transform: scale(.98); }
+.account-or {
+  display: flex; align-items: center; gap: 10px; margin: 16px 0 6px; color: var(--ink-2);
+}
+.account-or::before, .account-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.account-or span { font-size: 12px; }
+.btn-secondary { background: var(--surface-2); color: var(--ink); }
 
 /* ---- Paneler / formulär ---- */
 .panel, .sheet { padding: 16px 18px calc(26px + var(--safe-b)); }

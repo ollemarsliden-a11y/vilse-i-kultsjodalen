@@ -475,6 +475,10 @@ function wireAccount() {
   btn.addEventListener("click", openAccountSheet);
   document.getElementById("account-cancel").addEventListener("click", () => closeSheet("account-sheet"));
   document.getElementById("account-send").addEventListener("click", sendMagicLink);
+  document.getElementById("account-google").addEventListener("click", async () => {
+    try { await Storage.auth.signInWithGoogle(); }
+    catch (e) { toast("Kunde inte starta Google-inloggning: " + e.message); }
+  });
   document.getElementById("account-signout").addEventListener("click", async () => {
     await Storage.auth.signOut(); toast("Utloggad."); closeSheet("account-sheet");
   });

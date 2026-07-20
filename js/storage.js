@@ -68,6 +68,13 @@ const Storage = (() => {
           });
           if (error) throw error;
         },
+        async signInWithGoogle() {
+          const redirect = location.href.split("#")[0];
+          const { error } = await sb.auth.signInWithOAuth({
+            provider: "google", options: { redirectTo: redirect },
+          });
+          if (error) throw error;
+        },
         async signOut() { await sb.auth.signOut(); },
       },
 
