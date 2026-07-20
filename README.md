@@ -1,5 +1,8 @@
 # Vilse i Kultsjödalen
 
+**Live:** https://ollemarsliden-a11y.github.io/vilse-i-kultsjodalen/
+(installerbar som app — öppna på mobilen och lägg till på hemskärmen)
+
 Interaktiv kartguide (PWA) till Kultsjödalen och närliggande byar — leder,
 smultronställen, fiske, kultur, fornlämningar, sevärdheter och boende. Byggd för
 mobil, funkar även på surfplatta och dator.
