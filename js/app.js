@@ -29,6 +29,16 @@ const BASEMAPS = {
         { maxZoom: 19, attribution: "© Esri, Maxar, Earthstar Geographics" }
       ),
   },
+  // Lantmäteriets Fjällkarta (visas bara om CONFIG.LM_TOKEN är satt).
+  fjall: {
+    label: "Fjällkarta",
+    requiresToken: true,
+    layer: () =>
+      L.tileLayer(
+        `https://api.lantmateriet.se/open/topowebb-ccby/v1/wmts/token/${CONFIG.LM_TOKEN}/1.0.0/topowebb/default/3857/{z}/{y}/{x}.png`,
+        { maxZoom: 17, attribution: "© Lantmäteriet (CC0)" }
+      ),
+  },
 };
 
 // ---- Live-overlays -------------------------------------------------
@@ -368,6 +378,7 @@ function buildCategoryChips() {
 function buildBasemapButtons() {
   const wrap = document.getElementById("basemap-buttons");
   for (const [key, b] of Object.entries(BASEMAPS)) {
+    if (b.requiresToken && !CONFIG.LM_TOKEN) continue; // dölj tills token finns
     const btn = document.createElement("button");
     btn.className = "seg-btn" + (key === "enkel" ? " active" : "");
     btn.dataset.key = key;

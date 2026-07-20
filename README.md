@@ -75,7 +75,15 @@ bilduppladdning i t.ex. Azure Blob Storage (idag sparas bild-URL:er).
 ## Datakällor & regenerering
 
 - Kartor: OpenStreetMap, OpenTopoMap, Esri World Imagery
+- **Fjällkarta (Lantmäteriet, CC0)** — valfritt kartunderlag. Kräver gratis
+  öppna-data-token: skapa konto på [opendata.lantmateriet.se](https://opendata.lantmateriet.se/),
+  aktivera produkten *Topografisk webbkarta Visning* och kopiera din token.
+  Klistra in den i `LM_TOKEN` i [`js/config.js`](js/config.js) — då dyker
+  "Fjällkarta" upp som kartunderlag.
 - Fornlämningar: Riksantikvarieämbetet (`pub.raa.se/visning/lamningar_v1`)
+- Boende/mat/service & skoterleder: OpenStreetMap via Overpass
+  (`scripts/fetch-services.py`)
+- Community (delade tips, konton, foton): Supabase (`supabase/schema.sql`)
 - Väder: SMHI öppna data (`snow1g/version/1`, ersätter nedlagda pmp3g)
 - Platskoordinater: OpenStreetMap / Nominatim / Wikipedia (Marsfjällets topp)
 - Leder: OpenStreetMap via Overpass — uppdatera med `python scripts/fetch-leder.py`
