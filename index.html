@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=6" />
+  <link rel="stylesheet" href="css/styles.css?v=7" />
 </head>
 <body>
 
@@ -116,6 +116,15 @@
     <p class="panel-hint" id="add-hint">Ditt tips delas med andra via molnet.</p>
   </div>
 
+  <!-- Rutter -->
+  <div id="routes-sheet" class="sheet">
+    <div class="panel-head">
+      <h2 id="routes-title">Rutter</h2>
+      <button id="routes-cancel" class="panel-close" aria-label="Stäng">✕</button>
+    </div>
+    <div id="routes-body"></div>
+  </div>
+
   <!-- Konto / inloggning -->
   <div id="account-sheet" class="sheet">
     <div class="panel-head">
@@ -148,13 +157,14 @@
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=6"></script>
-  <script src="js/data.js?v=6"></script>
-  <script src="js/leder.js?v=6"></script>
-  <script src="js/services.js?v=6"></script>
-  <script src="js/icons.js?v=6"></script>
-  <script src="js/weather.js?v=6"></script>
-  <script src="js/storage.js?v=6"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/config.js?v=7"></script>
+  <script src="js/data.js?v=7"></script>
+  <script src="js/leder.js?v=7"></script>
+  <script src="js/services.js?v=7"></script>
+  <script src="js/routes.js?v=7"></script>
+  <script src="js/icons.js?v=7"></script>
+  <script src="js/weather.js?v=7"></script>
+  <script src="js/storage.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>

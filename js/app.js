@@ -143,7 +143,7 @@ const state = {
   meMarker: null,
   meCircle: null,
   meLatLng: null,
-  gpxLayer: null,
+  routeLayer: null,
   pickingLocation: false,
   pendingCoord: null,
   pendingImage: null,
@@ -416,9 +416,9 @@ function wireControls() {
   document.getElementById("btn-locate").addEventListener("click", locateMe);
   document.getElementById("btn-layers").addEventListener("click", () => togglePanel("panel-layers"));
   document.getElementById("btn-add").addEventListener("click", startAddFlow);
-  document.getElementById("btn-gpx").addEventListener("click", () =>
-    document.getElementById("gpx-input").click());
-  document.getElementById("gpx-input").addEventListener("change", handleGpx);
+  document.getElementById("btn-gpx").addEventListener("click", openRoutesSheet);
+  document.getElementById("gpx-input").addEventListener("change", importGpxFile);
+  document.getElementById("routes-cancel").addEventListener("click", () => closeSheet("routes-sheet"));
 
   document.getElementById("add-cancel").addEventListener("click", closeAddForm);
   document.getElementById("add-save").addEventListener("click", saveNewPoi);
@@ -767,25 +767,117 @@ async function saveNewPoi() {
 }
 
 // ===================================================================
-//  GPX-import
+//  Rutter (GPX-import, spara, höjdprofil, dela)
 // ===================================================================
-function handleGpx(e) {
+function openRoutesSheet() { renderRoutesList(); openSheet("routes-sheet"); }
+
+function renderRoutesList() {
+  const body = document.getElementById("routes-body");
+  document.getElementById("routes-title").textContent = "Rutter";
+  const saved = Routes.list();
+  const rows = saved.length
+    ? saved.map((r) => `
+        <button class="route-row" data-show="${r.id}">
+          <span class="route-ic">🥾</span>
+          <span class="route-meta">
+            <span class="route-name">${escapeHtml(r.name)}</span>
+            <span class="route-sub">${r.stats.distanceKm.toFixed(1)} km${r.stats.ascent ? " · ↑" + r.stats.ascent + " m" : ""}</span>
+          </span>
+        </button>`).join("")
+    : `<p class="panel-hint">Inga sparade rutter än. Importera en GPX-fil från din klocka eller telefon — t.ex. vägen upp på en topp.</p>`;
+
+  body.innerHTML = `
+    <button class="btn-primary" id="routes-import">📥 Importera GPX-fil</button>
+    <div class="routes-list">${rows}</div>`;
+  document.getElementById("routes-import").onclick = () => document.getElementById("gpx-input").click();
+  body.querySelectorAll("[data-show]").forEach((b) =>
+    b.addEventListener("click", () => {
+      const r = Routes.list().find((x) => x.id === b.dataset.show);
+      if (r) showRoute(r, false);
+    }));
+}
+
+function importGpxFile(e) {
   const file = e.target.files[0];
+  e.target.value = "";
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = (ev) => { try { drawGpx(ev.target.result); } catch { toast("Kunde inte läsa GPX-filen."); } };
+  reader.onload = (ev) => {
+    try {
+      const parsed = Routes.parseGpx(ev.target.result, file.name.replace(/\.gpx$/i, ""));
+      if (!parsed.points.length) return toast("Inga spårpunkter i filen.");
+      parsed.stats = Routes.computeStats(parsed.points);
+      showRoute(parsed, true);
+    } catch { toast("Kunde inte läsa GPX-filen."); }
+  };
   reader.readAsText(file);
-  e.target.value = "";
 }
-function drawGpx(xmlText) {
-  const doc = new DOMParser().parseFromString(xmlText, "application/xml");
-  const pts = [...doc.getElementsByTagName("trkpt"), ...doc.getElementsByTagName("rtept")];
-  if (!pts.length) return toast("Inga spårpunkter i filen.");
-  const latlngs = pts.map((p) => [parseFloat(p.getAttribute("lat")), parseFloat(p.getAttribute("lon"))]);
-  if (state.gpxLayer) state.map.removeLayer(state.gpxLayer);
-  state.gpxLayer = L.polyline(latlngs, { color: "#d1495b", weight: 4, opacity: 0.9 }).addTo(state.map);
-  state.map.fitBounds(state.gpxLayer.getBounds(), { padding: [40, 40] });
-  toast(`Rutt inläst (${latlngs.length} punkter).`);
+
+function showRoute(route, unsaved) {
+  if (state.routeLayer) state.map.removeLayer(state.routeLayer);
+  state.routeLayer = L.polyline(route.points.map((p) => [p.lat, p.lng]),
+    { color: "#d1495b", weight: 4, opacity: 0.95 }).addTo(state.map);
+  state.map.fitBounds(state.routeLayer.getBounds(), { padding: [50, 50] });
+  renderRouteDetail(route, unsaved);
+  openSheet("routes-sheet");
+}
+
+function renderRouteDetail(route, unsaved) {
+  const body = document.getElementById("routes-body");
+  const s = route.stats;
+  document.getElementById("routes-title").textContent = "Rutt";
+  const facts = [
+    ["Längd", s.distanceKm.toFixed(1) + " km"],
+    s.ascent ? ["Stigning", "↑ " + s.ascent + " m"] : null,
+    s.descent ? ["Utför", "↓ " + s.descent + " m"] : null,
+    s.maxEle != null ? ["Högsta", s.maxEle + " m"] : null,
+  ].filter(Boolean).map(([k, v]) => `<div class="ps-fact"><span>${k}</span><b>${v}</b></div>`).join("");
+  const elev = s.hasElevation
+    ? `<div class="ps-section"><h4>Höjdprofil</h4>${Routes.elevationSvg(s.profile)}</div>` : "";
+
+  body.innerHTML = `
+    <button class="route-back" id="route-back">‹ Alla rutter</button>
+    <h2 class="ps-title">${escapeHtml(route.name)}</h2>
+    <div class="ps-facts">${facts}</div>
+    ${elev}
+    <div class="ps-actions">
+      ${unsaved
+        ? `<button class="ps-btn" id="route-save">Spara rutt</button>`
+        : `<button class="ps-btn ps-danger" id="route-del">Ta bort</button>`}
+      <button class="ps-btn ps-btn-ghost" id="route-share">Dela / exportera</button>
+    </div>`;
+
+  document.getElementById("route-back").onclick = renderRoutesList;
+  document.getElementById("route-share").onclick = () => shareRoute(route);
+  const saveBtn = document.getElementById("route-save");
+  if (saveBtn) saveBtn.onclick = () => {
+    const name = prompt("Namn på rutten:", route.name) || route.name;
+    Routes.save({ ...route, name });
+    toast("Rutt sparad.");
+    renderRoutesList();
+  };
+  const delBtn = document.getElementById("route-del");
+  if (delBtn) delBtn.onclick = () => {
+    if (!confirm("Ta bort rutten?")) return;
+    Routes.remove(route.id);
+    if (state.routeLayer) { state.map.removeLayer(state.routeLayer); state.routeLayer = null; }
+    toast("Rutt borttagen.");
+    renderRoutesList();
+  };
+}
+
+async function shareRoute(route) {
+  const gpx = Routes.toGpx(route);
+  const file = new File([gpx], (route.name || "rutt").replace(/[^\w-]+/g, "_") + ".gpx",
+    { type: "application/gpx+xml" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: route.name }); return; } catch {}
+  }
+  const url = URL.createObjectURL(new Blob([gpx], { type: "application/gpx+xml" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = file.name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast("GPX exporterad.");
 }
 
 // ===================================================================

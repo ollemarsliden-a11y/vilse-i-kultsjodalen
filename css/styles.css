@@ -261,6 +261,24 @@ body.picking::after {
 .account-or span { font-size: 12px; }
 .btn-secondary { background: var(--surface-2); color: var(--ink); }
 
+/* Rutter */
+.routes-list { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.route-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 14px;
+  background: var(--surface); cursor: pointer; color: var(--ink);
+}
+.route-ic { font-size: 20px; }
+.route-name { display: block; font-weight: 700; font-size: 14.5px; }
+.route-sub { display: block; font-size: 12.5px; color: var(--ink-2); }
+.route-back {
+  border: none; background: none; color: var(--ink-2); font-size: 13.5px;
+  cursor: pointer; padding: 4px 0; margin-bottom: 6px;
+}
+svg.elev { width: 100%; height: 90px; display: block; }
+.elev-fill { fill: color-mix(in srgb, var(--brand-2) 22%, transparent); stroke: none; }
+.elev-line { fill: none; stroke: var(--brand-2); stroke-width: 2; vector-effect: non-scaling-stroke; }
+
 /* ---- Paneler / formulär ---- */
 .panel, .sheet { padding: 16px 18px calc(26px + var(--safe-b)); }
 .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
