@@ -311,6 +311,57 @@ const SEED_POIS = [
     source: "Kultsjöns FVO, OpenStreetMap",
   },
   {
+    id: "vastra-marssjon",
+    name: "Västra Marssjön",
+    category: "fiske",
+    coord: [65.02025, 15.37511],
+    blurb: "Marslidens fiskesjö — öring, röding & abborre",
+    description:
+      "Sjön vid Marsliden, i skuggan av Marsfjällen. Här fiskas abborre (gott om), " +
+      "öring och röding, och det finns båtar att hyra samt vindskydd vid vattnet. " +
+      "Sjön ingår i Marslidens fiskevårdsområde tillsammans med Harrtjärn, och " +
+      "fiskekort löses enklast via iFiske. Observera lekfredning för öring " +
+      "20 augusti–1 oktober.",
+    website: "https://www.ifiske.se/fiske-marslidens.htm",
+    facts: [
+      ["Fiskekort", "Marslidens FVO (iFiske)"],
+      ["Arter", "Abborre, öring, röding"],
+      ["Lekfredning", "20 aug–1 okt"],
+    ],
+    image: "",
+    source: "iFiske, Marslidens FVO",
+  },
+  {
+    id: "stora-grytsjon",
+    name: "Stora Grytsjön",
+    category: "fiske",
+    coord: [64.99877, 15.56724],
+    blurb: "Skogssjö sydost om Kultsjön",
+    description:
+      "En av Grytsjöarna söder om Kultsjön, med Grytsjöån som avvattnar dem. " +
+      "Kontrollera vilket fiskekort som gäller innan du fiskar — sjön listas inte " +
+      "under något av de vanliga fiskevårdsområdena.",
+    website: "https://www.ifiske.se/fiske-i-vilhelmina-kommun.htm",
+    facts: [["Fiskekort", "Kontrollera före fiske"]],
+    image: "",
+    source: "OpenStreetMap, iFiske",
+  },
+  {
+    id: "lilla-grytsjon",
+    name: "Lilla Grytsjön",
+    category: "fiske",
+    coord: [64.99842, 15.53253],
+    blurb: "Mindre skogssjö vid Grytsjöån",
+    description:
+      "Den mindre av Grytsjöarna, strax väster om Stora Grytsjön. Kontrollera " +
+      "vilket fiskekort som gäller innan du fiskar — sjön listas inte under något " +
+      "av de vanliga fiskevårdsområdena.",
+    website: "https://www.ifiske.se/fiske-i-vilhelmina-kommun.htm",
+    facts: [["Fiskekort", "Kontrollera före fiske"]],
+    image: "",
+    source: "OpenStreetMap, iFiske",
+  },
+  {
     id: "stalon",
     name: "Stalon",
     category: "sevart",
