@@ -99,6 +99,7 @@ const I18N = {
     "📍 Visa i Google Maps": "📍 Show in Google Maps",
     "Visa på kartan": "Show on map",
     "Hemsida ↗": "Website ↗",
+    "Köp fiskekort ↗": "Buy fishing permit ↗",
     "Redigera": "Edit",
     "Ta bort": "Remove",
     "Ta bort tips": "Remove tip",

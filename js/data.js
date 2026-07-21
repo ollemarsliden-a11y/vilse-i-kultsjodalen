@@ -292,8 +292,23 @@ const SEED_POIS = [
       ["Reglerad", "1950-tal"],
       ["Fiske", "Röding & öring"],
     ],
+    website: "https://sodralappland.nu/fiskeomraden/fiskeomraden-vilhelmina/",
     image: "",
     source: "Sportfiskeguide, Vilhelmina museum",
+  },
+  {
+    id: "stensjon",
+    name: "Stensjön",
+    category: "fiske",
+    coord: [64.86071, 15.35699],
+    blurb: "Fiskesjö i Kultsjöns fiskevårdsområde",
+    description:
+      "Sjö söder om Kultsjön som ingår i Kultsjöns fiskevårdsområde (tillsammans " +
+      "med Insjön). Fiskekort krävs och löses via Kultsjöns FVO.",
+    website: "https://kultsjonfvo.se/",
+    facts: [["Fiskekort", "Kultsjöns FVO"], ["Arter", "Röding & öring"]],
+    image: "",
+    source: "Kultsjöns FVO, OpenStreetMap",
   },
   {
     id: "stalon",
@@ -363,9 +378,10 @@ const SEED_POIS = [
       ["Höjd", "542 m ö.h."],
       ["Strandlinje", "129 km"],
     ],
+    website: "https://kultsjonfvo.se/",
     image: "images/kultsjon.webp",
     imageCredit: "Foto: Lövberg / Wikimedia Commons (CC0)",
-    source: "Wikipedia",
+    source: "Wikipedia, Kultsjöns FVO",
   },
 
   // ---- Fler sevärdheter (koordinater från OpenStreetMap) ----

@@ -309,6 +309,14 @@ function galleryFor(poi) {
   return imgs;
 }
 
+// Boenden som bara ska ligga på kartan, inte i listorna:
+// fjällstugor (obemannade rastkojor) och Kittelfjälls anläggningar (utanför dalen).
+function listableService(s) {
+  if (s.sub === "wilderness_hut" || s.sub === "alpine_hut") return false;
+  if (s.lat > 65.20 && s.lng > 15.40 && s.lng < 15.80) return false; // Kittelfjäll-området
+  return true;
+}
+
 function canAdminEdit(poi) {
   return Storage.auth && Storage.auth.isAdmin && Storage.auth.isAdmin() && poi && !poi.userAdded;
 }
@@ -602,7 +610,7 @@ function openPlaceSheet(poi, marker) {
         <button class="ps-btn" id="ps-directions">${["topp", "led"].includes(poi.category) ? t("📍 Visa i Google Maps") : t("🧭 Vägbeskrivning")}</button>
         <button class="ps-btn ps-btn-ghost" id="ps-center">${t("Visa på kartan")}</button>
       </div>
-      ${poi.website ? `<a class="ps-btn ps-web" href="${encodeURI(poi.website)}" target="_blank" rel="noopener">${t("Hemsida ↗")}</a>` : ""}
+      ${poi.website ? `<a class="ps-btn ps-web" href="${encodeURI(poi.website)}" target="_blank" rel="noopener">${poi.category === "fiske" ? t("Köp fiskekort ↗") : t("Hemsida ↗")}</a>` : ""}
       ${ownerCtl}
       ${canAdminEdit(poi) ? `<button class="ps-btn ps-admin-edit" id="ps-place-edit">${t("✏️ Redigera plats")}</button>` : ""}
       ${community ? `<div class="ps-comments" id="ps-comments"></div>` : ""}
@@ -726,7 +734,7 @@ function openCategoryList(key) {
   };
   let html = items.map(row).join("");
   if (g.services && typeof SERVICES !== "undefined") {
-    html += SERVICES.filter((s) => s.kind === "boende" || s.kind === "mat").map((s) =>
+    html += SERVICES.filter((s) => (s.kind === "boende" || s.kind === "mat") && listableService(s)).map((s) =>
       `<a class="vh-row" ${s.website ? `href="${encodeURI(s.website)}" target="_blank" rel="noopener"` : ""} style="--c:#e0872b;text-decoration:none">
         <span class="vh-row-ic">${iconSvg(s.kind === "mat" ? "mat" : "boende", "currentColor", 20)}</span>
         <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(s.name)}</span>
@@ -934,7 +942,7 @@ function renderVillageHub(poi) {
 
   const vpatch = state.overrides[poi.id] || {};
   const hideSet = new Set(vpatch.todoHide || []);
-  let todo = pool.filter((p) => p.id !== poi.id && !isVillage(p))
+  let todo = pool.filter((p) => p.id !== poi.id && !isVillage(p) && p.category !== "boende")
     .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
     .filter((x) => nearestVillageId(x.p.coord) === poi.id && x.d <= 15000 && !hideSet.has(x.p.id));
   for (const id of (vpatch.todoAdd || [])) {
@@ -945,9 +953,14 @@ function renderVillageHub(poi) {
   todo = todo.sort((a, b) => a.d - b.d).slice(0, 14);
   const admin = canAdminEdit(poi);
   const services = (typeof SERVICES !== "undefined" ? SERVICES : [])
-    .filter((s) => s.kind === "boende" || s.kind === "mat")
+    .filter((s) => (s.kind === "boende" || s.kind === "mat") && listableService(s))
     .map((s) => ({ s, d: distMeters(poi.coord, [s.lat, s.lng]) }))
     .filter((x) => x.d <= 9000).sort((a, b) => a.d - b.d).slice(0, 6);
+  // Egna boende-platser (t.ex. Kultsjögården) hör hemma under "Bo & äta".
+  const seedLodging = SEED_POIS
+    .filter((p) => p.category === "boende" && !isVillage(p) && nearestVillageId(p.coord) === poi.id)
+    .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
+    .sort((a, b) => a.d - b.d);
   const tips = Object.values(state.markers).map((m) => m.poi).filter((p) => p.userAdded)
     .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
     .filter((x) => x.p.village_id === poi.id || (!x.p.village_id && x.d <= 9000))
@@ -1016,7 +1029,9 @@ function renderVillageHub(poi) {
 
       <div class="vh-sec-head"><h3>${t("Bo & äta")}</h3></div>
       ${lodging.map(lodgeRow).join("")}
-      ${services.length ? services.map(svcRow).join("") : (lodging.length ? "" : `<p class="vh-empty">${t("Inget boende registrerat nära byn än.")}</p>`)}
+      ${seedLodging.map((x) => poiRow(x)).join("")}
+      ${services.length ? services.map(svcRow).join("")
+        : (lodging.length || seedLodging.length ? "" : `<p class="vh-empty">${t("Inget boende registrerat nära byn än.")}</p>`)}
 
       <div class="vh-sec-head"><h3>${t("Turer från byn")}</h3></div>
       ${routes.length ? routes.map(routeRow).join("") : `<p class="vh-empty">${t("Inga turer från byn än.")}</p>`}
