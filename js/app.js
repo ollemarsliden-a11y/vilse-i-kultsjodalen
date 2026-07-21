@@ -204,7 +204,7 @@ async function init() {
   L.control.attribution({ position: "bottomleft", prefix: false }).addTo(state.map);
   L.control.zoom({ position: "bottomright" }).addTo(state.map);
 
-  setBasemap("topo");
+  setBasemap(CONFIG.LOCAL_FJALL ? "fjall" : "topo");
   for (const key of Object.keys(CATEGORIES)) {
     state.layers[key] = L.layerGroup().addTo(state.map);
   }
@@ -655,8 +655,9 @@ const QUICK_ACTIONS = [
 function placeCardHtml(poi) {
   const cat = CATEGORIES[poi.category] || CATEGORIES.sevart;
   const badge = `<span class="pc-badge">${iconSvg(poi.category, "#fff", 12)} ${t(cat.label)}</span>`;
-  const hero = poi.image
-    ? `<div class="pc-hero" style="background-image:url('${poi.image}')">${badge}</div>`
+  const heroUrl = (galleryFor(poi)[0] || {}).url;
+  const hero = heroUrl
+    ? `<div class="pc-hero" style="background-image:url('${heroUrl}')">${badge}</div>`
     : `<div class="pc-hero pc-hero-plain" style="--c:${cat.color}">
          <span class="pc-hero-glyph">${iconSvg(poi.category, "rgba(255,255,255,.92)", 34)}</span>${badge}
        </div>`;
@@ -694,6 +695,40 @@ function buildStartPage() {
       const poi = byId[el.dataset.poi];
       if (poi) openPlaceOrHub(poi, state.markers[poi.id]);
     }));
+
+  applyStartHero();
+}
+
+// Startsidans bakgrund (admin kan byta). Lagras som vik_place_images med
+// reserverat place_id "_startpage" — senaste synliga bilden används.
+const START_BG_ID = "_startpage";
+function applyStartHero() {
+  const bg = document.querySelector("#view-start .start-hero-bg");
+  const imgs = (state.placeImages[START_BG_ID] || []).filter((r) => !r.hidden);
+  if (bg && imgs.length) bg.style.backgroundImage = `url('${imgs[imgs.length - 1].url}')`;
+  const btn = document.getElementById("start-bg-btn");
+  if (btn) btn.hidden = !(Storage.auth && Storage.auth.isAdmin && Storage.auth.isAdmin());
+}
+
+function handleStartBgPhoto(e) {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  if (!(Storage.auth && Storage.auth.userId && Storage.auth.userId())) return toast("Logga in som admin.");
+  toast("Förbereder foto…");
+  compressImage(file).then(async (dataUrl) => {
+    try {
+      toast("Laddar upp foto…");
+      const url = await Storage.uploadImage(dataUrl);
+      for (const r of (state.placeImages[START_BG_ID] || [])) {
+        if (!r.hidden) { try { await Storage.setPlaceImageHidden(r.id, true); } catch {} }
+      }
+      await Storage.addPlaceImage(START_BG_ID, url, null);
+      await loadPlaceData();
+      applyStartHero();
+      toast("Startsidans bakgrund uppdaterad.");
+    } catch (err) { toast("Kunde inte ladda upp: " + err.message); }
+  }).catch(() => toast("Kunde inte läsa bilden."));
 }
 
 // ===================================================================
@@ -1060,7 +1095,7 @@ function buildBasemapButtons() {
     if (b.requiresToken && !CONFIG.LM_TOKEN) continue; // dölj tills token finns
     if (b.requiresLocal && !CONFIG.LOCAL_FJALL) continue; // dölj tills lokala rutor finns
     const btn = document.createElement("button");
-    btn.className = "seg-btn" + (key === "topo" ? " active" : "");
+    btn.className = "seg-btn" + (key === (CONFIG.LOCAL_FJALL ? "fjall" : "topo") ? " active" : "");
     btn.dataset.key = key;
     btn.textContent = t(b.label);
     btn.addEventListener("click", () => setBasemap(key));
@@ -1125,6 +1160,8 @@ function wireControls() {
   document.getElementById("place-close").addEventListener("click", closePlaceSheet);
   document.getElementById("pe-cancel").addEventListener("click", () => closeSheet("place-edit"));
   document.getElementById("pe-photo").addEventListener("change", handlePlacePhoto);
+  document.getElementById("sp-photo").addEventListener("change", handleStartBgPhoto);
+  document.getElementById("start-bg-btn").addEventListener("click", () => document.getElementById("sp-photo").click());
 
   document.querySelectorAll("[data-close]").forEach((el) =>
     el.addEventListener("click", () => togglePanel(el.dataset.close, false)));
@@ -1257,6 +1294,8 @@ function wireAccount() {
 }
 function updateAccountUI(user) {
   document.getElementById("btn-account").classList.toggle("signed-in", !!user);
+  const spb = document.getElementById("start-bg-btn");
+  if (spb) spb.hidden = !(Storage.auth && Storage.auth.isAdmin && Storage.auth.isAdmin());
   if (document.getElementById("account-sheet").classList.contains("open")) renderAccount(user);
 }
 function renderAccount(user) {
