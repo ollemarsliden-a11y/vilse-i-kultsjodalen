@@ -568,9 +568,7 @@ function openPlaceSheet(poi, marker) {
     ? `<div class="ps-section"><h4>${t("Historia")}</h4><p>${escapeHtml(poi.history)}</p></div>`
     : "";
 
-  const dist = state.meLatLng
-    ? `<div class="ps-dist">📍 ${formatDist(state.map.distance(state.meLatLng, poi.coord))} ${t("härifrån")}</div>`
-    : "";
+  const dist = ""; // fågelvägs-avstånd är missvisande i fjället — dolt
 
   const uid = Storage.auth ? Storage.auth.userId() : null;
   const isOwner = poi.userAdded && uid && poi.user_id === uid;
@@ -601,7 +599,7 @@ function openPlaceSheet(poi, marker) {
       ${poi.description ? `<div class="ps-section"><p>${escapeHtml(poi.description)}</p></div>` : ""}
       ${history}
       <div class="ps-actions">
-        <button class="ps-btn" id="ps-directions">${t("🧭 Vägbeskrivning")}</button>
+        <button class="ps-btn" id="ps-directions">${["topp", "led"].includes(poi.category) ? t("📍 Visa i Google Maps") : t("🧭 Vägbeskrivning")}</button>
         <button class="ps-btn ps-btn-ghost" id="ps-center">${t("Visa på kartan")}</button>
       </div>
       ${ownerCtl}
@@ -617,8 +615,11 @@ function openPlaceSheet(poi, marker) {
 
   // knappar
   document.getElementById("ps-directions").onclick = () => {
-    const mode = ["topp", "led"].includes(poi.category) ? "walking" : "driving";
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${poi.coord[0]},${poi.coord[1]}&travelmode=${mode}`, "_blank");
+    const trailless = ["topp", "led"].includes(poi.category);
+    const url = trailless
+      ? `https://www.google.com/maps/search/?api=1&query=${poi.coord[0]},${poi.coord[1]}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${poi.coord[0]},${poi.coord[1]}&travelmode=driving`;
+    window.open(url, "_blank");
   };
   document.getElementById("ps-center").onclick = () => {
     closePlaceSheet();
@@ -912,14 +913,13 @@ function renderVillageHub(poi) {
     return `<button class="vh-row" data-poi="${p.id}" style="--c:${c.color}">
       <span class="vh-row-ic">${iconSvg(p.category, "currentColor", 20)}</span>
       <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(p.name)}</span>
-        <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span>
-      <span class="vh-row-dist">${fmtDistShort(d)}</span>${x}</button>`;
+        <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span>${x}</button>`;
   };
   const svcRow = ({ s, d }) => `<button class="vh-row" data-svc="${encodeURIComponent(s.website || "")}" style="--c:#e0872b">
       <span class="vh-row-ic">${iconSvg(s.kind === "mat" ? "mat" : "boende", "currentColor", 20)}</span>
       <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(s.name)}</span>
         <span class="vh-row-sub">${escapeHtml(SERVICE_SUB[s.sub] || s.kind)}</span></span>
-      ${s.website ? `<span class="vh-row-link">${t("Boka ↗")}</span>` : `<span class="vh-row-dist">${fmtDistShort(d)}</span>`}</button>`;
+      ${s.website ? `<span class="vh-row-link">${t("Boka ↗")}</span>` : ""}</button>`;
   const lodgeRow = (l) => `<a class="vh-row" href="${l.url ? encodeURI(l.url) : "#"}" target="_blank" rel="noopener" style="--c:#e0872b; text-decoration:none;">
       <span class="vh-row-ic">${iconSvg("boende", "currentColor", 20)}</span>
       <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(l.name || "Boende")}</span>

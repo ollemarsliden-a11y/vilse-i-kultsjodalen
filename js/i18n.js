@@ -92,6 +92,7 @@ const I18N = {
     // Platskort
     "Historia": "History",
     "🧭 Vägbeskrivning": "🧭 Directions",
+    "📍 Visa i Google Maps": "📍 Show in Google Maps",
     "Visa på kartan": "Show on map",
     "Redigera": "Edit",
     "Ta bort": "Remove",

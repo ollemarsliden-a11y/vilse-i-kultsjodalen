@@ -30,18 +30,21 @@ const SEED_POIS = [
     description:
       "En av Sveriges mest särpräglade kyrkstäder, vackert belägen där Ransarån " +
       "möter Kultsjön med Marsfjället i fonden. Ett myller av kåtor, timmerstugor " +
-      "och bodar kring den lilla fjällkyrkan.",
+      "och bodar kring den lilla fjällkyrkan — en plats där samisk kultur och " +
+      "nybyggarkultur möts tydligt sida vid sida.",
     history:
-      "Fatmomakke har varit en samisk mötesplats sedan 1700-talet. Första " +
-      "gudstjänsten hölls 1781, och platsen växte till ett hundratal byggnader — " +
-      "omkring 80 kåtor och 20 timmerstugor. Samerna reste sina kåtor uppför " +
-      "sluttningen medan nybyggarna byggde stugor närmare stranden. 1904 bildades " +
-      "här Sveriges första sameförening. Sedan 2014 är kyrkstaden ett kulturreservat.",
+      "Fatmomakke har varit en samisk mötesplats i generationer. Den första " +
+      "gudstjänsten hölls den 8 juli 1781, sedan två kåtor och en bod rests på en " +
+      "liten holme vid Ransaråns utlopp. Platsen växte till ett hundratal " +
+      "byggnader — omkring 80 kåtor och 20 timmerstugor. Samerna reste kåtor medan " +
+      "nybyggarna byggde timmerhus, vilket än i dag gör de två kulturerna synliga " +
+      "sida vid sida. 1904 bildades här Sveriges första sameförening, och sedan " +
+      "2014 är kyrkstaden ett kulturreservat (Faepmie).",
     facts: [
       ["Byggnader", "~100"],
       ["Första gudstjänst", "1781"],
       ["Sameförening", "1904"],
-      ["Skydd", "Kulturreservat 2014"],
+      ["Kulturreservat", "2014 (Faepmie)"],
     ],
     image: "images/fatmomakke.webp",
     imageCredit: "Foto: Moralist / Wikimedia Commons (CC BY-SA 4.0)",
@@ -54,21 +57,40 @@ const SEED_POIS = [
     coord: [64.9706, 15.3516],
     blurb: "Fjällby och nav i dalen",
     description:
-      "Största byn vid Kultsjön, med fjällanläggning, butik och service. " +
-      "Utgångspunkt för fiske, vandring och turer längs Vildmarksvägen.",
+      "Största byn vid Kultsjön och ett nav i dalen, med fjällhotell, butik och " +
+      "service. Härifrån utgår fiske, vandring och turer längs Vildmarksvägen — " +
+      "omgiven av fjällkedjor och vidöppna vyer över sjön.",
     history:
-      "Första nybygget i Saxnäs anlades 1824. Väg till Vilhelmina (~85 km) kom på " +
-      "1920-talet. Från 1930-talet växte turismen fram, dels genom Saxnäsgården, " +
-      "dels genom Bernhard Nordhs romaner ”I Marsfjällets skugga” (1937) och " +
-      "”Fjällfolk” (1938) som utspelar sig i trakten. Saxnäs kyrka byggdes 1958–59.",
+      "Det första nybygget i Saxnäs anlades 1824, och väg till Vilhelmina " +
+      "(~85 km) kom på 1920-talet. Turismen växte fram från 1930-talet, dels " +
+      "genom Saxnäsgården, dels genom Bernhard Nordhs romaner ”I Marsfjällets " +
+      "skugga” (1937) och ”Fjällfolk” (1938) som utspelar sig i trakten. På " +
+      "1940-talet skapade konstnärsparet Emma och Folke Ricklund konsthemmet " +
+      "Ricklundgården, i dag ett konstnärsresidens med storslagen utsikt över " +
+      "Kultsjön och Marsfjället. Saxnäs kyrka byggdes 1958–59.",
     facts: [
       ["Grundat", "1824"],
       ["Invånare", "~130"],
       ["Kyrka", "1959"],
+      ["Konsthem", "Ricklundgården"],
     ],
     image: "images/saxnas.webp",
     imageCredit: "Foto: Skogsfrun / Wikimedia Commons (CC BY-SA 3.0)",
     source: "Wikipedia, Visit Vilhelmina",
+  },
+  {
+    id: "ricklundgarden",
+    name: "Ricklundgården",
+    category: "kultur",
+    coord: [64.97109, 15.35599],
+    blurb: "Konsthem & residens med vy över Kultsjön",
+    description:
+      "Konstnärshem skapat av Emma och Folke Ricklund på 1940-talet, i dag ett " +
+      "konstnärsresidens där konstnärer från hela världen bor och arbetar. Känt " +
+      "för sin storslagna vy över Kultsjön med Marsfjället i fonden.",
+    facts: [["Skapat", "1940-talet"], ["Typ", "Konsthem & residens"]],
+    image: "",
+    source: "Visit Vilhelmina, Ricklundgården, OpenStreetMap",
   },
   {
     id: "trappstegsforsen",
@@ -180,14 +202,17 @@ const SEED_POIS = [
     blurb: "Fjällby längs Vildmarksvägen",
     description:
       "By väster om Saxnäs på väg mot Stekenjokk, omgiven av fjäll. Boende och " +
-      "utgångspunkt för fjällturer sommar som vinter.",
+      "utgångspunkt för fjällturer, fiske, bärmarker och vidsträckta utsikter över " +
+      "dalgångarna — sommar som vinter. Vildmarksvägen går rakt genom byn.",
     history:
-      "Klimpfjälls förste nybyggare, Jonatan Björklund, byggde stuga och lada i " +
-      "slutet av 1820-talet. Vid Vielmesmakke intill låg ett gammalt samiskt " +
-      "sommarviste, och i en av kåtorna drevs en nomadskola för samiska barn " +
-      "1926–1950.",
+      "Klimpfjälls förste nybyggare, Jonatan Björklund från trakten kring " +
+      "Skellefteå, byggde stuga och lada i slutet av 1820-talet, och byn fick sitt " +
+      "namn genom Johan Gabrielssons nybyggesansökan 1831. Trakten har djupa " +
+      "samiska rötter — vid Vielmesmakke intill låg ett gammalt sommarviste, och i " +
+      "en av kåtorna drevs en nomadskola för samiska barn 1926–1950.",
     facts: [
       ["Förste nybyggare", "1820-tal"],
+      ["Namngavs", "1831"],
       ["Nomadskola", "1926–1950"],
     ],
     image: "images/klimpfjall.webp",
@@ -246,16 +271,19 @@ const SEED_POIS = [
     coord: [64.9409, 15.8741],
     blurb: "Kraftverket vid Kultsjöåns utlopp",
     description:
-      "By vid Kultsjöån öster om Kultsjön, präglad av vattenkraften. " +
+      "By vid Kultsjöån öster om Kultsjön, starkt präglad av vattenkraften. " +
       "Utgångspunkt österut i dalen.",
     history:
-      "Stalons kraftstation byggdes 1958–1961 och reglerar Kultsjön. Via en " +
-      "17 800 meter lång bergtunnel leds vatten från sjön till kraftverket. " +
-      "Kultsjöåns naturliga fåra är därför mestadels torrlagd — vintertid rinner " +
-      "bara ca 1,5 m³/s genom den gamla åfåran.",
+      "Stalons kraftstation, uppkallad efter Stalo ur samisk folktro, byggdes " +
+      "1958–1961 och tog Kultsjön i anspråk för reglering. Via en 17,8 km lång " +
+      "bergtunnel leds vattnet från sjön till turbinerna, vilket i praktiken " +
+      "torrlade Kultsjöåns gamla fåra — vintertid rinner bara omkring 1,5 m³/s " +
+      "genom den. En äldre betongbro över ån från 1933 revs 1960 när " +
+      "utloppskanalen byggdes.",
     facts: [
       ["Kraftverk", "1958–1961"],
-      ["Tunnel", "17 800 m"],
+      ["Tunnel", "17,8 km"],
+      ["Reglerar", "Kultsjön"],
     ],
     image: "",
     source: "Wikipedia",
@@ -267,14 +295,19 @@ const SEED_POIS = [
     coord: [65.2347, 15.9952],
     blurb: "By i övre Vojmådalen",
     description:
-      "Fjällby nordost om Kultsjödalen med service, skola och kyrka. Utgångspunkt " +
-      "för turer i omkringliggande fjäll och samiskt kärnland.",
+      "Fjällby i övre Vojmådalen nordost om Kultsjödalen, med service, skola och " +
+      "kyrka. Utgångspunkt för turer i omkringliggande fjäll och samiskt kärnland; " +
+      "härifrån går bland annat en kort vandring mot gamla samevisten.",
     history:
-      "Trakten kring Dikanäs har djupa samiska rötter — vistena Siliste och " +
-      "Klitvallen i övre Vojmådalen anlades redan 1831–32. Bygden hör till " +
-      "Vilhelminas fjällsamiska område.",
+      "Trakten kring Dikanäs har djupa samiska rötter, och de första svenska " +
+      "nybyggarna kom under 1800-talets första decennier — det äldsta kronobygget " +
+      "anlades 1815. Efter en gudstjänst i Fatmomakke 1828 bad nybyggarna i " +
+      "Vojmådalen om hjälp att bygga ett eget kapell, då vägen till kyrkan i " +
+      "Vilhelmina var lång. Dikanäs kapell timrades 1832 och stod klart 1833 — en " +
+      "av församlingens äldsta bevarade kyrkor.",
     facts: [
-      ["Viste", "1831–32"],
+      ["Äldsta kronobygge", "1815"],
+      ["Kyrka", "1833"],
       ["Läge", "Övre Vojmådalen"],
     ],
     image: "images/dikanas.webp",
