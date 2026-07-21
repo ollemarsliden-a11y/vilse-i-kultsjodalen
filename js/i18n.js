@@ -56,6 +56,15 @@ const I18N = {
     "Vildmarksvägen över Stekenjokk är vinterstängd (ca 15 okt–6 jun). Kontrollera alltid väder och lavinläge före fjällfärd.":
       "The Wilderness Road over Stekenjokk is closed in winter (approx. 15 Oct–6 Jun). Always check weather and avalanche conditions before heading into the mountains.",
     "Datalager": "Data layers",
+    "Offline": "Offline",
+    "⬇ Spara denna vy offline": "⬇ Save this view offline",
+    "Sparar kartrutorna för det du ser nu, så de fungerar utan täckning.":
+      "Saves the map tiles for what you see now, so they work without signal.",
+    "Vyn sparad offline ✓": "View saved offline ✓",
+    "Zooma in lite — då blir det lagom att spara.": "Zoom in a bit — then it's a sensible amount to save.",
+    "Ingen karta att spara.": "No map to save.",
+    "Offline-sparning fungerar i appen på mobilen, inte lokalt.":
+      "Offline saving works in the app on your phone, not locally.",
 
     // Kartunderlag-namn
     "Terräng": "Terrain",

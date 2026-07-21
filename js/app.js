@@ -232,6 +232,8 @@ async function init() {
   wireWeather();
   wireAccount();
   registerServiceWorker();
+  state.map.on("zoomend", updatePeakVisibility);
+  updatePeakVisibility();
 }
 
 // ===================================================================
@@ -449,6 +451,36 @@ async function refreshAfterEdit(poi, keepEditOpen) {
   if (keepEditOpen) renderPlaceEdit(fresh);
 }
 
+// Spara kartrutorna för nuvarande vy i offline-cachen (service workern).
+const lon2tileX = (lon, z) => Math.floor(((lon + 180) / 360) * 2 ** z);
+const lat2tileY = (lat, z) => {
+  const r = (lat * Math.PI) / 180;
+  return Math.floor(((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * 2 ** z);
+};
+async function downloadCurrentView() {
+  const layer = state.currentBasemap;
+  if (!layer || !layer.getTileUrl) return toast("Ingen karta att spara.");
+  if (!("serviceWorker" in navigator) || !navigator.serviceWorker.controller)
+    return toast("Offline-sparning fungerar i appen på mobilen, inte lokalt.");
+  const b = state.map.getBounds();
+  const zNow = Math.round(state.map.getZoom());
+  const zMax = Math.min(layer.options.maxNativeZoom ?? layer.options.maxZoom ?? zNow, zNow + 2);
+  const urls = [];
+  for (let z = Math.max(zNow, MAP_MIN_ZOOM); z <= zMax; z++) {
+    const x0 = lon2tileX(b.getWest(), z), x1 = lon2tileX(b.getEast(), z);
+    const y0 = lat2tileY(b.getNorth(), z), y1 = lat2tileY(b.getSouth(), z);
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) urls.push(layer.getTileUrl({ x, y, z }));
+  }
+  if (urls.length > 2500) return toast("Zooma in lite — då blir det lagom att spara.");
+  toast(`Sparar ${urls.length} rutor offline…`);
+  let done = 0, fail = 0;
+  for (let i = 0; i < urls.length; i += 6) {
+    await Promise.all(urls.slice(i, i + 6).map((u) => fetch(u, { mode: "no-cors" }).catch(() => { fail++; })));
+    done += Math.min(6, urls.length - i);
+  }
+  toast(fail ? `Sparade ${done - fail} av ${done} rutor offline.` : "Vyn sparad offline ✓");
+}
+
 // Slå på ett datalager (samma som att bocka i det i lagerpanelen).
 function enableOverlay(key) {
   const cb = document.querySelector(`input[data-overlay="${key}"]`);
@@ -477,9 +509,19 @@ function markerIcon(cat) {
   });
 }
 
+// Toppmarkör med höjdetikett direkt på kartan (triangel + meter).
+function peakEle(poi) { const m = (poi.blurb || "").match(/\d+/); return m ? m[0] : ""; }
+function peakIcon(poi) {
+  return L.divIcon({
+    className: "peak-marker",
+    html: `<span class="peak-tri">▲</span><span class="peak-ele">${peakEle(poi)}</span>`,
+    iconSize: [0, 0], iconAnchor: [7, 11],
+  });
+}
+
 function addPoiMarker(poi) {
   const cat = poi.category in CATEGORIES ? poi.category : "sevart";
-  const marker = L.marker(poi.coord, { icon: markerIcon(cat) });
+  const marker = L.marker(poi.coord, { icon: cat === "topp" ? peakIcon(poi) : markerIcon(cat) });
   marker.poi = poi;
   marker.on("click", () => openPlaceOrHub(poi, marker));
   (state.layers[cat] || state.layers.sevart).addLayer(marker);
@@ -1066,7 +1108,18 @@ function infoPageSv(ic) {
 }
 
 // Kategorier som är avstängda som standard (opt-in via chipraden).
-const DEFAULT_OFF_CATEGORIES = new Set(["topp"]);
+const DEFAULT_OFF_CATEGORIES = new Set();
+
+// Toppar visas bara från denna zoomnivå (annars för rörigt utzoomat).
+const PEAK_MIN_ZOOM = 11;
+function updatePeakVisibility() {
+  const layer = state.layers["topp"];
+  if (!layer) return;
+  const want = state.activeCategories.has("topp") && state.map.getZoom() >= PEAK_MIN_ZOOM;
+  const on = state.map.hasLayer(layer);
+  if (want && !on) layer.addTo(state.map);
+  else if (!want && on) state.map.removeLayer(layer);
+}
 
 function buildCategoryChips() {
   const wrap = document.getElementById("category-chips");
@@ -1084,6 +1137,7 @@ function buildCategoryChips() {
       const on = chip.classList.toggle("active");
       if (on) { state.activeCategories.add(key); state.map.addLayer(state.layers[key]); }
       else { state.activeCategories.delete(key); state.map.removeLayer(state.layers[key]); }
+      updatePeakVisibility();
     });
     wrap.appendChild(chip);
   }
@@ -1145,6 +1199,7 @@ function fillCategorySelect() {
 function wireControls() {
   document.getElementById("btn-locate").addEventListener("click", locateMe);
   document.getElementById("btn-layers").addEventListener("click", () => togglePanel("panel-layers"));
+  document.getElementById("btn-offline").addEventListener("click", downloadCurrentView);
   document.getElementById("btn-add").addEventListener("click", startAddFlow);
   document.getElementById("btn-gpx").addEventListener("click", openRoutesSheet);
   document.getElementById("gpx-input").addEventListener("change", importGpxFile);

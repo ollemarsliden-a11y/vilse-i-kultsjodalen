@@ -322,6 +322,19 @@ body.picking::after {
 }
 .pin2-body svg { transform: rotate(45deg); }
 
+/* Toppmarkör med höjd direkt på kartan */
+.peak-marker { background: none; border: none; display: flex; align-items: center; gap: 2px; white-space: nowrap; }
+.peak-tri { font-size: 12px; color: #4a3b2c; text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 3px #fff; line-height: 1; }
+.peak-ele {
+  font-size: 11px; font-weight: 750; color: #3a2f26; line-height: 1;
+  background: rgba(255,255,255,.82); padding: 1px 4px; border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.25);
+}
+@media (prefers-color-scheme: dark) {
+  .peak-tri { color: #e8ddcf; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 3px #000; }
+  .peak-ele { color: #2a221a; background: rgba(240,235,225,.88); }
+}
+
 /* ---- Flytande knappar ---- */
 .fab-stack {
   position: absolute; right: 14px; z-index: 900;
