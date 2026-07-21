@@ -29,6 +29,10 @@ const I18N = {
     "Din guide till dalen — byar, leder, fiske, kultur och sevärdheter.":
       "Your guide to the valley — villages, trails, fishing, culture and sights.",
     "Byar & platser i dalen": "Villages & places in the valley",
+    "Byar i dalen": "Villages in the valley",
+    "Utflykter & vandringar": "Trips & hikes",
+    "Sevärt & kultur": "Sights & culture",
+    "Inget här än.": "Nothing here yet.",
     "Sevärt & natur": "Sights & nature",
     "Tryck på ett kort för att läsa mer och visa platsen på kartan.":
       "Tap a card to read more and show the place on the map.",

@@ -547,7 +547,7 @@ function openPlaceSheet(poi, marker) {
   const body = document.getElementById("place-body");
 
   const imgs = galleryFor(poi);
-  const heroTag = (im) => escapeHtml(im.credit || im.caption || t("Foto: Kultsjödalen"));
+  const heroTag = (im) => escapeHtml(im.credit || im.caption || "Foto: OL");
   const header = imgs.length
     ? `<div class="ps-hero" id="ps-hero" style="background-image:url('${imgs[0].url}')">
          <span class="ps-hero-tag" id="ps-hero-tag">${heroTag(imgs[0])}</span>
@@ -651,7 +651,7 @@ function openPlaceSheet(poi, marker) {
   thumbs.forEach((tb) => tb.onclick = () => {
     const im = imgs[+tb.dataset.idx];
     document.getElementById("ps-hero").style.backgroundImage = `url('${im.url}')`;
-    document.getElementById("ps-hero-tag").textContent = im.credit || im.caption || t("Foto: Kultsjödalen");
+    document.getElementById("ps-hero-tag").textContent = im.credit || im.caption || "Foto: OL";
     thumbs.forEach((x) => x.classList.toggle("active", x === tb));
   });
   const placeEditBtn = document.getElementById("ps-place-edit");
@@ -696,11 +696,48 @@ function formatDist(m) {
 // ===================================================================
 const VILLAGE_IDS = ["saxnas", "marsliden", "klimpfjall", "fatmomakke", "dikanas", "stalon"];
 
-const QUICK_ACTIONS = [
-  { label: "Utforska\nkartan", icon: "sevart", color: "#2f6fb0", run: () => showView("map") },
-  { label: "Vandrings-\nleder", icon: "led", color: "#2f8f4e", run: () => { showView("map"); enableOverlay("leder"); } },
-  { label: "Boende\n& mat", icon: "boende", color: "#e0872b", run: () => { showView("map"); enableOverlay("service"); } },
+// Kategorier att bläddra i från startsidan (öppnar en lista med platser).
+const CATEGORY_GROUPS = [
+  { key: "utflykter", label: "Utflykter & vandringar", icon: "led", color: "#2f8f4e",
+    match: (p) => ["led", "topp"].includes(p.category) },
+  { key: "boende", label: "Boende & mat", icon: "boende", color: "#e0872b",
+    match: (p) => p.category === "boende" && !VILLAGE_IDS.includes(p.id), services: true },
+  { key: "fiske", label: "Fiske", icon: "fiske", color: "#2f6fb0",
+    match: (p) => p.category === "fiske" },
+  { key: "sevart", label: "Sevärt & kultur", icon: "sevart", color: "#17a2a2",
+    match: (p) => ["sevart", "kultur"].includes(p.category) },
 ];
+
+function openCategoryList(key) {
+  const g = CATEGORY_GROUPS.find((x) => x.key === key);
+  if (!g) return;
+  let items = SEED_POIS.filter(g.match);
+  if (g.key === "utflykter" && typeof PEAKS !== "undefined") items = items.concat(PEAKS);
+  const row = (p) => {
+    const c = CATEGORIES[p.category] || CATEGORIES.sevart;
+    return `<button class="vh-row" data-poi="${p.id}" style="--c:${c.color}">
+      <span class="vh-row-ic">${iconSvg(p.category, "currentColor", 20)}</span>
+      <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(p.name)}</span>
+        <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span></button>`;
+  };
+  let html = items.map(row).join("");
+  if (g.services && typeof SERVICES !== "undefined") {
+    html += SERVICES.filter((s) => s.kind === "boende" || s.kind === "mat").map((s) =>
+      `<a class="vh-row" ${s.website ? `href="${encodeURI(s.website)}" target="_blank" rel="noopener"` : ""} style="--c:#e0872b;text-decoration:none">
+        <span class="vh-row-ic">${iconSvg(s.kind === "mat" ? "mat" : "boende", "currentColor", 20)}</span>
+        <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(s.name)}</span>
+          <span class="vh-row-sub">${escapeHtml(SERVICE_SUB[s.sub] || s.kind)}</span></span>
+        ${s.website ? `<span class="vh-row-link">${t("Hemsida ↗")}</span>` : ""}</a>`).join("");
+  }
+  document.getElementById("cat-title").textContent = t(g.label);
+  document.getElementById("cat-body").innerHTML = html || `<p class="panel-hint">${t("Inget här än.")}</p>`;
+  document.querySelectorAll("#cat-body [data-poi]").forEach((el) => el.onclick = () => {
+    const p = SEED_POIS.find((x) => x.id === el.dataset.poi)
+      || (typeof PEAKS !== "undefined" ? PEAKS.find((x) => x.id === el.dataset.poi) : null);
+    if (p) { closeSheet("category-sheet"); openPlaceOrHub(p, state.markers[p.id]); }
+  });
+  openSheet("category-sheet");
+}
 
 function placeCardHtml(poi) {
   const cat = CATEGORIES[poi.category] || CATEGORIES.sevart;
@@ -721,30 +758,25 @@ function placeCardHtml(poi) {
 }
 
 function buildStartPage() {
-  // Snabbknappar
-  const quick = document.getElementById("start-quick");
-  quick.innerHTML = QUICK_ACTIONS.map((a, i) =>
-    `<button class="quick-btn" data-quick="${i}" style="--c:${a.color}">
-       <span class="qb-ic">${iconSvg(a.icon, "currentColor", 22)}</span>
-       <span>${escapeHtml(t(a.label)).replace(/\n/g, "<br>")}</span>
-     </button>`).join("");
-  quick.querySelectorAll("[data-quick]").forEach((b) =>
-    b.addEventListener("click", () => QUICK_ACTIONS[+b.dataset.quick].run()));
-
-  // Byar & platser
   const byId = Object.fromEntries(SEED_POIS.map((p) => [p.id, p]));
   const villages = VILLAGE_IDS.map((id) => byId[id]).filter(Boolean);
-  const villageSet = new Set(VILLAGE_IDS);
-  const sights = SEED_POIS.filter((p) => !villageSet.has(p.id));
 
   document.getElementById("start-villages").innerHTML = villages.map(placeCardHtml).join("");
-  document.getElementById("start-sights").innerHTML = sights.map(placeCardHtml).join("");
-
-  document.querySelectorAll("#view-start [data-poi]").forEach((el) =>
+  document.querySelectorAll("#start-villages [data-poi]").forEach((el) =>
     el.addEventListener("click", () => {
       const poi = byId[el.dataset.poi];
       if (poi) openPlaceOrHub(poi, state.markers[poi.id]);
     }));
+
+  // Kategori-rutor
+  const cats = document.getElementById("start-categories");
+  cats.innerHTML = CATEGORY_GROUPS.map((g) =>
+    `<button class="cat-tile" data-cat="${g.key}" style="--c:${g.color}">
+       <span class="cat-ic">${iconSvg(g.icon, "currentColor", 24)}</span>
+       <span class="cat-label">${t(g.label)}</span>
+     </button>`).join("");
+  cats.querySelectorAll("[data-cat]").forEach((b) =>
+    b.addEventListener("click", () => openCategoryList(b.dataset.cat)));
 
   applyStartHero();
 }
@@ -769,8 +801,16 @@ function applyStartHero() {
 
 function applySplashBg() {
   const bg = document.querySelector("#splash .splash-bg");
+  const cred = document.querySelector("#splash .splash-credit");
+  if (!bg) return;
   const imgs = (state.placeImages[SPLASH_BG_ID] || []).filter((r) => !r.hidden);
-  if (bg && imgs.length) bg.style.backgroundImage = `url('${imgs[imgs.length - 1].url}')`;
+  if (imgs.length) {
+    bg.style.backgroundImage = `url('${imgs[imgs.length - 1].url}')`;
+    if (cred) cred.textContent = ""; // admin-uppladdad bild → ingen känd fotokredit
+  } else {
+    bg.style.backgroundImage = "url('images/kultsjon.webp')";
+    if (cred) cred.textContent = "Foto: Lövberg / Wikimedia Commons (CC0)";
+  }
 }
 
 // Ladda upp bakgrund för startsidan (_startpage) eller välkomstbilden (_splash).
@@ -1415,6 +1455,7 @@ function wireWeather() {
   const sw = document.getElementById("start-weather");
   if (sw) sw.addEventListener("click", openWeatherSheet);
   document.getElementById("weather-cancel").addEventListener("click", () => closeSheet("weather-sheet"));
+  document.getElementById("cat-cancel").addEventListener("click", () => closeSheet("category-sheet"));
 }
 
 function fcDayName(dateStr) {

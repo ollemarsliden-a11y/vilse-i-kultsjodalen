@@ -13,7 +13,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=29" />
+  <link rel="stylesheet" href="css/styles.css?v=30" />
 </head>
 <body>
 
@@ -26,7 +26,7 @@
       <p class="splash-tagline"><span data-i18n="Upptäck dalen och byarna — leder, smultronställen,">Upptäck dalen och byarna — leder, smultronställen,</span><br><span data-i18n="fiske, kultur och fornlämningar på kartan.">fiske, kultur och fornlämningar på kartan.</span></p>
       <button id="splash-enter" class="splash-btn" data-i18n="Kom igång">Kom igång</button>
     </div>
-    <div class="splash-credit">Foto: Lövberg / Wikimedia Commons (CC0)</div>
+    <div class="splash-credit"></div>
   </div>
 
   <!-- ============ VY: Upptäck (startsida) ============ -->
@@ -51,13 +51,11 @@
       </div>
     </header>
     <div class="start-body">
-      <div id="start-quick" class="quick-row"></div>
-
-      <h2 class="section-h" data-i18n="Byar & platser i dalen">Byar &amp; platser i dalen</h2>
+      <h2 class="section-h" data-i18n="Byar i dalen">Byar i dalen</h2>
       <div id="start-villages" class="card-scroll"></div>
 
-      <h2 class="section-h" data-i18n="Sevärt & natur">Sevärt &amp; natur</h2>
-      <div id="start-sights" class="card-grid"></div>
+      <h2 class="section-h" data-i18n="Upptäck">Upptäck</h2>
+      <div id="start-categories" class="cat-grid"></div>
 
       <p class="start-foot" data-i18n="Tryck på ett kort för att läsa mer och visa platsen på kartan.">Tryck på ett kort för att läsa mer och visa platsen på kartan.</p>
     </div>
@@ -270,6 +268,15 @@
     <div id="admin-body"></div>
   </div>
 
+  <!-- Kategorilista (från startsidan) -->
+  <div id="category-sheet" class="sheet">
+    <div class="panel-head">
+      <h2 id="cat-title">Kategori</h2>
+      <button id="cat-cancel" class="panel-close" aria-label="Stäng">✕</button>
+    </div>
+    <div id="cat-body"></div>
+  </div>
+
   <!-- Väderprognos -->
   <div id="weather-sheet" class="sheet">
     <div class="panel-head">
@@ -299,17 +306,17 @@
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=29"></script>
-  <script src="js/i18n.js?v=29"></script>
-  <script src="js/data.js?v=29"></script>
-  <script src="js/peaks.js?v=29"></script>
-  <script src="js/leder.js?v=29"></script>
-  <script src="js/services.js?v=29"></script>
-  <script src="js/routes.js?v=29"></script>
-  <script src="js/winter.js?v=29"></script>
-  <script src="js/icons.js?v=29"></script>
-  <script src="js/weather.js?v=29"></script>
-  <script src="js/storage.js?v=29"></script>
-  <script src="js/app.js?v=29"></script>
+  <script src="js/config.js?v=30"></script>
+  <script src="js/i18n.js?v=30"></script>
+  <script src="js/data.js?v=30"></script>
+  <script src="js/peaks.js?v=30"></script>
+  <script src="js/leder.js?v=30"></script>
+  <script src="js/services.js?v=30"></script>
+  <script src="js/routes.js?v=30"></script>
+  <script src="js/winter.js?v=30"></script>
+  <script src="js/icons.js?v=30"></script>
+  <script src="js/weather.js?v=30"></script>
+  <script src="js/storage.js?v=30"></script>
+  <script src="js/app.js?v=30"></script>
 </body>
 </html>
