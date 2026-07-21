@@ -13,7 +13,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=12" />
+  <link rel="stylesheet" href="css/styles.css?v=14" />
 </head>
 <body>
 
@@ -23,19 +23,47 @@
     <div class="splash-content">
       <div class="splash-mark">▲</div>
       <h1 class="splash-title">Vilse i Kultsjödalen</h1>
-      <p class="splash-tagline">Upptäck dalen och byarna — leder, smultronställen,<br>fiske, kultur och fornlämningar på kartan.</p>
-      <button id="splash-enter" class="splash-btn">Utforska kartan</button>
+      <p class="splash-tagline"><span data-i18n="Upptäck dalen och byarna — leder, smultronställen,">Upptäck dalen och byarna — leder, smultronställen,</span><br><span data-i18n="fiske, kultur och fornlämningar på kartan.">fiske, kultur och fornlämningar på kartan.</span></p>
+      <button id="splash-enter" class="splash-btn" data-i18n="Kom igång">Kom igång</button>
     </div>
-    <div class="splash-credit">Foto: Kultsjödalen</div>
+    <div class="splash-credit" data-i18n="Foto: Kultsjödalen">Foto: Kultsjödalen</div>
   </div>
 
+  <!-- ============ VY: Upptäck (startsida) ============ -->
+  <section id="view-start" class="view active">
+    <header class="start-hero">
+      <div class="start-hero-bg"></div>
+      <div class="start-hero-inner">
+        <div class="start-hero-top">
+          <span class="brand-mark">▲</span>
+          <button id="start-weather" class="weather-pill" title="Väder just nu (SMHI)"></button>
+        </div>
+        <h1 class="start-title">Kultsjödalen</h1>
+        <p class="start-sub" data-i18n="Din guide till dalen — byar, leder, fiske, kultur och sevärdheter.">Din guide till dalen — byar, leder, fiske, kultur och sevärdheter.</p>
+      </div>
+    </header>
+    <div class="start-body">
+      <div id="start-quick" class="quick-row"></div>
+
+      <h2 class="section-h" data-i18n="Byar & platser i dalen">Byar &amp; platser i dalen</h2>
+      <div id="start-villages" class="card-scroll"></div>
+
+      <h2 class="section-h" data-i18n="Sevärt & natur">Sevärt &amp; natur</h2>
+      <div id="start-sights" class="card-grid"></div>
+
+      <p class="start-foot" data-i18n="Tryck på ett kort för att läsa mer och visa platsen på kartan.">Tryck på ett kort för att läsa mer och visa platsen på kartan.</p>
+    </div>
+  </section>
+
+  <!-- ============ VY: Karta ============ -->
+  <section id="view-map" class="view">
   <!-- Toppbar -->
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">▲</span>
       <div class="brand-text">
         <div class="brand-title">Kultsjödalen</div>
-        <div class="brand-sub">Din guide till dalen</div>
+        <div class="brand-sub" data-i18n="Din guide till dalen">Din guide till dalen</div>
       </div>
     </div>
     <div class="topbar-right">
@@ -68,6 +96,36 @@
     </button>
   </div>
   <input type="file" id="gpx-input" accept=".gpx,application/gpx+xml" hidden />
+  </section>
+
+  <!-- ============ VY: Info & fjällvett ============ -->
+  <section id="view-info" class="view">
+    <header class="info-hero">
+      <h1 class="start-title" data-i18n="Info & fjällvett">Info &amp; fjällvett</h1>
+      <p class="start-sub" data-i18n="Praktiskt inför besöket och vett i fjällen.">Praktiskt inför besöket och vett i fjällen.</p>
+    </header>
+    <div id="info-body" class="start-body"></div>
+  </section>
+
+  <!-- ============ Flikrad ============ -->
+  <nav class="tabbar">
+    <button class="tab active" data-view="start">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2 1 21h22zM12 6.5 18.2 19H5.8z"/></svg>
+      <span data-i18n="Upptäck">Upptäck</span>
+    </button>
+    <button class="tab" data-view="map">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="m15 4-6 2-5-2v15l5 2 6-2 5 2V4l-5 2zm-6 2 6-2v13l-6 2z"/></svg>
+      <span data-i18n="Karta">Karta</span>
+    </button>
+    <button class="tab" data-view="info">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>
+      <span data-i18n="Info">Info</span>
+    </button>
+    <button class="tab" id="tab-account" data-action="account">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 2.7-9 6v2h18v-2c0-3.3-4-6-9-6z"/></svg>
+      <span data-i18n="Konto">Konto</span>
+    </button>
+  </nav>
 
   <!-- Platskort (bottom sheet) -->
   <div id="place-sheet" class="place-sheet">
@@ -79,53 +137,59 @@
   <!-- Lagerpanel -->
   <div id="panel-layers" class="panel">
     <div class="panel-head">
-      <h2>Kartunderlag</h2>
+      <h2 data-i18n="Kartunderlag">Kartunderlag</h2>
       <button data-close="panel-layers" class="panel-close" aria-label="Stäng">✕</button>
     </div>
-    <h3 class="panel-subhead">Säsong</h3>
+    <h3 class="panel-subhead" data-i18n="Säsong">Säsong</h3>
     <div id="season-toggle" class="segmented">
-      <button class="seg-btn" data-season="summer">☀️ Sommar</button>
-      <button class="seg-btn" data-season="winter">❄️ Vinter</button>
+      <button class="seg-btn" data-season="summer" data-i18n="☀️ Sommar">☀️ Sommar</button>
+      <button class="seg-btn" data-season="winter" data-i18n="❄️ Vinter">❄️ Vinter</button>
     </div>
 
     <div id="winter-card" class="winter-card" hidden>
-      <h4>❄️ Vinterinfo &amp; säkerhet</h4>
-      <a href="https://www.lavinprognoser.se/oversikt-alla-omraden/sodra_lapplandsfjallen/" target="_blank" rel="noopener">Lavinprognos — Södra Lapplandsfjällen ↗</a>
-      <a href="https://friak.se/guide/skoterleder-vilhelmina/" target="_blank" rel="noopener">Skoterledskarta — Vilhelmina ↗</a>
-      <p>Vildmarksvägen över Stekenjokk är vinterstängd (ca 15 okt–6 jun). Kontrollera alltid väder och lavinläge före fjällfärd.</p>
+      <h4 data-i18n="❄️ Vinterinfo & säkerhet">❄️ Vinterinfo &amp; säkerhet</h4>
+      <a href="https://www.lavinprognoser.se/oversikt-alla-omraden/sodra_lapplandsfjallen/" target="_blank" rel="noopener" data-i18n="Lavinprognos — Södra Lapplandsfjällen ↗">Lavinprognos — Södra Lapplandsfjällen ↗</a>
+      <a href="https://friak.se/guide/skoterleder-vilhelmina/" target="_blank" rel="noopener" data-i18n="Skoterledskarta — Vilhelmina ↗">Skoterledskarta — Vilhelmina ↗</a>
+      <p data-i18n="Vildmarksvägen över Stekenjokk är vinterstängd (ca 15 okt–6 jun). Kontrollera alltid väder och lavinläge före fjällfärd.">Vildmarksvägen över Stekenjokk är vinterstängd (ca 15 okt–6 jun). Kontrollera alltid väder och lavinläge före fjällfärd.</p>
     </div>
 
-    <h3 class="panel-subhead">Kartunderlag</h3>
+    <h3 class="panel-subhead" data-i18n="Kartunderlag">Kartunderlag</h3>
     <div id="basemap-buttons" class="segmented"></div>
-    <h3 class="panel-subhead">Datalager</h3>
+    <h3 class="panel-subhead" data-i18n="Datalager">Datalager</h3>
     <div id="overlay-toggles"></div>
+
+    <h3 class="panel-subhead" data-i18n="Språk / Language">Språk / Language</h3>
+    <div id="lang-toggle" class="segmented">
+      <button class="seg-btn" data-lang="sv">Svenska</button>
+      <button class="seg-btn" data-lang="en">English</button>
+    </div>
   </div>
 
   <!-- Lägg till-formulär -->
   <div id="add-form" class="sheet">
     <div class="panel-head">
-      <h2>Nytt tips</h2>
+      <h2 data-i18n="Nytt tips">Nytt tips</h2>
       <button id="add-cancel" class="panel-close" aria-label="Stäng">✕</button>
     </div>
-    <label>Namn
-      <input id="add-name" type="text" placeholder="T.ex. Fin badvik" />
+    <label><span data-i18n="Namn">Namn</span>
+      <input id="add-name" type="text" placeholder="T.ex. Fin badvik" data-i18n-ph="T.ex. Fin badvik" />
     </label>
-    <label>Kategori
+    <label><span data-i18n="Kategori">Kategori</span>
       <select id="add-category"></select>
     </label>
-    <label>Säsong
+    <label><span data-i18n="Säsong">Säsong</span>
       <select id="add-season">
-        <option value="all">Året runt</option>
-        <option value="summer">☀️ Sommar</option>
-        <option value="winter">❄️ Vinter</option>
+        <option value="all" data-i18n="Året runt">Året runt</option>
+        <option value="summer" data-i18n="☀️ Sommar">☀️ Sommar</option>
+        <option value="winter" data-i18n="❄️ Vinter">❄️ Vinter</option>
       </select>
     </label>
-    <label>Beskrivning
-      <textarea id="add-desc" rows="3" placeholder="Berätta om platsen…"></textarea>
+    <label><span data-i18n="Beskrivning">Beskrivning</span>
+      <textarea id="add-desc" rows="3" placeholder="Berätta om platsen…" data-i18n-ph="Berätta om platsen…"></textarea>
     </label>
-    <label>Foto (valfritt)</label>
+    <label data-i18n="Foto (valfritt)">Foto (valfritt)</label>
     <div class="photo-picker">
-      <button type="button" id="add-photo-btn" class="photo-btn">📷 Ta foto eller välj bild</button>
+      <button type="button" id="add-photo-btn" class="photo-btn" data-i18n="📷 Ta foto eller välj bild">📷 Ta foto eller välj bild</button>
       <input id="add-photo" type="file" accept="image/*" hidden />
       <div id="add-photo-preview" class="photo-preview" hidden>
         <img id="add-photo-img" alt="Förhandsvisning" />
@@ -133,15 +197,15 @@
       </div>
     </div>
     <div class="sheet-actions">
-      <button id="add-save" class="btn-primary">Spara tips</button>
+      <button id="add-save" class="btn-primary" data-i18n="Spara tips">Spara tips</button>
     </div>
-    <p class="panel-hint" id="add-hint">Ditt tips delas med andra via molnet.</p>
+    <p class="panel-hint" id="add-hint" data-i18n="Ditt tips delas med andra via molnet.">Ditt tips delas med andra via molnet.</p>
   </div>
 
   <!-- Rutter -->
   <div id="routes-sheet" class="sheet">
     <div class="panel-head">
-      <h2 id="routes-title">Rutter</h2>
+      <h2 id="routes-title" data-i18n="Rutter">Rutter</h2>
       <button id="routes-cancel" class="panel-close" aria-label="Stäng">✕</button>
     </div>
     <div id="routes-body"></div>
@@ -150,29 +214,29 @@
   <!-- Konto / inloggning -->
   <div id="account-sheet" class="sheet">
     <div class="panel-head">
-      <h2 id="account-title">Logga in</h2>
+      <h2 id="account-title" data-i18n="Logga in">Logga in</h2>
       <button id="account-cancel" class="panel-close" aria-label="Stäng">✕</button>
     </div>
     <div id="account-signedout">
-      <p class="account-lead">Logga in för att dela tips och foton med andra i dalen.</p>
+      <p class="account-lead" data-i18n="Logga in för att dela tips och foton med andra i dalen.">Logga in för att dela tips och foton med andra i dalen.</p>
       <button id="account-google" class="google-btn">
         <svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.89 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.47.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
-        Logga in med Google
+        <span data-i18n="Logga in med Google">Logga in med Google</span>
       </button>
-      <div class="account-or"><span>eller</span></div>
-      <label>Inloggningslänk på mejlen
-        <input id="account-email" type="email" inputmode="email" placeholder="din@epost.se" />
+      <div class="account-or"><span data-i18n="eller">eller</span></div>
+      <label><span data-i18n="Inloggningslänk på mejlen">Inloggningslänk på mejlen</span>
+        <input id="account-email" type="email" inputmode="email" placeholder="din@epost.se" data-i18n-ph="din@epost.se" />
       </label>
       <div class="sheet-actions">
-        <button id="account-send" class="btn-primary btn-secondary">Skicka länk</button>
+        <button id="account-send" class="btn-primary btn-secondary" data-i18n="Skicka länk">Skicka länk</button>
       </div>
-      <p class="panel-hint">Genom att bidra godkänner du att bilder du laddar upp visas i appen, att du har rätt till dem, och att inga identifierbara personer syns utan medgivande.</p>
+      <p class="panel-hint" data-i18n="Genom att bidra godkänner du att bilder du laddar upp visas i appen, att du har rätt till dem, och att inga identifierbara personer syns utan medgivande.">Genom att bidra godkänner du att bilder du laddar upp visas i appen, att du har rätt till dem, och att inga identifierbara personer syns utan medgivande.</p>
     </div>
     <div id="account-signedin" hidden>
-      <p class="account-lead">Inloggad som <b id="account-who"></b>.</p>
-      <button id="account-admin" class="btn-primary btn-secondary" hidden>🛡️ Moderering</button>
+      <p class="account-lead"><span data-i18n="Inloggad som">Inloggad som</span> <b id="account-who"></b>.</p>
+      <button id="account-admin" class="btn-primary btn-secondary" data-i18n="🛡️ Moderering" hidden>🛡️ Moderering</button>
       <div class="sheet-actions">
-        <button id="account-signout" class="btn-primary">Logga ut</button>
+        <button id="account-signout" class="btn-primary" data-i18n="Logga ut">Logga ut</button>
       </div>
     </div>
   </div>
@@ -180,7 +244,7 @@
   <!-- Moderering (admin) -->
   <div id="admin-sheet" class="sheet">
     <div class="panel-head">
-      <h2>Moderering</h2>
+      <h2 data-i18n="Moderering">Moderering</h2>
       <button id="admin-cancel" class="panel-close" aria-label="Stäng">✕</button>
     </div>
     <div id="admin-body"></div>
@@ -189,15 +253,17 @@
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=12"></script>
-  <script src="js/data.js?v=12"></script>
-  <script src="js/leder.js?v=12"></script>
-  <script src="js/services.js?v=12"></script>
-  <script src="js/routes.js?v=12"></script>
-  <script src="js/winter.js?v=12"></script>
-  <script src="js/icons.js?v=12"></script>
-  <script src="js/weather.js?v=12"></script>
-  <script src="js/storage.js?v=12"></script>
-  <script src="js/app.js?v=12"></script>
+  <script src="js/config.js?v=14"></script>
+  <script src="js/i18n.js?v=14"></script>
+  <script src="js/data.js?v=14"></script>
+  <script src="js/peaks.js?v=14"></script>
+  <script src="js/leder.js?v=14"></script>
+  <script src="js/services.js?v=14"></script>
+  <script src="js/routes.js?v=14"></script>
+  <script src="js/winter.js?v=14"></script>
+  <script src="js/icons.js?v=14"></script>
+  <script src="js/weather.js?v=14"></script>
+  <script src="js/storage.js?v=14"></script>
+  <script src="js/app.js?v=14"></script>
 </body>
 </html>

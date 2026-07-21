@@ -13,6 +13,7 @@ const CATEGORIES = {
   kultur:   { label: "Kultur & fornlämningar", color: "#9a6a3a" },
   sevart:   { label: "Sevärt",                 color: "#17a2a2" },
   boende:   { label: "Boende & mat",           color: "#e0872b" },
+  topp:     { label: "Toppar",                 color: "#5f7488" },
 };
 
 // Karta centreras kring dalen (Stekenjokk i väster → Dikanäs i öster).
