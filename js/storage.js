@@ -32,6 +32,7 @@ const Storage = (() => {
     return {
       id: r.id, name: r.name, category: r.category, description: r.description || "",
       image: r.image_url || "", coord: [r.lat, r.lng], season: r.season || "all",
+      village_id: r.village_id || null,
       user_id: r.user_id, userAdded: true, createdAt: r.created_at, status: r.status,
     };
   }
@@ -95,6 +96,7 @@ const Storage = (() => {
           user_id: currentUser.id, name: poi.name, category: poi.category,
           description: poi.description || null, lat: poi.coord[0], lng: poi.coord[1],
           image_url: poi.image || null, season: poi.season || "all",
+          village_id: poi.village_id || null,
         }).select().single();
         if (error) throw error;
         return rowToPoi(data);
@@ -107,6 +109,7 @@ const Storage = (() => {
         if (patch.description != null) upd.description = patch.description;
         if (patch.image != null) upd.image_url = patch.image;
         if (patch.season != null) upd.season = patch.season;
+        if (patch.village_id !== undefined) upd.village_id = patch.village_id;
         upd.edited_at = new Date().toISOString();
         const { data, error } = await sb.from("vik_tips").update(upd).eq("id", id).select().single();
         if (error) throw error;

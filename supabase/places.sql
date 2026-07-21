@@ -99,4 +99,8 @@ create policy routes_insert on public.vik_routes for insert with check (auth.uid
 create policy routes_update on public.vik_routes for update using (auth.uid() = user_id or public.vik_is_admin());
 create policy routes_delete on public.vik_routes for delete using (auth.uid() = user_id or public.vik_is_admin());
 
+-- 5. Knyt användartips till en by (valfritt). Tips med village_id visas i den
+--    byns hub oavsett exakt läge; tips utan village_id visas via närhet.
+alter table public.vik_tips add column if not exists village_id text;
+
 -- Klart. Admin loggar in i appen (samma e-post) → redigeringsknappar dyker upp.

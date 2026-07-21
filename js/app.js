@@ -220,6 +220,7 @@ async function init() {
   buildBasemapButtons();
   buildOverlayToggles();
   fillCategorySelect();
+  fillVillageSelect();
   applyStaticI18n();
   buildStartPage();
   buildInfoPage();
@@ -819,7 +820,8 @@ function renderVillageHub(poi) {
     .filter((x) => x.d <= 9000).sort((a, b) => a.d - b.d).slice(0, 6);
   const tips = Object.values(state.markers).map((m) => m.poi).filter((p) => p.userAdded)
     .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
-    .filter((x) => x.d <= 9000).sort((a, b) => a.d - b.d).slice(0, 8);
+    .filter((x) => x.p.village_id === poi.id || (!x.p.village_id && x.d <= 9000))
+    .sort((a, b) => a.d - b.d).slice(0, 8);
 
   const patch = state.overrides[poi.id] || {};
   const lodging = Array.isArray(patch.lodging) ? patch.lodging : [];
@@ -932,6 +934,7 @@ function villageAdd(poi) {
   state.pendingCoord = [poi.coord[0], poi.coord[1]];
   state.pendingImage = null;
   setAddFormMode(false);
+  document.getElementById("add-village").value = poi.id;
   document.getElementById("add-form").classList.add("open");
   toast("Tipset placeras vid byn. Du kan flytta det på kartan sen.");
 }
@@ -1191,6 +1194,16 @@ function fillCategorySelect() {
     opt.textContent = t(c.label);
     sel.appendChild(opt);
   }
+}
+
+// Ort-väljare i tips-formuläret (knyter tipset till en by).
+function fillVillageSelect() {
+  const sel = document.getElementById("add-village");
+  if (!sel) return;
+  const byId = Object.fromEntries(SEED_POIS.map((p) => [p.id, p]));
+  sel.innerHTML = `<option value="">${t("Närmaste (automatiskt)")}</option>` +
+    VILLAGE_IDS.map((id) => byId[id]
+      ? `<option value="${id}">${escapeHtml(byId[id].name)}</option>` : "").join("");
 }
 
 // ===================================================================
@@ -1631,6 +1644,7 @@ function startEditFlow(poi) {
   document.getElementById("add-desc").value = poi.description || "";
   document.getElementById("add-category").value = poi.category;
   document.getElementById("add-season").value = poi.season || "all";
+  document.getElementById("add-village").value = poi.village_id || "";
   setAddFormMode(true);
   closePlaceSheet();
   document.getElementById("add-form").classList.add("open");
@@ -1646,6 +1660,7 @@ function closeAddForm() {
   document.getElementById("add-name").value = "";
   document.getElementById("add-desc").value = "";
   document.getElementById("add-season").value = "all";
+  document.getElementById("add-village").value = "";
   state.pendingCoord = null;
   state.editingId = null;
   setAddFormMode(false);
@@ -1702,13 +1717,14 @@ async function saveNewPoi() {
   if (!name) return toast("Ge platsen ett namn.");
   const category = document.getElementById("add-category").value;
   const season = document.getElementById("add-season").value;
+  const village_id = document.getElementById("add-village").value || null;
   const description = document.getElementById("add-desc").value.trim();
   try {
     let image;
     if (state.pendingImage) { toast("Laddar upp foto…"); image = await Storage.uploadImage(state.pendingImage); }
 
     if (state.editingId) {
-      const patch = { name, category, description, season };
+      const patch = { name, category, description, season, village_id };
       if (image !== undefined) patch.image = image;
       const updated = await Storage.updateUserPoi(state.editingId, patch);
       removeMarkerById(state.editingId);
@@ -1720,7 +1736,7 @@ async function saveNewPoi() {
     }
 
     const saved = await Storage.addUserPoi({
-      name, category, description, season, image: image || "", coord: state.pendingCoord,
+      name, category, description, season, village_id, image: image || "", coord: state.pendingCoord,
     });
     addPoiMarker(saved);
     refreshHubIfOpen();

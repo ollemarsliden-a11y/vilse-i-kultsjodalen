@@ -123,6 +123,8 @@ const I18N = {
     "Namn": "Name",
     "T.ex. Fin badvik": "E.g. Nice swimming spot",
     "Kategori": "Category",
+    "Ort (by)": "Village",
+    "Närmaste (automatiskt)": "Nearest (automatic)",
     "Året runt": "All year",
     "Beskrivning": "Description",
     "Berätta om platsen…": "Tell us about the place…",
