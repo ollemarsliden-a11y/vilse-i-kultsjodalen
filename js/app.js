@@ -602,6 +602,7 @@ function openPlaceSheet(poi, marker) {
         <button class="ps-btn" id="ps-directions">${["topp", "led"].includes(poi.category) ? t("📍 Visa i Google Maps") : t("🧭 Vägbeskrivning")}</button>
         <button class="ps-btn ps-btn-ghost" id="ps-center">${t("Visa på kartan")}</button>
       </div>
+      ${poi.website ? `<a class="ps-btn ps-web" href="${encodeURI(poi.website)}" target="_blank" rel="noopener">${t("Hemsida ↗")}</a>` : ""}
       ${ownerCtl}
       ${canAdminEdit(poi) ? `<button class="ps-btn ps-admin-edit" id="ps-place-edit">${t("✏️ Redigera plats")}</button>` : ""}
       ${community ? `<div class="ps-comments" id="ps-comments"></div>` : ""}
@@ -693,7 +694,7 @@ function formatDist(m) {
 // ===================================================================
 //  Startsida (Upptäck)
 // ===================================================================
-const VILLAGE_IDS = ["saxnas", "marsliden", "klimpfjall", "fatmomakke", "dikanas", "stalon", "ransarn"];
+const VILLAGE_IDS = ["saxnas", "marsliden", "klimpfjall", "fatmomakke", "dikanas", "stalon"];
 
 const QUICK_ACTIONS = [
   { label: "Utforska\nkartan", icon: "sevart", color: "#2f6fb0", run: () => showView("map") },
@@ -1410,9 +1411,35 @@ function wireWeather() {
     clearTimeout(state.weatherTimer);
     state.weatherTimer = setTimeout(updateWeatherPill, 700);
   });
-  document.getElementById("weather-pill").addEventListener("click", updateWeatherPill);
+  document.getElementById("weather-pill").addEventListener("click", openWeatherSheet);
   const sw = document.getElementById("start-weather");
-  if (sw) sw.addEventListener("click", updateWeatherPill);
+  if (sw) sw.addEventListener("click", openWeatherSheet);
+  document.getElementById("weather-cancel").addEventListener("click", () => closeSheet("weather-sheet"));
+}
+
+function fcDayName(dateStr) {
+  const d = new Date(dateStr + "T12:00:00");
+  return d.toLocaleDateString(LANG === "en" ? "en-GB" : "sv-SE", { weekday: "long", day: "numeric", month: "short" });
+}
+async function openWeatherSheet() {
+  const body = document.getElementById("weather-body");
+  body.innerHTML = `<p class="panel-hint">${t("Hämtar prognos…")}</p>`;
+  openSheet("weather-sheet");
+  const c = state.map ? state.map.getCenter() : { lat: MAP_CENTER[0], lng: MAP_CENTER[1] };
+  try {
+    const days = await Weather.forecast(c.lat, c.lng);
+    body.innerHTML = days.map((d, i) => {
+      const label = i === 0 ? t("Idag") : i === 1 ? t("Imorgon") : fcDayName(d.date);
+      return `<div class="wf-row">
+        <span class="wf-emoji">${d.emoji}</span>
+        <span class="wf-day">${escapeHtml(label)}</span>
+        <span class="wf-temp"><b>${d.tmax}°</b> <span class="wf-min">${d.tmin}°</span></span>
+        <span class="wf-meta">🌬️ ${d.wind}${d.gust > d.wind ? ` (${d.gust})` : ""} m/s &nbsp;·&nbsp; 💧 ${d.precip} mm</span>
+      </div>`;
+    }).join("") + `<p class="panel-hint">${t("Prognos från SMHI. Vindbyar inom parentes, nederbörd som dygnsmängd.")}</p>`;
+  } catch {
+    body.innerHTML = `<p class="panel-hint">${t("Kunde inte hämta prognosen.")}</p>`;
+  }
 }
 async function updateWeatherPill() {
   const pill = document.getElementById("weather-pill");

@@ -93,6 +93,37 @@ const SEED_POIS = [
     source: "Visit Vilhelmina, Ricklundgården, OpenStreetMap",
   },
   {
+    id: "kultsjogarden",
+    name: "Kultsjögården",
+    category: "boende",
+    coord: [64.97061, 15.34598],
+    blurb: "Prisvärt fjällboende i Saxnäs",
+    description:
+      "Mysigt och prisvärt boende mitt i Saxnäs — vandrarhemsrum, stugor, " +
+      "lägenheter och ställplatser, med utsikt mot Kultsjön och Marsfjällen. " +
+      "Reception i Marsfjällshandlar'n. Drivs ihop med Fiskecentrum Saxnäs.",
+    website: "https://xn--fiskecentrumsaxns-5qb.se/",
+    facts: [["Typ", "Boende"], ["By", "Saxnäs"]],
+    image: "",
+    source: "Visit Vilhelmina, Kultsjögården",
+  },
+  {
+    id: "fiskecentrum-saxnas",
+    name: "Fiskecentrum Saxnäs",
+    category: "fiske",
+    coord: [64.97146, 15.33801],
+    blurb: "Fiskekort, utrustning & guidning i Handlar'n",
+    description:
+      "Fiskecentrum ligger i Marsfjällshandlar'n mitt i Saxnäs. Här köper du " +
+      "fiske- och jaktkort, hittar fiske- och friluftsutrustning, fjällkartor och " +
+      "dagligvaror. De ordnar guidning och kurser och tipsar om vattnen kring " +
+      "Kultsjön, Kultsjöån, Stekenjokk och Ransarån.",
+    website: "https://xn--fiskecentrumsaxns-5qb.se/",
+    facts: [["Läge", "Marsfjällshandlar'n"], ["By", "Saxnäs"]],
+    image: "",
+    source: "Visit Vilhelmina, Fiskecentrum Saxnäs",
+  },
+  {
     id: "trappstegsforsen",
     name: "Trappstegsforsen",
     category: "sevart",

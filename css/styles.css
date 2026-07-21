@@ -477,6 +477,7 @@ body.picking::after {
 }
 .ps-btn:active { transform: scale(.98); }
 .ps-btn-ghost { background: var(--surface-2); color: var(--ink); }
+.ps-web { display: block; width: 100%; margin-top: 10px; background: var(--accent); color: #fff; }
 .ps-src { font-size: 11.5px; color: var(--ink-2); margin-top: 6px; }
 .ps-del {
   margin-top: 14px; width: 100%; padding: 12px; border: none; border-radius: 14px;
@@ -690,6 +691,18 @@ svg.elev { width: 100%; height: 90px; display: block; }
   backdrop-filter: blur(6px);
 }
 .ps-hero, .vh-hero { cursor: zoom-in; }
+
+/* ---- Väderprognos ---- */
+.wf-row {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px;
+  padding: 11px 2px; border-bottom: 1px solid var(--line);
+}
+.wf-emoji { font-size: 22px; flex: 0 0 auto; }
+.wf-day { flex: 1; font-weight: 700; font-size: 14px; text-transform: capitalize; }
+.wf-temp { font-size: 15px; flex: 0 0 auto; }
+.wf-temp b { font-size: 16px; }
+.wf-min { color: var(--ink-2); }
+.wf-meta { flex-basis: 100%; font-size: 12.5px; color: var(--ink-2); padding-left: 32px; }
 
 /* ---- Toast ---- */
 .toast {

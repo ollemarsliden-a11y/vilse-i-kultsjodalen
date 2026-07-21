@@ -63,5 +63,45 @@ const Weather = (() => {
       cache.set(key, { time: Date.now(), data: out });
       return out;
     },
+
+    // Dygnsprognos för kommande dagar (temp, vind, nederbörd).
+    async forecast(lat, lon) {
+      const url = `${BASE}/lon/${lon.toFixed(4)}/lat/${lat.toFixed(4)}/data.json`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("SMHI " + res.status);
+      const json = await res.json();
+      const series = json.timeSeries.map((s) => ({ t: new Date(s.time), d: s.data }));
+      const byDay = new Map();
+      for (const s of series) {
+        const k = s.t.toISOString().slice(0, 10);
+        if (!byDay.has(k)) byDay.set(k, []);
+        byDay.get(k).push(s);
+      }
+      const days = [];
+      for (const [date, arr] of byDay) {
+        arr.sort((a, b) => a.t - b.t);
+        const temps = arr.map((x) => x.d.air_temperature);
+        const winds = arr.map((x) => x.d.wind_speed);
+        const gusts = arr.map((x) => x.d.wind_speed_of_gust);
+        let precip = 0;
+        for (let i = 0; i < arr.length; i++) {
+          const hrs = i < arr.length - 1 ? (arr[i + 1].t - arr[i].t) / 3600000 : 1;
+          precip += (arr[i].d.precipitation_amount_mean || 0) * hrs;
+        }
+        const rep = arr.reduce((a, b) =>
+          Math.abs(b.t.getHours() - 13) < Math.abs(a.t.getHours() - 13) ? b : a);
+        const sym = SYMBOLS[rep.d.symbol_code] || ["", "🌡️"];
+        days.push({
+          date,
+          tmin: Math.round(Math.min(...temps)),
+          tmax: Math.round(Math.max(...temps)),
+          wind: Math.round(Math.max(...winds)),
+          gust: Math.round(Math.max(...gusts)),
+          precip: Math.round(precip * 10) / 10,
+          emoji: sym[1], desc: sym[0],
+        });
+      }
+      return days.slice(0, 7);
+    },
   };
 })();
