@@ -852,16 +852,46 @@ function refreshHubIfOpen() {
   }
 }
 
+// Admin: dölj/lägg till plats i byns "Att göra"-lista (sparas i override-patch).
+async function saveTodoPatch(villageId, patch) {
+  try {
+    await Storage.savePlaceOverride(villageId, patch);
+    await loadPlaceData();
+    const v = SEED_POIS.find((p) => p.id === villageId);
+    if (v) renderVillageHub(v);
+  } catch (e) { toast("Kunde inte spara: " + e.message); }
+}
+function hideTodo(villageId, placeId) {
+  const patch = { ...(state.overrides[villageId] || {}) };
+  patch.todoHide = [...new Set([...(patch.todoHide || []), placeId])];
+  patch.todoAdd = (patch.todoAdd || []).filter((x) => x !== placeId);
+  saveTodoPatch(villageId, patch);
+}
+function addTodo(villageId, placeId) {
+  const patch = { ...(state.overrides[villageId] || {}) };
+  patch.todoAdd = [...new Set([...(patch.todoAdd || []), placeId])];
+  patch.todoHide = (patch.todoHide || []).filter((x) => x !== placeId);
+  saveTodoPatch(villageId, patch);
+}
+
 function renderVillageHub(poi) {
   const cat = CATEGORIES[poi.category] || CATEGORIES.sevart;
   const imgs = galleryFor(poi);
   const hero0 = imgs[0];
   const pool = [...SEED_POIS, ...(typeof PEAKS !== "undefined" ? PEAKS : [])];
 
-  const todo = pool.filter((p) => p.id !== poi.id && !isVillage(p))
+  const vpatch = state.overrides[poi.id] || {};
+  const hideSet = new Set(vpatch.todoHide || []);
+  let todo = pool.filter((p) => p.id !== poi.id && !isVillage(p))
     .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
-    .filter((x) => nearestVillageId(x.p.coord) === poi.id && x.d <= 15000)
-    .sort((a, b) => a.d - b.d).slice(0, 10);
+    .filter((x) => nearestVillageId(x.p.coord) === poi.id && x.d <= 15000 && !hideSet.has(x.p.id));
+  for (const id of (vpatch.todoAdd || [])) {
+    if (todo.some((x) => x.p.id === id)) continue;
+    const p = pool.find((x) => x.id === id);
+    if (p) todo.push({ p, d: distMeters(poi.coord, p.coord) });
+  }
+  todo = todo.sort((a, b) => a.d - b.d).slice(0, 14);
+  const admin = canAdminEdit(poi);
   const services = (typeof SERVICES !== "undefined" ? SERVICES : [])
     .filter((s) => s.kind === "boende" || s.kind === "mat")
     .map((s) => ({ s, d: distMeters(poi.coord, [s.lat, s.lng]) }))
@@ -876,13 +906,14 @@ function renderVillageHub(poi) {
   const routes = collectVillageRoutes(poi);
   const loggedIn = !!(Storage.auth && Storage.auth.userId && Storage.auth.userId());
 
-  const poiRow = ({ p, d }) => {
+  const poiRow = ({ p, d }, canHide) => {
     const c = CATEGORIES[p.category] || CATEGORIES.sevart;
+    const x = canHide ? `<span class="vh-row-x" data-hide="${p.id}" title="${t("Dölj")}" role="button">✕</span>` : "";
     return `<button class="vh-row" data-poi="${p.id}" style="--c:${c.color}">
       <span class="vh-row-ic">${iconSvg(p.category, "currentColor", 20)}</span>
       <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(p.name)}</span>
         <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span>
-      <span class="vh-row-dist">${fmtDistShort(d)}</span></button>`;
+      <span class="vh-row-dist">${fmtDistShort(d)}</span>${x}</button>`;
   };
   const svcRow = ({ s, d }) => `<button class="vh-row" data-svc="${encodeURIComponent(s.website || "")}" style="--c:#e0872b">
       <span class="vh-row-ic">${iconSvg(s.kind === "mat" ? "mat" : "boende", "currentColor", 20)}</span>
@@ -923,7 +954,12 @@ function renderVillageHub(poi) {
         ${poi.history ? `<p class="vh-more" hidden>${escapeHtml(poi.history)}</p><button class="vh-readmore" id="vh-readmore">${t("Läs mer")}</button>` : ""}</div>` : ""}
 
       <div class="vh-sec-head"><h3>${t("Att göra här")}</h3><span>${todo.length ? todo.length + " " + t("platser") : ""}</span></div>
-      ${todo.length ? todo.map(poiRow).join("") : `<p class="vh-empty">${t("Inga registrerade platser nära byn än.")}</p>`}
+      ${todo.length ? todo.map((x) => poiRow(x, admin)).join("") : `<p class="vh-empty">${t("Inga registrerade platser nära byn än.")}</p>`}
+      ${admin ? `<select class="vh-todo-add" id="vh-todo-add"><option value="">${t("+ Lägg till plats i listan")}</option>${
+        pool.filter((p) => !isVillage(p) && p.id !== poi.id && !todo.some((x) => x.p.id === p.id))
+          .map((p) => ({ p, d: distMeters(poi.coord, p.coord) })).sort((a, b) => a.d - b.d).slice(0, 80)
+          .map(({ p, d }) => `<option value="${p.id}">${escapeHtml(p.name)} · ${fmtDistShort(d)}</option>`).join("")
+      }</select>` : ""}
 
       <div class="vh-sec-head"><h3>${t("Bo & äta")}</h3></div>
       ${lodging.map(lodgeRow).join("")}
@@ -934,7 +970,7 @@ function renderVillageHub(poi) {
       <button class="vh-add vh-add-soft" id="vh-import-gpx">${iconSvg("led", "currentColor", 18)} ${t("Importera GPX-tur")}</button>
 
       <div class="vh-sec-head"><h3>${t("Från besökare")}</h3></div>
-      ${tips.length ? tips.map(poiRow).join("") : `<p class="vh-empty">${t("Inga besökartips än — bli först!")}</p>`}
+      ${tips.length ? tips.map((x) => poiRow(x)).join("") : `<p class="vh-empty">${t("Inga besökartips än — bli först!")}</p>`}
       <button class="vh-add" id="vh-add">${iconSvg("smultron", "#fff", 18)} ${t("Lägg till tips vid byn")}</button>
       ${loggedIn ? `<button class="vh-add vh-add-soft" id="vh-photo-btn">${iconSvg("sevart", "currentColor", 18)} ${t("Lägg till bild")}</button>` : ""}
 
@@ -956,6 +992,11 @@ function renderVillageHub(poi) {
       || Object.values(state.markers).map((m) => m.poi).find((x) => x.id === el.dataset.poi);
     if (p) openPlaceSheet(p, state.markers[p.id]);
   });
+  document.querySelectorAll("#vh-body [data-hide]").forEach((el) => el.onclick = (e) => {
+    e.stopPropagation(); hideTodo(poi.id, el.dataset.hide);
+  });
+  const todoAddSel = document.getElementById("vh-todo-add");
+  if (todoAddSel) todoAddSel.onchange = () => { if (todoAddSel.value) addTodo(poi.id, todoAddSel.value); };
   document.querySelectorAll("#vh-body [data-svc]").forEach((el) => el.onclick = () => {
     const url = decodeURIComponent(el.dataset.svc);
     if (url) window.open(url, "_blank", "noopener");

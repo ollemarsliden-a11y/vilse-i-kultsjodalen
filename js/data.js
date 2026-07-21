@@ -120,20 +120,57 @@ const SEED_POIS = [
     name: "Marsliden",
     category: "boende",
     coord: [65.0296, 15.3701],
-    blurb: "By vid fjällets fot",
+    blurb: "By vid fjällets fot — porten till Marsfjället",
     description:
-      "Liten by vid Kultsjöns strand och ingång till Marsfjällets naturreservat. " +
-      "Bevarad nybyggar- och fäbodmiljö.",
+      "Marsliden ligger utmed Kultsjöns östra strand, tätt inpå Marsfjället, och " +
+      "brukar kallas porten till Marsfjällets naturreservat. Byn är liten — ett " +
+      "tjugotal fastboende men uppemot 200 fritidshus — och har kvar mycket av sin " +
+      "gamla nybyggar- och fäbodmiljö. Härifrån utgår markerade leder mot toppar, " +
+      "kåtor och fjällstugor, och den lokala intresseföreningen håller flera mil " +
+      "leder öppna både sommar och vinter.",
     history:
-      "Marsliden bär tydliga spår av nybyggartiden, bland annat efter Lars " +
-      "Pålsson. I byn finns utställningen ”De skrivna orden” om författaren " +
-      "Bernhard Nordh, vars romaner skildrar livet i Marsfjällets skugga.",
+      "Byns första nybygge anlades på 1800-talet, och trakten blev vida känd genom " +
+      "Bernhard Nordhs romaner om nybyggarna ”i Marsfjällets skugga”. En bevarad " +
+      "kopia av det första nybygget — Pålssons stuga efter Lars Pålsson — är öppen " +
+      "som litet museum, och sommartid visas utställningen ”De skrivna orden” om " +
+      "Nordh och andra författare från byn. Mitt i Marsliden ligger Kanons kiosk och " +
+      "café, som förutom fika också fungerar som informationspunkt och ett stycke " +
+      "lokalt kuriosamuseum.",
     facts: [
-      ["Läge", "Kultsjöns östra del"],
-      ["Nära", "Marsfjället"],
+      ["Läge", "Kultsjöns östra strand"],
+      ["Fastboende", "ca 20–30"],
+      ["Fritidshus", "ca 200"],
+      ["Port till", "Marsfjället"],
     ],
     image: "",
-    source: "Vilhelmina museum, OpenStreetMap",
+    source: "Visit Vilhelmina, Marslidens intresseförening, Vilhelmina museum",
+  },
+  {
+    id: "palssons-stuga",
+    name: "Pålssons stuga",
+    category: "kultur",
+    coord: [65.02538, 15.36378],
+    blurb: "Byns första nybygge — litet museum",
+    description:
+      "En bevarad kopia av Lars Pålssons stuga, det första nybygget i Marsliden. " +
+      "Ett litet museum om nybyggartiden och livet i Marsfjällets skugga.",
+    facts: [["Typ", "Nybyggarmuseum"], ["By", "Marsliden"]],
+    image: "",
+    source: "Visit Vilhelmina, OpenStreetMap",
+  },
+  {
+    id: "kanons-kiosk",
+    name: "Kanons kiosk & café",
+    category: "boende",
+    coord: [65.0262, 15.36633],
+    blurb: "Bykrog, café och kuriosamuseum",
+    description:
+      "Landmärke mitt i Marsliden — café och kiosk som också fungerar som " +
+      "informationspunkt och ett stycke lokalt prylmuseum. Här hämtar man ofta " +
+      "nyckeln till fjällbyns stugor.",
+    facts: [["Typ", "Café & info"], ["By", "Marsliden"]],
+    image: "",
+    source: "Visit Vilhelmina, OpenStreetMap",
   },
   {
     id: "klimpfjall",

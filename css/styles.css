@@ -269,6 +269,17 @@ button { font-family: inherit; }
 .vh-row-name { font-weight: 700; font-size: 14.5px; }
 .vh-row-sub { font-size: 12px; color: var(--ink-2); }
 .vh-row-dist { font-size: 11.5px; color: var(--ink-2); font-weight: 600; flex: 0 0 auto; }
+.vh-row-x {
+  flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 13px;
+  background: color-mix(in srgb, #d1495b 14%, transparent); color: #d1495b;
+}
+.vh-todo-add {
+  width: 100%; margin: 2px 0 4px; padding: 11px 12px; cursor: pointer;
+  border: 1.5px dashed color-mix(in srgb, var(--brand-2) 45%, var(--line));
+  border-radius: 12px; background: var(--surface-2); color: var(--brand);
+  font-size: 13.5px; font-weight: 650; font-family: inherit;
+}
 .vh-row-link { color: var(--accent); font-size: 12px; font-weight: 650; flex: 0 0 auto; }
 .vh-empty { font-size: 13px; color: var(--ink-2); margin: 0 4px 8px; }
 .vh-add {

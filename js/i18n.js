@@ -186,6 +186,7 @@ const I18N = {
     "Att göra här": "Things to do",
     "platser": "places",
     "Inga registrerade platser nära byn än.": "No registered places near the village yet.",
+    "+ Lägg till plats i listan": "+ Add a place to the list",
     "Bo & äta": "Stay & eat",
     "Boka ↗": "Book ↗",
     "Inget boende registrerat nära byn än.": "No accommodation registered near the village yet.",
