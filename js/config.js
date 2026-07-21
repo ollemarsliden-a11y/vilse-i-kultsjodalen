@@ -15,6 +15,11 @@ const _isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
 // här så dyker "Fjällkarta" upp som kartunderlag. Registrering: se README.
 const LM_TOKEN = "";
 
+// Lantmäteriets fjällkarta som LOKALA rutor (nedladdade en gång, CC0).
+// Sätts till true när tiles/topo/ finns i projektet (scripts/fetch-lm-tiles.mjs).
+const LOCAL_FJALL = true;
+const LOCAL_FJALL_MAXZOOM = 13; // sista nedladdade zoomnivån (skalas upp ovanför)
+
 // Moderatorer (matchar admin.sql). Endast för att visa admin-vyn i klienten —
 // den faktiska behörigheten styrs av säkerhetsreglerna i Supabase.
 const ADMIN_EMAILS = ["olle.marsliden@gmail.com"];
@@ -24,5 +29,7 @@ const CONFIG = {
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
   LM_TOKEN,
+  LOCAL_FJALL,
+  LOCAL_FJALL_MAXZOOM,
   ADMIN_EMAILS,
 };

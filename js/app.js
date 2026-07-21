@@ -29,15 +29,16 @@ const BASEMAPS = {
         { maxNativeZoom: 19, maxZoom: 18, attribution: "© Esri, Maxar, Earthstar Geographics" }
       ),
   },
-  // Lantmäteriets Fjällkarta (visas bara om CONFIG.LM_TOKEN är satt).
+  // Lantmäteriets Fjällkarta som LOKALA rutor (nedladdade en gång, CC0).
+  // Visas bara när CONFIG.LOCAL_FJALL är true (dvs tiles/topo/ finns).
   fjall: {
     label: "Fjällkarta",
-    requiresToken: true,
+    requiresLocal: true,
     layer: () =>
-      L.tileLayer(
-        `https://api.lantmateriet.se/open/topowebb-ccby/v1/wmts/token/${CONFIG.LM_TOKEN}/1.0.0/topowebb/default/3857/{z}/{y}/{x}.png`,
-        { maxNativeZoom: 17, maxZoom: 18, attribution: "© Lantmäteriet (CC0)" }
-      ),
+      L.tileLayer("tiles/topo/{z}/{x}/{y}.png", {
+        maxNativeZoom: CONFIG.LOCAL_FJALL_MAXZOOM || 14, maxZoom: 18,
+        attribution: "© Lantmäteriet (CC0)",
+      }),
   },
 };
 
@@ -1057,6 +1058,7 @@ function buildBasemapButtons() {
   const wrap = document.getElementById("basemap-buttons");
   for (const [key, b] of Object.entries(BASEMAPS)) {
     if (b.requiresToken && !CONFIG.LM_TOKEN) continue; // dölj tills token finns
+    if (b.requiresLocal && !CONFIG.LOCAL_FJALL) continue; // dölj tills lokala rutor finns
     const btn = document.createElement("button");
     btn.className = "seg-btn" + (key === "topo" ? " active" : "");
     btn.dataset.key = key;
