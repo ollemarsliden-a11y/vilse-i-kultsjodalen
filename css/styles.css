@@ -13,10 +13,12 @@
   --brand-2: #2f8f4e;
   --accent: #2f6fb0;     /* sjöblå */
   --radius: 18px;
-  --radius-lg: 24px;
-  --shadow-s: 0 2px 8px rgba(20,30,24,.10);
-  --shadow-m: 0 8px 24px rgba(20,30,24,.16);
-  --shadow-l: 0 -10px 40px rgba(15,20,17,.22);
+  --radius-lg: 28px;
+  /* Tvålagers, diffusa skuggor ger en mjukare känsla än en hård skugga. */
+  --shadow-s: 0 1px 2px rgba(20,30,24,.04), 0 4px 14px rgba(20,30,24,.07);
+  --shadow-m: 0 2px 6px rgba(20,30,24,.05), 0 14px 34px rgba(20,30,24,.11);
+  --shadow-l: 0 -6px 24px rgba(15,20,17,.10), 0 -18px 56px rgba(15,20,17,.16);
+  --ease: cubic-bezier(.22,1,.36,1);
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --tabbar-h: calc(60px + var(--safe-b));
@@ -30,9 +32,9 @@
     --ink-2: #a4b0a8;
     --line: #2b352e;
     --brand: #3f7d57;
-    --shadow-s: 0 2px 8px rgba(0,0,0,.4);
-    --shadow-m: 0 8px 24px rgba(0,0,0,.5);
-    --shadow-l: 0 -10px 40px rgba(0,0,0,.55);
+    --shadow-s: 0 1px 2px rgba(0,0,0,.25), 0 4px 14px rgba(0,0,0,.30);
+    --shadow-m: 0 2px 6px rgba(0,0,0,.28), 0 14px 34px rgba(0,0,0,.38);
+    --shadow-l: 0 -6px 24px rgba(0,0,0,.30), 0 -18px 56px rgba(0,0,0,.42);
   }
 }
 
@@ -137,16 +139,23 @@ button { font-family: inherit; }
 /* ---- Startsida ---- */
 .start-hero {
   position: relative; overflow: hidden;
-  padding: calc(18px + var(--safe-t)) 20px 22px;
+  padding: calc(18px + var(--safe-t)) 20px 70px;
   color: #fff;
 }
 .start-hero-bg {
   position: absolute; inset: 0; z-index: 0;
   background: #14201a url("../images/marsfjallet.webp") center/cover no-repeat;
 }
-.start-hero::after {
+/* Mörkning för läsbar text ovanpå bilden. */
+.start-hero::before {
   content: ""; position: absolute; inset: 0; z-index: 1;
-  background: linear-gradient(180deg, rgba(15,20,17,.28), rgba(15,20,17,.72));
+  background: linear-gradient(180deg, rgba(15,20,17,.20) 0%, rgba(15,20,17,.58) 55%, rgba(15,20,17,.66) 100%);
+}
+/* Mjuk övergång så bilden smälter in i sidan nedanför i stället för en hård kant. */
+.start-hero::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 96px; z-index: 1;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, var(--bg) 88%);
+  pointer-events: none;
 }
 .start-hero-inner { position: relative; z-index: 2; }
 .start-hero-top { display: flex; align-items: center; justify-content: space-between; }
@@ -162,7 +171,8 @@ button { font-family: inherit; }
 .start-title { font-size: 30px; margin: 14px 0 6px; letter-spacing: -.6px; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
 .start-sub { font-size: 14px; line-height: 1.5; margin: 0; opacity: .94; max-width: 30ch; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
 
-.start-body { padding: 18px 16px 8px; }
+.start-body { padding: 6px 16px 8px; }
+.start-body > .section-h:first-child { margin-top: 10px; }
 .quick-row { display: flex; gap: 10px; margin-bottom: 8px; }
 .quick-btn {
   flex: 1; border: 1.5px solid var(--line); background: var(--surface);
@@ -235,9 +245,15 @@ button { font-family: inherit; }
   display: flex; flex-direction: column; justify-content: flex-end;
 }
 .vh-hero.vh-plain { background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 55%, #000)); }
-.vh-hero::after {
+.vh-hero::before {
   content: ""; position: absolute; inset: 0; z-index: 0;
-  background: linear-gradient(180deg, rgba(15,20,17,.15), rgba(15,20,17,.78));
+  background: linear-gradient(180deg, rgba(15,20,17,.12) 0%, rgba(15,20,17,.55) 55%, rgba(15,20,17,.68) 100%);
+}
+/* Mjuk övergång ner i innehållet i stället för hård kant. */
+.vh-hero::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 88px; z-index: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, var(--bg) 88%);
+  pointer-events: none;
 }
 .vh-back {
   position: absolute; top: calc(12px + var(--safe-t)); left: 12px; z-index: 2;
@@ -245,7 +261,7 @@ button { font-family: inherit; }
   background: rgba(15,20,17,.5); color: #fff; font-size: 13px; font-weight: 600;
   padding: 8px 13px 8px 10px; border-radius: 20px; backdrop-filter: blur(6px);
 }
-.vh-hero-inner { position: relative; z-index: 1; padding: 16px 18px; }
+.vh-hero-inner { position: relative; z-index: 1; padding: 16px 18px 34px; }
 .vh-cat { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #cfe3d8; }
 .vh-name { font-size: 27px; margin: 4px 0 4px; letter-spacing: -.5px; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
 .vh-blurb { font-size: 14px; margin: 0; opacity: .95; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
@@ -256,7 +272,7 @@ button { font-family: inherit; }
 }
 .vh-thumbs {
   display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
-  padding: 10px 18px 2px; background: var(--surface);
+  padding: 10px 18px 2px; background: transparent;
 }
 .vh-thumbs::-webkit-scrollbar { display: none; }
 .vh-thumbs .ps-thumb { width: 64px; height: 46px; }
@@ -271,7 +287,7 @@ button { font-family: inherit; }
 
 .vh-row {
   display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
-  padding: 11px 12px; border: 1px solid var(--line); border-radius: 14px;
+  padding: 11px 12px; border: 1px solid var(--line); border-radius: 16px;
   background: var(--surface); cursor: pointer; color: var(--ink); margin-bottom: 8px;
   box-shadow: var(--shadow-s);
 }
@@ -308,7 +324,11 @@ button { font-family: inherit; }
 .vh-row-link { white-space: nowrap; }
 
 /* Info-sida */
-.info-hero { padding: calc(20px + var(--safe-t)) 20px 18px; background: var(--brand); color: #fff; }
+.info-hero {
+  padding: calc(20px + var(--safe-t)) 20px 26px;
+  background: linear-gradient(180deg, var(--brand), color-mix(in srgb, var(--brand) 84%, #0b120e));
+  color: #fff; border-radius: 0 0 26px 26px;
+}
 .info-hero .start-title { text-shadow: none; margin-top: 0; }
 .info-hero .start-sub { opacity: .9; }
 .info-card {
@@ -743,6 +763,15 @@ svg.elev { width: 100%; height: 90px; display: block; }
 .svc-cat { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; margin-bottom: 2px; }
 .svc-row { font-size: 12.5px; margin-top: 3px; }
 .svc-row a { color: var(--accent); }
+
+/* ---- Mjuka övergångar på allt klickbart ---- */
+.place-card, .cat-tile, .vh-row, .fab, .icon-btn, .start-bg-btn, .ps-btn,
+.vh-add, .chip, .seg-btn, .tab, .weather-pill, .panel-close, .place-close,
+.photo-btn, .btn-primary, .route-row, .overlay-row, .ps-thumb {
+  transition: transform .18s var(--ease), box-shadow .22s var(--ease),
+              background-color .18s var(--ease), border-color .18s var(--ease),
+              opacity .18s var(--ease);
+}
 
 /* ---- Tillgänglighet ---- */
 /* Synligt fokus för tangentbordsnavigering (visas inte vid musklick). */
