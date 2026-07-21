@@ -661,6 +661,25 @@ svg.elev { width: 100%; height: 90px; display: block; }
 .splash-btn:active { transform: scale(.96); }
 .splash-credit { position: absolute; bottom: calc(14px + var(--safe-b)); font-size: 11px; opacity: .55; }
 
+/* ---- Bildvisning (lightbox) ---- */
+.lightbox {
+  position: fixed; inset: 0; z-index: 3000; display: none;
+  align-items: center; justify-content: center;
+  background: rgba(0,0,0,.93); padding: 20px;
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: 96vw; max-height: 90vh; object-fit: contain;
+  border-radius: 6px; box-shadow: 0 8px 40px rgba(0,0,0,.6);
+}
+.lightbox-close {
+  position: absolute; top: calc(12px + var(--safe-t)); right: 14px;
+  width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255,255,255,.18); color: #fff; font-size: 18px;
+  backdrop-filter: blur(6px);
+}
+.ps-hero, .vh-hero { cursor: zoom-in; }
+
 /* ---- Toast ---- */
 .toast {
   position: absolute; left: 50%; z-index: 1700;

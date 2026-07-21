@@ -8,6 +8,9 @@
 
 const PEAKS = [
   { id: "peak-marsfj-llet-0", name: "Marsfjället", category: "topp", coord: [65.10665, 15.37983], blurb: "1590 m ö.h.", facts: [["Höjd", "1590 m ö.h."]], source: "OpenStreetMap" },
+  { id: "peak-gahkagaejsie-nord", name: "Gahkagaejsie (nordtopp)", category: "topp", coord: [65.08873, 15.37228], blurb: "1449 m ö.h.", facts: [["Höjd", "1449 m ö.h."]], source: "OpenStreetMap" },
+  { id: "peak-aajnantjahke", name: "Aajnantjahke", category: "topp", coord: [65.06721, 15.32482], blurb: "1245 m ö.h.", facts: [["Höjd", "1245 m ö.h."]], source: "OpenStreetMap" },
+  { id: "peak-gahkagaejsie-syd", name: "Gahkagaejsie (sydtopp)", category: "topp", coord: [65.06687, 15.38332], blurb: "1196 m ö.h.", facts: [["Höjd", "1196 m ö.h."]], source: "OpenStreetMap" },
   { id: "peak-jetnamsklumpen-1", name: "Jetnamsklumpen", category: "topp", coord: [65.13194, 14.19333], blurb: "1513 m ö.h.", facts: [["Höjd", "1513 m ö.h."]], source: "OpenStreetMap" },
   { id: "peak-jiengejehtseme-2", name: "Jiengejehtseme", category: "topp", coord: [64.89529, 15.12504], blurb: "1477 m ö.h.", facts: [["Höjd", "1477 m ö.h."]], source: "OpenStreetMap" },
   { id: "peak-rainesklumpen-3", name: "Rainesklumpen", category: "topp", coord: [65.23026, 14.30025], blurb: "1450 m ö.h.", facts: [["Höjd", "1450 m ö.h."]], source: "OpenStreetMap" },

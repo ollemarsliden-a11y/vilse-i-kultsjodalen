@@ -616,8 +616,10 @@ function openPlaceSheet(poi, marker) {
   sheet.classList.add("open");
 
   // knappar
-  document.getElementById("ps-directions").onclick = () =>
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${poi.coord[0]},${poi.coord[1]}`, "_blank");
+  document.getElementById("ps-directions").onclick = () => {
+    const mode = ["topp", "led"].includes(poi.category) ? "walking" : "driving";
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${poi.coord[0]},${poi.coord[1]}&travelmode=${mode}`, "_blank");
+  };
   document.getElementById("ps-center").onclick = () => {
     closePlaceSheet();
     showView("map");
@@ -652,6 +654,8 @@ function openPlaceSheet(poi, marker) {
   });
   const placeEditBtn = document.getElementById("ps-place-edit");
   if (placeEditBtn) placeEditBtn.onclick = () => openPlaceEdit(poi);
+  const heroEl = document.getElementById("ps-hero");
+  if (heroEl) heroEl.onclick = () => openLightbox(bgUrl(heroEl));
 
   if (community) { loadReactions(poi.id); loadComments(poi.id); }
 
@@ -803,6 +807,33 @@ function distMeters(a, b) {
 }
 function fmtDistShort(m) { return m < 1000 ? Math.round(m) + " m" : (m / 1000).toFixed(1) + " km"; }
 
+// Bildvisning i full storlek
+function openLightbox(url) {
+  if (!url) return;
+  document.getElementById("lightbox-img").src = url;
+  document.getElementById("lightbox").classList.add("open");
+}
+function closeLightbox() {
+  document.getElementById("lightbox").classList.remove("open");
+  document.getElementById("lightbox-img").removeAttribute("src");
+}
+function bgUrl(el) {
+  const m = /url\(['"]?(.*?)['"]?\)/.exec((el && el.style.backgroundImage) || "");
+  return m ? m[1] : null;
+}
+
+// Vilken by ligger närmast en koordinat? (så en plats hör till EN by)
+function nearestVillageId(coord) {
+  let best = null, bd = Infinity;
+  for (const id of VILLAGE_IDS) {
+    const v = SEED_POIS.find((p) => p.id === id);
+    if (!v) continue;
+    const d = distMeters(coord, v.coord);
+    if (d < bd) { bd = d; best = id; }
+  }
+  return best;
+}
+
 function openVillageHub(poi) {
   state.hubVillageId = poi.id;
   renderVillageHub(poi);
@@ -829,7 +860,8 @@ function renderVillageHub(poi) {
 
   const todo = pool.filter((p) => p.id !== poi.id && !isVillage(p))
     .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
-    .filter((x) => x.d <= 12000).sort((a, b) => a.d - b.d).slice(0, 8);
+    .filter((x) => nearestVillageId(x.p.coord) === poi.id && x.d <= 15000)
+    .sort((a, b) => a.d - b.d).slice(0, 10);
   const services = (typeof SERVICES !== "undefined" ? SERVICES : [])
     .filter((s) => s.kind === "boende" || s.kind === "mat")
     .map((s) => ({ s, d: distMeters(poi.coord, [s.lat, s.lng]) }))
@@ -912,7 +944,11 @@ function renderVillageHub(poi) {
         <span class="vh-row-main"><span class="vh-row-name">${t("Visa byn på kartan")}</span></span></button>
     </div>`;
 
-  document.getElementById("vh-back").onclick = closeVillageHub;
+  document.getElementById("vh-back").onclick = (e) => { e.stopPropagation(); closeVillageHub(); };
+  if (hero0) {
+    const vhHero = document.querySelector("#vh-body .vh-hero");
+    if (vhHero) vhHero.onclick = () => openLightbox(bgUrl(vhHero));
+  }
   const rm = document.getElementById("vh-readmore");
   if (rm) rm.onclick = () => { document.querySelector("#vh-body .vh-more").hidden = false; rm.remove(); };
   document.querySelectorAll("#vh-body [data-poi]").forEach((el) => el.onclick = () => {
@@ -959,8 +995,9 @@ function villageAdd(poi) {
 function collectVillageRoutes(poi) {
   const out = [];
   for (const r of state.sharedRoutes) {
+    const start = r.start_lat != null ? [r.start_lat, r.start_lng] : null;
     const near = r.village_id === poi.id ||
-      (r.start_lat != null && distMeters(poi.coord, [r.start_lat, r.start_lng]) <= 12000);
+      (!r.village_id && start && nearestVillageId(start) === poi.id && distMeters(poi.coord, start) <= 15000);
     if (!near) continue;
     out.push({ key: "s:" + r.id, name: r.name, shared: true, row: r,
       sub: (r.distance_km ? r.distance_km.toFixed(1) + " km" : "GPX") + (r.ascent ? " · ↑" + r.ascent + " m" : "") });
@@ -968,7 +1005,7 @@ function collectVillageRoutes(poi) {
   const local = (typeof Routes !== "undefined" ? Routes.list() : []);
   for (const lr of local) {
     const p0 = lr.points && lr.points[0];
-    if (!p0 || distMeters(poi.coord, [p0.lat, p0.lng]) > 12000) continue;
+    if (!p0 || nearestVillageId([p0.lat, p0.lng]) !== poi.id || distMeters(poi.coord, [p0.lat, p0.lng]) > 15000) continue;
     out.push({ key: "l:" + lr.id, name: lr.name, shared: false, row: lr,
       sub: (lr.stats ? lr.stats.distanceKm.toFixed(1) + " km" : "GPX") + (lr.stats && lr.stats.ascent ? " · ↑" + lr.stats.ascent + " m" : "") });
   }
@@ -1242,6 +1279,9 @@ function wireControls() {
   document.getElementById("add-photo-clear").addEventListener("click", clearPhoto);
 
   document.getElementById("place-close").addEventListener("click", closePlaceSheet);
+  document.getElementById("lightbox").addEventListener("click", (e) => {
+    if (e.target.id === "lightbox" || e.target.id === "lightbox-close") closeLightbox();
+  });
   document.getElementById("pe-cancel").addEventListener("click", () => closeSheet("place-edit"));
   document.getElementById("pe-photo").addEventListener("change", handlePlacePhoto);
   document.getElementById("sp-photo").addEventListener("change", handleBgPhoto);

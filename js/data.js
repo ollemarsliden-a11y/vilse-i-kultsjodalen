@@ -67,7 +67,7 @@ const SEED_POIS = [
       ["Kyrka", "1959"],
     ],
     image: "images/saxnas.webp",
-    imageCredit: "Foto: Skogsfrun / Wikimedia Commons (CC BY-SA 4.0)",
+    imageCredit: "Foto: Skogsfrun / Wikimedia Commons (CC BY-SA 3.0)",
     source: "Wikipedia, Visit Vilhelmina",
   },
   {
