@@ -43,7 +43,8 @@ const SEED_POIS = [
       ["Sameförening", "1904"],
       ["Skydd", "Kulturreservat 2014"],
     ],
-    image: "",
+    image: "images/fatmomakke.webp",
+    imageCredit: "Foto: Moralist / Wikimedia Commons (CC BY-SA 4.0)",
     source: "Länsstyrelsen Västerbotten, Wikipedia",
   },
   {
@@ -65,7 +66,8 @@ const SEED_POIS = [
       ["Invånare", "~130"],
       ["Kyrka", "1959"],
     ],
-    image: "images/summer-valley.webp",
+    image: "images/saxnas.webp",
+    imageCredit: "Foto: Skogsfrun / Wikimedia Commons (CC BY-SA 4.0)",
     source: "Wikipedia, Visit Vilhelmina",
   },
   {
@@ -85,8 +87,8 @@ const SEED_POIS = [
       ["Vattendrag", "Kultsjöån"],
       ["Läge", "Vid Vildmarksvägen"],
     ],
-    image: "images/waterfall-summer.webp",
-    ambiance: true,
+    image: "images/trappstegsforsen.webp",
+    imageCredit: "Foto: Lavallen / Wikimedia Commons (Public domain)",
     source: "OpenStreetMap, Kultsjöåns FVO",
   },
   {
@@ -109,7 +111,8 @@ const SEED_POIS = [
       ["Naturreservat", "1988"],
       ["Areal", "~114 000 ha"],
     ],
-    image: "images/marsfjallet-massif.webp",
+    image: "images/marsfjallet.webp",
+    imageCredit: "Foto: Lövberg / Wikimedia Commons (CC0)",
     source: "Wikipedia, Länsstyrelsen",
   },
   {
@@ -129,7 +132,7 @@ const SEED_POIS = [
       ["Läge", "Kultsjöns östra del"],
       ["Nära", "Marsfjället"],
     ],
-    image: "images/autumn-trail.webp",
+    image: "",
     source: "Vilhelmina museum, OpenStreetMap",
   },
   {
@@ -150,7 +153,8 @@ const SEED_POIS = [
       ["Förste nybyggare", "1820-tal"],
       ["Nomadskola", "1926–1950"],
     ],
-    image: "",
+    image: "images/klimpfjall.webp",
+    imageCredit: "Foto: Lövberg / Wikimedia Commons (CC0)",
     source: "Visit Vilhelmina",
   },
   {
@@ -173,7 +177,8 @@ const SEED_POIS = [
       ["Gruva", "1969–1989"],
       ["Öppen", "ca juni–okt"],
     ],
-    image: "images/reindeer-stekenjokk.webp",
+    image: "images/stekenjokk.webp",
+    imageCredit: "Foto: Sprucecopse / Wikimedia Commons (CC BY-SA 4.0)",
     source: "Wikipedia",
   },
   {
@@ -235,7 +240,8 @@ const SEED_POIS = [
       ["Viste", "1831–32"],
       ["Läge", "Övre Vojmådalen"],
     ],
-    image: "",
+    image: "images/dikanas.webp",
+    imageCredit: "Foto: Riksantikvarieämbetet (KMB) / Wikimedia Commons (Public domain)",
     source: "dikanas.eu, Vilhelmina museum",
   },
   {
@@ -256,7 +262,8 @@ const SEED_POIS = [
       ["Höjd", "542 m ö.h."],
       ["Strandlinje", "129 km"],
     ],
-    image: "images/kultsjon-winter.webp",
+    image: "images/kultsjon.webp",
+    imageCredit: "Foto: Lövberg / Wikimedia Commons (CC0)",
     source: "Wikipedia",
   },
 

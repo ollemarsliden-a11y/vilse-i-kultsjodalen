@@ -59,20 +59,6 @@ const SERVICE_SUB = {
 };
 
 const OVERLAYS = {
-  service: {
-    label: "Boende & service",
-    icon: "boende",
-    sub: "Hotell, stugor, camping, mat, affärer & mackar (OpenStreetMap)",
-    toast: "Laddar boende & service…",
-    create: () => buildServiceLayer(),
-  },
-  leder: {
-    label: "Vandringsleder",
-    icon: "led",
-    sub: "Utmärkta leder från OpenStreetMap — tryck på en led för namn",
-    toast: "Laddar vandringsleder…",
-    create: () => buildTrailLayer(),
-  },
   statligaleder: {
     label: "Statliga leder",
     icon: "led",
@@ -83,6 +69,24 @@ const OVERLAYS = {
         layers: "LED", format: "image/png", transparent: true, version: "1.3.0",
         attribution: "Leder © Naturvårdsverket / Länsstyrelserna",
       }),
+  },
+  waymarked: {
+    label: "Fler leder & stigar",
+    icon: "led",
+    sub: "Alla markerade leder & stigar från OpenStreetMap (Waymarked Trails)",
+    toast: "Laddar leder & stigar…",
+    create: () =>
+      L.tileLayer("https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png", {
+        maxNativeZoom: 18, maxZoom: 18, opacity: 0.9,
+        attribution: "Leder © waymarkedtrails.org, © OpenStreetMap",
+      }),
+  },
+  service: {
+    label: "Boende & service",
+    icon: "boende",
+    sub: "Hotell, stugor, camping, mat, affärer & mackar (OpenStreetMap)",
+    toast: "Laddar boende & service…",
+    create: () => buildServiceLayer(),
   },
   fornlamningar: {
     label: "Fornlämningar",
@@ -171,6 +175,12 @@ const state = {
   pendingCoord: null,
   pendingImage: null,
   weatherTimer: null,
+  overrides: {},      // place_id -> patch (admin-textändringar)
+  placeImages: {},    // place_id -> [bildrader]
+  editingPlaceId: null,
+  hubVillageId: null, // öppen byhub
+  sharedRoutes: [],   // delade GPX-turer (Supabase)
+  routeVillageId: null, // by som importerad rutt ska delas till
 };
 
 // ===================================================================
@@ -193,10 +203,11 @@ async function init() {
   L.control.attribution({ position: "bottomleft", prefix: false }).addTo(state.map);
   L.control.zoom({ position: "bottomright" }).addTo(state.map);
 
-  setBasemap("enkel");
+  setBasemap("topo");
   for (const key of Object.keys(CATEGORIES)) {
     state.layers[key] = L.layerGroup().addTo(state.map);
   }
+  await loadPlaceData(); // admins textändringar + bilder ovanpå grunddatan
   SEED_POIS.forEach(addPoiMarker);
   if (typeof PEAKS !== "undefined") PEAKS.forEach(addPoiMarker);
   const userPois = await Storage.getUserPois();
@@ -255,6 +266,188 @@ function wireLang() {
   });
 }
 
+// ===================================================================
+//  Admin-redigering: läs in ändringar + bilder ovanpå grunddatan
+// ===================================================================
+async function loadPlaceData() {
+  if (Storage.mode !== "supabase") return;
+  try {
+    const [overrides, images, routes] = await Promise.all([
+      Storage.getPlaceOverrides(), Storage.getPlaceImages(),
+      Storage.getSharedRoutes ? Storage.getSharedRoutes() : [],
+    ]);
+    state.overrides = {};
+    for (const o of overrides) state.overrides[o.place_id] = o.patch || {};
+    state.placeImages = {};
+    for (const im of images) (state.placeImages[im.place_id] ||= []).push(im);
+    state.sharedRoutes = routes || [];
+    applyOverridesToSeed();
+  } catch (e) { console.warn("Kunde inte läsa platsdata:", e.message); }
+}
+
+// Lägg admins textändringar ovanpå grundplatserna (muterar SEED_POIS).
+function applyOverridesToSeed() {
+  for (const poi of SEED_POIS) {
+    const patch = state.overrides[poi.id];
+    if (patch) for (const k of Object.keys(patch)) poi[k] = patch[k];
+  }
+}
+
+// Bilder att visa för en plats: grundbild (om ej dold) + synliga gallerибilder.
+function galleryFor(poi) {
+  const patch = state.overrides[poi.id] || {};
+  const imgs = [];
+  if (poi.image && !patch.hideSeedImage)
+    imgs.push({ url: poi.image, credit: poi.imageCredit, seed: true });
+  for (const r of (state.placeImages[poi.id] || []))
+    if (!r.hidden) imgs.push({ url: r.url, caption: r.caption, id: r.id });
+  return imgs;
+}
+
+function canAdminEdit(poi) {
+  return Storage.auth && Storage.auth.isAdmin && Storage.auth.isAdmin() && poi && !poi.userAdded;
+}
+
+// ---- Redigeringsark (text + bildhanterare) ----
+function factsToText(facts) {
+  return (facts || []).map(([k, v]) => `${k}: ${v}`).join("\n");
+}
+function textToFacts(txt) {
+  return txt.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
+    const i = l.indexOf(":");
+    return i < 0 ? [l, ""] : [l.slice(0, i).trim(), l.slice(i + 1).trim()];
+  });
+}
+function lodgingToText(list) {
+  return (list || []).map((l) => [l.name, l.url, l.note].filter(Boolean).join(" | ")).join("\n");
+}
+function textToLodging(txt) {
+  return txt.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
+    const [name, url, note] = l.split("|").map((s) => (s || "").trim());
+    return { name: name || "Boende", url: url || "", note: note || "" };
+  });
+}
+
+function openPlaceEdit(poi) {
+  state.editingPlaceId = poi.id;
+  document.getElementById("pe-title").textContent = t("Redigera plats") + ": " + (poi.name || "");
+  renderPlaceEdit(poi);
+  openSheet("place-edit");
+}
+
+function renderPlaceEdit(poi) {
+  const body = document.getElementById("pe-body");
+  const patch = state.overrides[poi.id] || {};
+  const imgList = [];
+  if (poi.image) imgList.push({ seed: true, url: poi.image, hidden: !!patch.hideSeedImage });
+  for (const r of (state.placeImages[poi.id] || [])) imgList.push({ id: r.id, url: r.url, hidden: r.hidden });
+
+  body.innerHTML = `
+    <label><span>${t("Namn")}</span>
+      <input id="pe-name" type="text" value="${escapeHtml(poi.name || "")}" /></label>
+    <label><span>${t("Kort beskrivning")}</span>
+      <input id="pe-blurb" type="text" value="${escapeHtml(poi.blurb || "")}" /></label>
+    <label><span>${t("Beskrivning")}</span>
+      <textarea id="pe-desc" rows="4">${escapeHtml(poi.description || "")}</textarea></label>
+    <label><span>${t("Historia")}</span>
+      <textarea id="pe-history" rows="5">${escapeHtml(poi.history || "")}</textarea></label>
+    <label><span>${t("Fakta (en per rad: Rubrik: värde)")}</span>
+      <textarea id="pe-facts" rows="4">${escapeHtml(factsToText(poi.facts))}</textarea></label>
+    <label><span>${t("Boende & länkar (en per rad: Namn | länk | valfri notis)")}</span>
+      <textarea id="pe-lodging" rows="3" placeholder="Saxnäsgården | https://saxnas.se | Hotell & restaurang">${escapeHtml(lodgingToText(patch.lodging))}</textarea></label>
+    <div class="sheet-actions"><button id="pe-save" class="btn-primary">${t("Spara ändringar")}</button></div>
+
+    <h3 class="panel-subhead">${t("Bilder")}</h3>
+    <button type="button" id="pe-add-photo" class="photo-btn">${t("📷 Ladda upp bild")}</button>
+    <div class="pe-images">${imgList.map(imgManagerRow).join("") || `<p class="panel-hint">${t("Inga bilder än.")}</p>`}</div>
+    <p class="panel-hint">${t("Dölj eller ta bort bilder som inte passar. Bilder du laddar upp måste du ha rätt till.")}</p>`;
+
+  document.getElementById("pe-save").onclick = () => savePlaceEdit(poi);
+  document.getElementById("pe-add-photo").onclick = () => document.getElementById("pe-photo").click();
+  wireImageManager(poi);
+}
+
+function imgManagerRow(im) {
+  return `<div class="pe-img${im.hidden ? " is-hidden" : ""}" data-id="${im.id || ""}" data-seed="${im.seed ? "1" : ""}">
+    <div class="pe-img-thumb" style="background-image:url('${im.url}')">${im.seed ? `<span class="pe-img-tag">${t("Grundbild")}</span>` : ""}</div>
+    <div class="pe-img-actions">
+      <button data-act="hide">${im.hidden ? t("Visa") : t("Dölj")}</button>
+      ${im.seed ? "" : `<button class="pe-del" data-act="del">${t("Ta bort")}</button>`}
+    </div>
+  </div>`;
+}
+
+function wireImageManager(poi) {
+  document.querySelectorAll("#pe-body .pe-img").forEach((el) => {
+    const id = el.dataset.id, seed = el.dataset.seed === "1";
+    el.querySelector('[data-act="hide"]').onclick = async () => {
+      try {
+        if (seed) {
+          const patch = { ...(state.overrides[poi.id] || {}) };
+          patch.hideSeedImage = !patch.hideSeedImage;
+          await Storage.savePlaceOverride(poi.id, patch);
+        } else {
+          const cur = (state.placeImages[poi.id] || []).find((r) => r.id === id);
+          await Storage.setPlaceImageHidden(id, !(cur && cur.hidden));
+        }
+        await refreshAfterEdit(poi, true);
+      } catch (e) { toast("Kunde inte ändra: " + e.message); }
+    };
+    const del = el.querySelector('[data-act="del"]');
+    if (del) del.onclick = async () => {
+      if (!confirm(t("Ta bort bilden?"))) return;
+      try { await Storage.deletePlaceImage(id); await refreshAfterEdit(poi, true); }
+      catch (e) { toast("Kunde inte ta bort: " + e.message); }
+    };
+  });
+}
+
+async function savePlaceEdit(poi) {
+  const val = (id) => document.getElementById(id).value;
+  const patch = { ...(state.overrides[poi.id] || {}) };
+  patch.name = val("pe-name").trim() || poi.name;
+  patch.blurb = val("pe-blurb").trim();
+  patch.description = val("pe-desc").trim();
+  patch.history = val("pe-history").trim();
+  patch.facts = textToFacts(val("pe-facts"));
+  patch.lodging = textToLodging(val("pe-lodging"));
+  try {
+    await Storage.savePlaceOverride(poi.id, patch);
+    await refreshAfterEdit(poi, false);
+    refreshHubIfOpen();
+    toast("Ändringar sparade.");
+  } catch (e) { toast("Kunde inte spara: " + e.message); }
+}
+
+function handlePlacePhoto(e) {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file || !state.editingPlaceId) return;
+  const poi = SEED_POIS.find((p) => p.id === state.editingPlaceId);
+  if (!poi) return;
+  toast("Förbereder foto…");
+  compressImage(file).then(async (dataUrl) => {
+    try {
+      toast("Laddar upp foto…");
+      const url = await Storage.uploadImage(dataUrl);
+      await Storage.addPlaceImage(poi.id, url, null);
+      await refreshAfterEdit(poi, true);
+      refreshHubIfOpen();
+      toast("Bild tillagd.");
+    } catch (err) { toast("Kunde inte ladda upp: " + err.message); }
+  }).catch(() => toast("Kunde inte läsa bilden."));
+}
+
+// Ladda om platsdata och uppdatera vyer efter en admin-ändring.
+async function refreshAfterEdit(poi, keepEditOpen) {
+  await loadPlaceData();
+  const fresh = SEED_POIS.find((p) => p.id === poi.id) || poi;
+  buildStartPage();
+  if (document.getElementById("place-sheet").classList.contains("open"))
+    openPlaceSheet(fresh, state.markers[fresh.id]);
+  if (keepEditOpen) renderPlaceEdit(fresh);
+}
+
 // Slå på ett datalager (samma som att bocka i det i lagerpanelen).
 function enableOverlay(key) {
   const cb = document.querySelector(`input[data-overlay="${key}"]`);
@@ -287,7 +480,7 @@ function addPoiMarker(poi) {
   const cat = poi.category in CATEGORIES ? poi.category : "sevart";
   const marker = L.marker(poi.coord, { icon: markerIcon(cat) });
   marker.poi = poi;
-  marker.on("click", () => openPlaceSheet(poi, marker));
+  marker.on("click", () => openPlaceOrHub(poi, marker));
   (state.layers[cat] || state.layers.sevart).addLayer(marker);
   state.markers[poi.id] = marker;
   return marker;
@@ -308,10 +501,16 @@ function openPlaceSheet(poi, marker) {
   const sheet = document.getElementById("place-sheet");
   const body = document.getElementById("place-body");
 
-  const header = poi.image
-    ? `<div class="ps-hero" style="background-image:url('${poi.image}')">
-         <span class="ps-hero-tag">${t(poi.ambiance ? "Stämningsbild" : "Foto: Kultsjödalen")}</span>
-       </div>`
+  const imgs = galleryFor(poi);
+  const heroTag = (im) => escapeHtml(im.credit || im.caption || t("Foto: Kultsjödalen"));
+  const header = imgs.length
+    ? `<div class="ps-hero" id="ps-hero" style="background-image:url('${imgs[0].url}')">
+         <span class="ps-hero-tag" id="ps-hero-tag">${heroTag(imgs[0])}</span>
+       </div>
+       ${imgs.length > 1
+         ? `<div class="ps-gallery">${imgs.map((im, i) =>
+             `<button class="ps-thumb${i === 0 ? " active" : ""}" data-idx="${i}" style="background-image:url('${im.url}')"></button>`).join("")}</div>`
+         : ""}`
     : `<div class="ps-hero ps-hero-plain" style="--c:${cat.color}">
          <span class="ps-hero-glyph">${iconSvg(poi.category, "rgba(255,255,255,.9)", 46)}</span>
        </div>`;
@@ -361,6 +560,7 @@ function openPlaceSheet(poi, marker) {
         <button class="ps-btn ps-btn-ghost" id="ps-center">${t("Visa på kartan")}</button>
       </div>
       ${ownerCtl}
+      ${canAdminEdit(poi) ? `<button class="ps-btn ps-admin-edit" id="ps-place-edit">${t("✏️ Redigera plats")}</button>` : ""}
       ${community ? `<div class="ps-comments" id="ps-comments"></div>` : ""}
       ${poi.source ? `<div class="ps-src">${t("Källa")}: ${escapeHtml(poi.source)}</div>` : ""}
       ${LANG === "en" && (poi.description || poi.history || poi.blurb)
@@ -396,6 +596,17 @@ function openPlaceSheet(poi, marker) {
   if (editBtn) editBtn.onclick = () => startEditFlow(poi);
   const reportBtnEl = document.getElementById("ps-report");
   if (reportBtnEl) reportBtnEl.onclick = () => reportTip(poi.id);
+
+  // Galleri-miniatyrer byter hero-bild
+  const thumbs = [...document.querySelectorAll("#place-sheet .ps-thumb")];
+  thumbs.forEach((tb) => tb.onclick = () => {
+    const im = imgs[+tb.dataset.idx];
+    document.getElementById("ps-hero").style.backgroundImage = `url('${im.url}')`;
+    document.getElementById("ps-hero-tag").textContent = im.credit || im.caption || t("Foto: Kultsjödalen");
+    thumbs.forEach((x) => x.classList.toggle("active", x === tb));
+  });
+  const placeEditBtn = document.getElementById("ps-place-edit");
+  if (placeEditBtn) placeEditBtn.onclick = () => openPlaceEdit(poi);
 
   if (community) { loadReactions(poi.id); loadComments(poi.id); }
 
@@ -480,8 +691,231 @@ function buildStartPage() {
   document.querySelectorAll("#view-start [data-poi]").forEach((el) =>
     el.addEventListener("click", () => {
       const poi = byId[el.dataset.poi];
-      if (poi) openPlaceSheet(poi, state.markers[poi.id]);
+      if (poi) openPlaceOrHub(poi, state.markers[poi.id]);
     }));
+}
+
+// ===================================================================
+//  Byhub (helskärm per by)
+// ===================================================================
+function isVillage(poi) { return poi && VILLAGE_IDS.includes(poi.id); }
+function openPlaceOrHub(poi, marker) {
+  if (isVillage(poi)) openVillageHub(poi); else openPlaceSheet(poi, marker);
+}
+function distMeters(a, b) {
+  try { return state.map.distance(L.latLng(a[0], a[1]), L.latLng(b[0], b[1])); }
+  catch { return Infinity; }
+}
+function fmtDistShort(m) { return m < 1000 ? Math.round(m) + " m" : (m / 1000).toFixed(1) + " km"; }
+
+function openVillageHub(poi) {
+  state.hubVillageId = poi.id;
+  renderVillageHub(poi);
+  document.querySelectorAll(".view").forEach((v) => v.classList.toggle("active", v.id === "village-hub"));
+  document.getElementById("village-hub").scrollTop = 0;
+}
+function closeVillageHub() {
+  document.getElementById("village-hub").classList.remove("active");
+  document.getElementById("view-" + (document.body.dataset.view || "start"))?.classList.add("active");
+  state.hubVillageId = null;
+}
+function refreshHubIfOpen() {
+  if (state.hubVillageId && document.getElementById("village-hub").classList.contains("active")) {
+    const poi = SEED_POIS.find((p) => p.id === state.hubVillageId);
+    if (poi) renderVillageHub(poi);
+  }
+}
+
+function renderVillageHub(poi) {
+  const cat = CATEGORIES[poi.category] || CATEGORIES.sevart;
+  const imgs = galleryFor(poi);
+  const hero0 = imgs[0];
+  const pool = [...SEED_POIS, ...(typeof PEAKS !== "undefined" ? PEAKS : [])];
+
+  const todo = pool.filter((p) => p.id !== poi.id && !isVillage(p))
+    .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
+    .filter((x) => x.d <= 12000).sort((a, b) => a.d - b.d).slice(0, 8);
+  const services = (typeof SERVICES !== "undefined" ? SERVICES : [])
+    .filter((s) => s.kind === "boende" || s.kind === "mat")
+    .map((s) => ({ s, d: distMeters(poi.coord, [s.lat, s.lng]) }))
+    .filter((x) => x.d <= 9000).sort((a, b) => a.d - b.d).slice(0, 6);
+  const tips = Object.values(state.markers).map((m) => m.poi).filter((p) => p.userAdded)
+    .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
+    .filter((x) => x.d <= 9000).sort((a, b) => a.d - b.d).slice(0, 8);
+
+  const patch = state.overrides[poi.id] || {};
+  const lodging = Array.isArray(patch.lodging) ? patch.lodging : [];
+  const routes = collectVillageRoutes(poi);
+  const loggedIn = !!(Storage.auth && Storage.auth.userId && Storage.auth.userId());
+
+  const poiRow = ({ p, d }) => {
+    const c = CATEGORIES[p.category] || CATEGORIES.sevart;
+    return `<button class="vh-row" data-poi="${p.id}" style="--c:${c.color}">
+      <span class="vh-row-ic">${iconSvg(p.category, "currentColor", 20)}</span>
+      <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(p.name)}</span>
+        <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span>
+      <span class="vh-row-dist">${fmtDistShort(d)}</span></button>`;
+  };
+  const svcRow = ({ s, d }) => `<button class="vh-row" data-svc="${encodeURIComponent(s.website || "")}" style="--c:#e0872b">
+      <span class="vh-row-ic">${iconSvg(s.kind === "mat" ? "mat" : "boende", "currentColor", 20)}</span>
+      <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(s.name)}</span>
+        <span class="vh-row-sub">${escapeHtml(SERVICE_SUB[s.sub] || s.kind)}</span></span>
+      ${s.website ? `<span class="vh-row-link">${t("Boka ↗")}</span>` : `<span class="vh-row-dist">${fmtDistShort(d)}</span>`}</button>`;
+  const lodgeRow = (l) => `<a class="vh-row" href="${l.url ? encodeURI(l.url) : "#"}" target="_blank" rel="noopener" style="--c:#e0872b; text-decoration:none;">
+      <span class="vh-row-ic">${iconSvg("boende", "currentColor", 20)}</span>
+      <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(l.name || "Boende")}</span>
+        ${l.note ? `<span class="vh-row-sub">${escapeHtml(l.note)}</span>` : ""}</span>
+      ${l.url ? `<span class="vh-row-link">${t("Boka ↗")}</span>` : ""}</a>`;
+  const routeRow = (r) => `<button class="vh-row" data-route="${r.key}" style="--c:#d1495b">
+      <span class="vh-row-ic">${iconSvg("led", "currentColor", 20)}</span>
+      <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(r.name)}</span>
+        <span class="vh-row-sub">${r.sub}${r.shared ? "" : " · " + t("på din enhet")}</span></span>
+      <span class="vh-row-dist">GPX</span></button>`;
+
+  const heroTag = hero0 ? escapeHtml(hero0.credit || hero0.caption || "") : "";
+  const heroHtml = hero0
+    ? `<header class="vh-hero" style="background-image:url('${hero0.url}')">
+         <button class="vh-back" id="vh-back">${t("‹ Byar")}</button>
+         ${heroTag ? `<span class="vh-credit">${heroTag}</span>` : ""}
+         <div class="vh-hero-inner"><div class="vh-cat">${t(cat.label)}</div>
+           <h1 class="vh-name">${escapeHtml(poi.name)}</h1>
+           ${poi.blurb ? `<p class="vh-blurb">${escapeHtml(poi.blurb)}</p>` : ""}</div></header>`
+    : `<header class="vh-hero vh-plain" style="--c:${cat.color}">
+         <button class="vh-back" id="vh-back">${t("‹ Byar")}</button>
+         <div class="vh-hero-inner"><div class="vh-cat">${t(cat.label)}</div>
+           <h1 class="vh-name">${escapeHtml(poi.name)}</h1>
+           ${poi.blurb ? `<p class="vh-blurb">${escapeHtml(poi.blurb)}</p>` : ""}</div></header>`;
+  const thumbs = imgs.length > 1
+    ? `<div class="vh-thumbs">${imgs.map((im, i) => `<button class="ps-thumb${i === 0 ? " active" : ""}" data-idx="${i}" style="background-image:url('${im.url}')"></button>`).join("")}</div>` : "";
+
+  document.getElementById("vh-body").innerHTML = `
+    ${heroHtml}${thumbs}
+    <div class="vh-section">
+      ${poi.description ? `<div class="vh-about"><p>${escapeHtml(poi.description)}</p>
+        ${poi.history ? `<p class="vh-more" hidden>${escapeHtml(poi.history)}</p><button class="vh-readmore" id="vh-readmore">${t("Läs mer")}</button>` : ""}</div>` : ""}
+
+      <div class="vh-sec-head"><h3>${t("Att göra här")}</h3><span>${todo.length ? todo.length + " " + t("platser") : ""}</span></div>
+      ${todo.length ? todo.map(poiRow).join("") : `<p class="vh-empty">${t("Inga registrerade platser nära byn än.")}</p>`}
+
+      <div class="vh-sec-head"><h3>${t("Bo & äta")}</h3></div>
+      ${lodging.map(lodgeRow).join("")}
+      ${services.length ? services.map(svcRow).join("") : (lodging.length ? "" : `<p class="vh-empty">${t("Inget boende registrerat nära byn än.")}</p>`)}
+
+      <div class="vh-sec-head"><h3>${t("Turer från byn")}</h3></div>
+      ${routes.length ? routes.map(routeRow).join("") : `<p class="vh-empty">${t("Inga turer från byn än.")}</p>`}
+      <button class="vh-add vh-add-soft" id="vh-import-gpx">${iconSvg("led", "currentColor", 18)} ${t("Importera GPX-tur")}</button>
+
+      <div class="vh-sec-head"><h3>${t("Från besökare")}</h3></div>
+      ${tips.length ? tips.map(poiRow).join("") : `<p class="vh-empty">${t("Inga besökartips än — bli först!")}</p>`}
+      <button class="vh-add" id="vh-add">${iconSvg("smultron", "#fff", 18)} ${t("Lägg till tips vid byn")}</button>
+      ${loggedIn ? `<button class="vh-add vh-add-soft" id="vh-photo-btn">${iconSvg("sevart", "currentColor", 18)} ${t("Lägg till bild")}</button>` : ""}
+
+      <div class="vh-sec-head"><h3>${t("På kartan")}</h3></div>
+      <button class="vh-row" id="vh-map" style="--c:#2f6fb0">
+        <span class="vh-row-ic">${iconSvg("sevart", "currentColor", 20)}</span>
+        <span class="vh-row-main"><span class="vh-row-name">${t("Visa byn på kartan")}</span></span></button>
+    </div>`;
+
+  document.getElementById("vh-back").onclick = closeVillageHub;
+  const rm = document.getElementById("vh-readmore");
+  if (rm) rm.onclick = () => { document.querySelector("#vh-body .vh-more").hidden = false; rm.remove(); };
+  document.querySelectorAll("#vh-body [data-poi]").forEach((el) => el.onclick = () => {
+    const p = pool.find((x) => x.id === el.dataset.poi)
+      || Object.values(state.markers).map((m) => m.poi).find((x) => x.id === el.dataset.poi);
+    if (p) openPlaceSheet(p, state.markers[p.id]);
+  });
+  document.querySelectorAll("#vh-body [data-svc]").forEach((el) => el.onclick = () => {
+    const url = decodeURIComponent(el.dataset.svc);
+    if (url) window.open(url, "_blank", "noopener");
+  });
+  document.getElementById("vh-add").onclick = () => villageAdd(poi);
+  document.getElementById("vh-map").onclick = () => {
+    closeVillageHub(); showView("map");
+    state.map.setView(poi.coord, Math.max(state.map.getZoom(), 12));
+  };
+  document.querySelectorAll("#vh-body [data-route]").forEach((el) => el.onclick = () => {
+    const r = routes.find((x) => x.key === el.dataset.route);
+    if (r) showVillageRoute(r);
+  });
+  document.getElementById("vh-import-gpx").onclick = () => villageImportGpx(poi);
+  const vhPhoto = document.getElementById("vh-photo-btn");
+  if (vhPhoto) vhPhoto.onclick = () => { state.editingPlaceId = poi.id; document.getElementById("pe-photo").click(); };
+  const thumbEls = [...document.querySelectorAll("#vh-body .ps-thumb")];
+  thumbEls.forEach((tb) => tb.onclick = () => {
+    const im = imgs[+tb.dataset.idx];
+    document.querySelector("#vh-body .vh-hero").style.backgroundImage = `url('${im.url}')`;
+    thumbEls.forEach((x) => x.classList.toggle("active", x === tb));
+  });
+}
+
+function villageAdd(poi) {
+  if (!requireLogin()) return;
+  state.editingId = null;
+  state.pendingCoord = [poi.coord[0], poi.coord[1]];
+  state.pendingImage = null;
+  setAddFormMode(false);
+  document.getElementById("add-form").classList.add("open");
+  toast("Tipset placeras vid byn. Du kan flytta det på kartan sen.");
+}
+
+// Samla turer nära byn: delade (Supabase) + lokala (denna enhet).
+function collectVillageRoutes(poi) {
+  const out = [];
+  for (const r of state.sharedRoutes) {
+    const near = r.village_id === poi.id ||
+      (r.start_lat != null && distMeters(poi.coord, [r.start_lat, r.start_lng]) <= 12000);
+    if (!near) continue;
+    out.push({ key: "s:" + r.id, name: r.name, shared: true, row: r,
+      sub: (r.distance_km ? r.distance_km.toFixed(1) + " km" : "GPX") + (r.ascent ? " · ↑" + r.ascent + " m" : "") });
+  }
+  const local = (typeof Routes !== "undefined" ? Routes.list() : []);
+  for (const lr of local) {
+    const p0 = lr.points && lr.points[0];
+    if (!p0 || distMeters(poi.coord, [p0.lat, p0.lng]) > 12000) continue;
+    out.push({ key: "l:" + lr.id, name: lr.name, shared: false, row: lr,
+      sub: (lr.stats ? lr.stats.distanceKm.toFixed(1) + " km" : "GPX") + (lr.stats && lr.stats.ascent ? " · ↑" + lr.stats.ascent + " m" : "") });
+  }
+  return out;
+}
+
+function showVillageRoute(r) {
+  let route = r.row;
+  if (r.shared) {
+    route = Routes.parseGpx(r.row.gpx, r.row.name);
+    route.stats = Routes.computeStats(route.points);
+  }
+  if (!route.points || !route.points.length) return toast("Turen saknar spårdata.");
+  closeVillageHub();
+  showView("map");
+  if (state.routeLayer) state.map.removeLayer(state.routeLayer);
+  state.routeLayer = L.polyline(route.points.map((p) => [p.lat, p.lng]),
+    { color: "#d1495b", weight: 4, opacity: 0.95 }).addTo(state.map);
+  state.map.fitBounds(state.routeLayer.getBounds(), { padding: [50, 50] });
+  toast(route.name + (route.stats ? " · " + route.stats.distanceKm.toFixed(1) + " km" : ""));
+}
+
+function villageImportGpx(poi) {
+  state.routeVillageId = poi.id;
+  closeVillageHub();
+  showView("map");
+  document.getElementById("gpx-input").click();
+}
+
+async function shareRouteToVillage(route) {
+  const vid = state.routeVillageId;
+  if (!vid) return;
+  try {
+    const p0 = route.points[0];
+    await Storage.addSharedRoute({
+      village_id: vid, name: route.name, gpx: Routes.toGpx(route),
+      start_lat: p0 ? p0.lat : null, start_lng: p0 ? p0.lng : null,
+      distance_km: route.stats ? +route.stats.distanceKm.toFixed(2) : null,
+      ascent: route.stats ? route.stats.ascent : null,
+    });
+    await loadPlaceData();
+    state.routeVillageId = null;
+    toast("Turen delad till byn!");
+  } catch (e) { toast("Kunde inte dela: " + e.message); }
 }
 
 // ===================================================================
@@ -505,15 +939,22 @@ function infoPageEn(ic) {
     <div class="info-card">
       <h3>${ic("led")} Getting here</h3>
       <ul>
-        <li><b>Car:</b> The Wilderness Road (road 1067) runs through the valley — Vilhelmina–Saxnäs approx. 85 km. The stretch over Stekenjokk is closed in winter, approx. 15 Oct–6 Jun.</li>
-        <li><b>Air:</b> Vilhelmina airport, then continue by car.</li>
-        <li><b>Bus/train:</b> To Vilhelmina, then onward connection into the valley.</li>
+        <li><b>Car:</b> The Wilderness Road (road 1067) runs through the valley — Vilhelmina–Saxnäs approx. 85 km (about 1 hr 15 min). The stretch over Stekenjokk is closed in winter, approx. 15 Oct–6 Jun.</li>
+        <li><b>Air:</b> populAir flies South Lapland Airport (Vilhelmina) ↔ Stockholm Arlanda, Mon–Fri and Sundays; continue by car. <a href="https://www.populair.com/en/destinations/south-lapland-airport-vilhelmina/" target="_blank" rel="noopener">Flights & booking ↗</a></li>
+        <li><b>Bus:</b> Regional buses to Vilhelmina and into the valley — timetables at <a href="https://tabussen.nu/" target="_blank" rel="noopener">tabussen.nu ↗</a></li>
       </ul>
     </div>
 
     <div class="info-card">
       <h3>${ic("boende")} Services in the valley</h3>
-      <p>Accommodation, food, shops and fuel are marked on the map under the <b>Stay &amp; services</b> layer. The widest range is in Saxnäs.</p>
+      <p>Accommodation, food, shops and fuel are marked on the map under the <b>Stay &amp; services</b> layer. The widest range is in Saxnäs. The nearest health centre and pharmacy are in Vilhelmina.</p>
+      <p><b>Saxnäs recycling centre (ÅVC)</b> — Vilhelminavägen, approx. 1 km east of Saxnäs. Summer (1 Jun–21 Aug): Mon &amp; Wed 15:00–18:00, Fri 11:00–13:00. Hours vary off-season — <a href="https://www.vilhelmina.se/bygga-bo-och-miljo/avfall-och-atervinning/atervinningscentraler/" target="_blank" rel="noopener">check current hours ↗</a></p>
+    </div>
+
+    <div class="info-card">
+      <h3>${ic("led")} Tours &amp; GPX — at your own risk</h3>
+      <p>Trails, tour suggestions and GPX routes in the app are <b>tips, not guaranteed safe or up-to-date routes</b>. Weather, snow, ice and ground conditions change quickly in the mountains.</p>
+      <p>You are responsible for your own trip: plan for your own ability, bring proper equipment and judge the conditions on site. If you follow someone else's route or suggestion, you do so entirely at your own risk.</p>
     </div>
 
     <div class="info-card">
@@ -549,17 +990,22 @@ function infoPageSv(ic) {
     <div class="info-card">
       <h3>${ic("led")} Hitta hit</h3>
       <ul>
-        <li><b>Bil:</b> Vildmarksvägen (väg 1067) genom dalen — Vilhelmina–Saxnäs ca 85 km. Sträckan över Stekenjokk är vinterstängd ca 15 okt–6 jun.</li>
-        <li><b>Flyg:</b> Vilhelmina flygplats, därifrån bil vidare.</li>
-        <li><b>Buss/tåg:</b> Till Vilhelmina, sedan anslutning mot dalen.</li>
+        <li><b>Bil:</b> Vildmarksvägen (väg 1067) genom dalen — Vilhelmina–Saxnäs ca 85 km (dryg timme). Sträckan över Stekenjokk är vinterstängd ca 15 okt–6 jun.</li>
+        <li><b>Flyg:</b> populAir flyger South Lapland Airport (Vilhelmina) ↔ Stockholm Arlanda, mån–fre samt söndag; därifrån bil vidare. <a href="https://www.populair.com/destinationer/vilhelmina/" target="_blank" rel="noopener">Tidtabell &amp; bokning ↗</a></li>
+        <li><b>Buss:</b> Regionbuss till Vilhelmina och vidare in i dalen — tidtabeller på <a href="https://tabussen.nu/" target="_blank" rel="noopener">tabussen.nu ↗</a></li>
       </ul>
-      <p class="info-note">Olle: fyll gärna på med aktuella busstider/hållplatser om du vill ha med dem.</p>
     </div>
 
     <div class="info-card">
       <h3>${ic("boende")} Service i dalen</h3>
-      <p>Boende, mat, affär och drivmedel finns markerade i kartan under lagret <b>Boende &amp; service</b>. Störst utbud finns i Saxnäs.</p>
-      <p class="info-note">Olle: ange lokala uppgifter (vårdcentral, närmaste apotek, återvinning/ÅVC, öppettider) så lägger jag in dem här.</p>
+      <p>Boende, mat, affär och drivmedel finns markerade i kartan under lagret <b>Boende &amp; service</b>. Störst utbud finns i Saxnäs. Närmaste vårdcentral och apotek finns i Vilhelmina.</p>
+      <p><b>Saxnäs återvinningscentral (ÅVC)</b> — Vilhelminavägen, ca 1 km öster om Saxnäs. Sommar (1 jun–21 aug): mån &amp; ons 15.00–18.00, fre 11.00–13.00. Tiderna ändras under övrig tid på året — <a href="https://www.vilhelmina.se/bygga-bo-och-miljo/avfall-och-atervinning/atervinningscentraler/" target="_blank" rel="noopener">se aktuella tider ↗</a></p>
+    </div>
+
+    <div class="info-card">
+      <h3>${ic("led")} Turer &amp; GPX — på egen risk</h3>
+      <p>Leder, turförslag och GPX-rutter i appen är <b>tips — inte garanterat säkra eller uppdaterade leder</b>. Väder, snö, is och markförhållanden ändras snabbt i fjället.</p>
+      <p>Du ansvarar själv för din tur: planera efter din egen förmåga, ta med rätt utrustning och bedöm förhållandena på plats. Följer du någon annans rutt eller förslag gör du det helt på eget ansvar.</p>
     </div>
 
     <div class="info-card">
@@ -578,7 +1024,6 @@ function infoPageSv(ic) {
     <div class="info-card">
       <h3>${ic("fiske")} Fiske</h3>
       <p>Fiskekort krävs i Kultsjön, Kultsjöån och de flesta fjällvatten. Kultsjöån är känd för sitt rödingfiske.</p>
-      <p class="info-note">Olle: vill du länka till iFiske/fiskekortsförsäljning för området lägger jag in det.</p>
     </div>
 
     <p class="info-foot">Allmän fjäll- och säkerhetsinfo bygger på Fjällsäkerhetsrådet och Naturvårdsverket.</p>`;
@@ -613,7 +1058,7 @@ function buildBasemapButtons() {
   for (const [key, b] of Object.entries(BASEMAPS)) {
     if (b.requiresToken && !CONFIG.LM_TOKEN) continue; // dölj tills token finns
     const btn = document.createElement("button");
-    btn.className = "seg-btn" + (key === "enkel" ? " active" : "");
+    btn.className = "seg-btn" + (key === "topo" ? " active" : "");
     btn.dataset.key = key;
     btn.textContent = t(b.label);
     btn.addEventListener("click", () => setBasemap(key));
@@ -676,6 +1121,8 @@ function wireControls() {
   document.getElementById("add-photo-clear").addEventListener("click", clearPhoto);
 
   document.getElementById("place-close").addEventListener("click", closePlaceSheet);
+  document.getElementById("pe-cancel").addEventListener("click", () => closeSheet("place-edit"));
+  document.getElementById("pe-photo").addEventListener("change", handlePlacePhoto);
 
   document.querySelectorAll("[data-close]").forEach((el) =>
     el.addEventListener("click", () => togglePanel(el.dataset.close, false)));
@@ -1180,6 +1627,7 @@ async function saveNewPoi() {
       name, category, description, season, image: image || "", coord: state.pendingCoord,
     });
     addPoiMarker(saved);
+    refreshHubIfOpen();
     closeAddForm();
     toast(Storage.mode === "supabase" ? "Tips delat! Nu syns det för alla."
       : Storage.mode === "cloud" ? "Tips delat!" : "Tips sparat lokalt.");
@@ -1211,7 +1659,8 @@ function renderRoutesList() {
 
   body.innerHTML = `
     <button class="btn-primary" id="routes-import">${t("📥 Importera GPX-fil")}</button>
-    <div class="routes-list">${rows}</div>`;
+    <div class="routes-list">${rows}</div>
+    <p class="panel-hint">${t("Turer och GPX-rutter är tips — färd sker på egen risk. Se Info & fjällvett.")}</p>`;
   document.getElementById("routes-import").onclick = () => document.getElementById("gpx-input").click();
   body.querySelectorAll("[data-show]").forEach((b) =>
     b.addEventListener("click", () => {
@@ -1268,10 +1717,14 @@ function renderRouteDetail(route, unsaved) {
         ? `<button class="ps-btn" id="route-save">${t("Spara rutt")}</button>`
         : `<button class="ps-btn ps-danger" id="route-del">${t("Ta bort")}</button>`}
       <button class="ps-btn ps-btn-ghost" id="route-share">${t("Dela / exportera")}</button>
-    </div>`;
+    </div>
+    ${unsaved && state.routeVillageId && Storage.mode === "supabase" && Storage.auth.userId()
+      ? `<button class="ps-btn" id="route-village-share" style="width:100%;margin-top:2px">${t("Dela till byn")}</button>` : ""}`;
 
   document.getElementById("route-back").onclick = renderRoutesList;
   document.getElementById("route-share").onclick = () => shareRoute(route);
+  const rvs = document.getElementById("route-village-share");
+  if (rvs) rvs.onclick = () => shareRouteToVillage(route);
   const saveBtn = document.getElementById("route-save");
   if (saveBtn) saveBtn.onclick = () => {
     const name = prompt(t("Namn på rutten:"), route.name) || route.name;

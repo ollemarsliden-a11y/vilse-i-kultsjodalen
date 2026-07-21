@@ -13,7 +13,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=14" />
+  <link rel="stylesheet" href="css/styles.css?v=19" />
 </head>
 <body>
 
@@ -26,7 +26,7 @@
       <p class="splash-tagline"><span data-i18n="Upptäck dalen och byarna — leder, smultronställen,">Upptäck dalen och byarna — leder, smultronställen,</span><br><span data-i18n="fiske, kultur och fornlämningar på kartan.">fiske, kultur och fornlämningar på kartan.</span></p>
       <button id="splash-enter" class="splash-btn" data-i18n="Kom igång">Kom igång</button>
     </div>
-    <div class="splash-credit" data-i18n="Foto: Kultsjödalen">Foto: Kultsjödalen</div>
+    <div class="splash-credit">Foto: Lövberg / Wikimedia Commons (CC0)</div>
   </div>
 
   <!-- ============ VY: Upptäck (startsida) ============ -->
@@ -105,6 +105,11 @@
       <p class="start-sub" data-i18n="Praktiskt inför besöket och vett i fjällen.">Praktiskt inför besöket och vett i fjällen.</p>
     </header>
     <div id="info-body" class="start-body"></div>
+  </section>
+
+  <!-- ============ VY: Byhub (helskärm) ============ -->
+  <section id="village-hub" class="view village-hub">
+    <div id="vh-body"></div>
   </section>
 
   <!-- ============ Flikrad ============ -->
@@ -250,20 +255,30 @@
     <div id="admin-body"></div>
   </div>
 
+  <!-- Redigera plats (admin) -->
+  <div id="place-edit" class="sheet">
+    <div class="panel-head">
+      <h2 id="pe-title" data-i18n="Redigera plats">Redigera plats</h2>
+      <button id="pe-cancel" class="panel-close" aria-label="Stäng">✕</button>
+    </div>
+    <div id="pe-body"></div>
+  </div>
+  <input type="file" id="pe-photo" accept="image/*" hidden />
+
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=14"></script>
-  <script src="js/i18n.js?v=14"></script>
-  <script src="js/data.js?v=14"></script>
-  <script src="js/peaks.js?v=14"></script>
-  <script src="js/leder.js?v=14"></script>
-  <script src="js/services.js?v=14"></script>
-  <script src="js/routes.js?v=14"></script>
-  <script src="js/winter.js?v=14"></script>
-  <script src="js/icons.js?v=14"></script>
-  <script src="js/weather.js?v=14"></script>
-  <script src="js/storage.js?v=14"></script>
-  <script src="js/app.js?v=14"></script>
+  <script src="js/config.js?v=19"></script>
+  <script src="js/i18n.js?v=19"></script>
+  <script src="js/data.js?v=19"></script>
+  <script src="js/peaks.js?v=19"></script>
+  <script src="js/leder.js?v=19"></script>
+  <script src="js/services.js?v=19"></script>
+  <script src="js/routes.js?v=19"></script>
+  <script src="js/winter.js?v=19"></script>
+  <script src="js/icons.js?v=19"></script>
+  <script src="js/weather.js?v=19"></script>
+  <script src="js/storage.js?v=19"></script>
+  <script src="js/app.js?v=19"></script>
 </body>
 </html>

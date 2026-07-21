@@ -72,6 +72,10 @@ const I18N = {
     "Statliga leder": "State trails",
     "Officiella leder & anordningar i skyddade områden (Länsstyrelsen)":
       "Official trails & facilities in protected areas (County Board)",
+    "Fler leder & stigar": "More trails & paths",
+    "Alla markerade leder & stigar från OpenStreetMap (Waymarked Trails)":
+      "All marked trails & paths from OpenStreetMap (Waymarked Trails)",
+    "Laddar leder & stigar…": "Loading trails & paths…",
     "Fornlämningar": "Ancient remains",
     "Live från Riksantikvarieämbetet — tryck på en lämning för info":
       "Live from the Swedish National Heritage Board — tap a site for info",
@@ -127,6 +131,8 @@ const I18N = {
     "Inga sparade rutter än. Importera en GPX-fil från din klocka eller telefon — t.ex. vägen upp på en topp.":
       "No saved routes yet. Import a GPX file from your watch or phone — e.g. the way up a peak.",
     "‹ Alla rutter": "‹ All routes",
+    "Turer och GPX-rutter är tips — färd sker på egen risk. Se Info & fjällvett.":
+      "Tours and GPX routes are tips — travel at your own risk. See Info & mountain safety.",
     "Längd": "Distance",
     "Stigning": "Ascent",
     "Utför": "Descent",
@@ -151,6 +157,49 @@ const I18N = {
     "Logga ut": "Sign out",
     "Konto": "Account",
     "Moderering": "Moderation",
+
+    // Admin — redigera plats
+    "Redigera plats": "Edit place",
+    "✏️ Redigera plats": "✏️ Edit place",
+    "Kort beskrivning": "Short description",
+    "Fakta (en per rad: Rubrik: värde)": "Facts (one per line: Label: value)",
+    "Bilder": "Images",
+    "📷 Ladda upp bild": "📷 Upload image",
+    "Inga bilder än.": "No images yet.",
+    "Dölj eller ta bort bilder som inte passar. Bilder du laddar upp måste du ha rätt till.":
+      "Hide or remove images that don't fit. You must hold the rights to images you upload.",
+    "Grundbild": "Base image",
+
+    // Byhub
+    "‹ Byar": "‹ Villages",
+    "Att göra här": "Things to do",
+    "platser": "places",
+    "Inga registrerade platser nära byn än.": "No registered places near the village yet.",
+    "Bo & äta": "Stay & eat",
+    "Boka ↗": "Book ↗",
+    "Inget boende registrerat nära byn än.": "No accommodation registered near the village yet.",
+    "Från besökare": "From visitors",
+    "Inga besökartips än — bli först!": "No visitor tips yet — be the first!",
+    "Lägg till tips vid byn": "Add a tip at this village",
+    "På kartan": "On the map",
+    "Visa byn på kartan": "Show village on the map",
+    "Läs mer": "Read more",
+    "Tipset placeras vid byn. Du kan flytta det på kartan sen.":
+      "The tip is placed at the village. You can move it on the map later.",
+    "Turer från byn": "Tours from the village",
+    "Inga turer från byn än.": "No tours from the village yet.",
+    "Importera GPX-tur": "Import GPX tour",
+    "på din enhet": "on your device",
+    "Lägg till bild": "Add photo",
+    "Dela till byn": "Share to village",
+    "Turen delad till byn!": "Tour shared to the village!",
+    "Turen saknar spårdata.": "The tour has no track data.",
+    "Boende & länkar (en per rad: Namn | länk | valfri notis)":
+      "Lodging & links (one per line: Name | link | optional note)",
+    "Visa": "Show",
+    "Dölj": "Hide",
+    "Ta bort bilden?": "Remove this image?",
+    "Bild tillagd.": "Image added.",
 
     // Info & fjällvett
     "Info & fjällvett": "Info & mountain safety",

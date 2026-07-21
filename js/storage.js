@@ -193,6 +193,69 @@ const Storage = (() => {
         const { error } = await sb.from("vik_reports").update({ resolved: true }).eq("id", reportId);
         if (error) throw error;
       },
+
+      // -------- Admin-redigering av inbyggda platser (byar/sevärt) --------
+      // Textändringar per plats (patch = ändrade fält). Kräver places.sql.
+      async getPlaceOverrides() {
+        const { data, error } = await sb.from("vik_place_overrides").select("place_id,patch");
+        if (error) { console.warn("place_overrides:", error.message); return []; }
+        return data || [];
+      },
+      async savePlaceOverride(placeId, patch) {
+        if (!currentUser) throw new Error("Inte inloggad");
+        const { data, error } = await sb.from("vik_place_overrides")
+          .upsert({ place_id: placeId, patch, updated_at: new Date().toISOString(), updated_by: currentUser.id })
+          .select().single();
+        if (error) throw error;
+        return data;
+      },
+      // Bildgalleri per plats.
+      async getPlaceImages() {
+        const { data, error } = await sb.from("vik_place_images")
+          .select("id,place_id,url,caption,sort,hidden")
+          .order("sort", { ascending: true }).order("created_at", { ascending: true });
+        if (error) { console.warn("place_images:", error.message); return []; }
+        return data || [];
+      },
+      async addPlaceImage(placeId, url, caption) {
+        if (!currentUser) throw new Error("Inte inloggad");
+        const { data, error } = await sb.from("vik_place_images")
+          .insert({ place_id: placeId, url, caption: caption || null, created_by: currentUser.id })
+          .select().single();
+        if (error) throw error;
+        return data;
+      },
+      async setPlaceImageHidden(id, hidden) {
+        const { error } = await sb.from("vik_place_images").update({ hidden }).eq("id", id);
+        if (error) throw error;
+      },
+      async deletePlaceImage(id) {
+        const { error } = await sb.from("vik_place_images").delete().eq("id", id);
+        if (error) throw error;
+      },
+
+      // -------- Delade GPX-turer (vik_routes) --------
+      async getSharedRoutes() {
+        const { data, error } = await sb.from("vik_routes")
+          .select("id,village_id,name,gpx,start_lat,start_lng,distance_km,ascent,user_id")
+          .order("created_at", { ascending: false });
+        if (error) { console.warn("vik_routes:", error.message); return []; }
+        return data || [];
+      },
+      async addSharedRoute(r) {
+        if (!currentUser) throw new Error("Inte inloggad");
+        const { data, error } = await sb.from("vik_routes").insert({
+          user_id: currentUser.id, village_id: r.village_id || null, name: r.name,
+          gpx: r.gpx, start_lat: r.start_lat, start_lng: r.start_lng,
+          distance_km: r.distance_km, ascent: r.ascent,
+        }).select().single();
+        if (error) throw error;
+        return data;
+      },
+      async deleteSharedRoute(id) {
+        const { error } = await sb.from("vik_routes").delete().eq("id", id);
+        if (error) throw error;
+      },
     };
   }
 

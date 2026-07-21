@@ -142,7 +142,7 @@ button { font-family: inherit; }
 }
 .start-hero-bg {
   position: absolute; inset: 0; z-index: 0;
-  background: #14201a url("../images/summer-valley.webp") center/cover no-repeat;
+  background: #14201a url("../images/marsfjallet.webp") center/cover no-repeat;
 }
 .start-hero::after {
   content: ""; position: absolute; inset: 0; z-index: 1;
@@ -200,6 +200,78 @@ button { font-family: inherit; }
 .pc-name { font-weight: 750; font-size: 14.5px; letter-spacing: -.2px; }
 .pc-blurb { font-size: 12px; color: var(--ink-2); margin-top: 2px; line-height: 1.4; }
 .start-foot, .info-foot { font-size: 12px; color: var(--ink-2); text-align: center; margin: 22px 12px 4px; }
+
+/* ---- Byhub (helskärm) ---- */
+.village-hub {
+  z-index: 1400; background: var(--bg);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(24px + var(--tabbar-h));
+}
+.vh-hero {
+  position: relative; min-height: 210px;
+  background-size: cover; background-position: center; color: #fff;
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
+.vh-hero.vh-plain { background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 55%, #000)); }
+.vh-hero::after {
+  content: ""; position: absolute; inset: 0; z-index: 0;
+  background: linear-gradient(180deg, rgba(15,20,17,.15), rgba(15,20,17,.78));
+}
+.vh-back {
+  position: absolute; top: calc(12px + var(--safe-t)); left: 12px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer;
+  background: rgba(15,20,17,.5); color: #fff; font-size: 13px; font-weight: 600;
+  padding: 8px 13px 8px 10px; border-radius: 20px; backdrop-filter: blur(6px);
+}
+.vh-hero-inner { position: relative; z-index: 1; padding: 16px 18px; }
+.vh-cat { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #cfe3d8; }
+.vh-name { font-size: 27px; margin: 4px 0 4px; letter-spacing: -.5px; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+.vh-blurb { font-size: 14px; margin: 0; opacity: .95; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
+.vh-credit {
+  position: absolute; bottom: 8px; right: 12px; z-index: 1;
+  font-size: 10.5px; color: rgba(255,255,255,.8);
+  background: rgba(15,20,17,.5); padding: 3px 8px; border-radius: 6px;
+}
+.vh-thumbs {
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+  padding: 10px 18px 2px; background: var(--surface);
+}
+.vh-thumbs::-webkit-scrollbar { display: none; }
+.vh-thumbs .ps-thumb { width: 64px; height: 46px; }
+
+.vh-section { padding: 6px 16px 0; }
+.vh-section:first-of-type { padding-top: 16px; }
+.vh-sec-head { display: flex; align-items: baseline; justify-content: space-between; margin: 16px 4px 10px; }
+.vh-sec-head h3 { margin: 0; font-size: 17px; letter-spacing: -.3px; }
+.vh-sec-head span { font-size: 11.5px; color: var(--ink-2); }
+.vh-about p { font-size: 14.5px; line-height: 1.6; margin: 0 4px 8px; color: var(--ink); }
+.vh-readmore { border: none; background: none; color: var(--brand-2); font-weight: 650; font-size: 13.5px; cursor: pointer; padding: 2px 4px; }
+
+.vh-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 11px 12px; border: 1px solid var(--line); border-radius: 14px;
+  background: var(--surface); cursor: pointer; color: var(--ink); margin-bottom: 8px;
+  box-shadow: var(--shadow-s);
+}
+.vh-row:active { transform: scale(.98); }
+.vh-row-ic {
+  width: 38px; height: 38px; border-radius: 11px; flex: 0 0 auto;
+  display: grid; place-items: center; background: color-mix(in srgb, var(--c) 15%, var(--surface)); color: var(--c);
+}
+.vh-row-main { flex: 1; min-width: 0; }
+.vh-row-name { font-weight: 700; font-size: 14.5px; }
+.vh-row-sub { font-size: 12px; color: var(--ink-2); }
+.vh-row-dist { font-size: 11.5px; color: var(--ink-2); font-weight: 600; flex: 0 0 auto; }
+.vh-row-link { color: var(--accent); font-size: 12px; font-weight: 650; flex: 0 0 auto; }
+.vh-empty { font-size: 13px; color: var(--ink-2); margin: 0 4px 8px; }
+.vh-add {
+  width: 100%; margin: 8px 0 4px; padding: 13px; border: none; border-radius: 14px;
+  background: var(--brand); color: #fff; font-size: 14.5px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.vh-add:active { transform: scale(.98); }
+.vh-add-soft { background: var(--surface-2); color: var(--ink); border: 1.5px solid var(--line); }
+.vh-row-link { white-space: nowrap; }
 
 /* Info-sida */
 .info-hero { padding: calc(20px + var(--safe-t)) 20px 18px; background: var(--brand); color: #fff; }
@@ -293,6 +365,42 @@ body.picking::after {
   background: rgba(15,20,17,.72); color: #fff; font-size: 11px;
   padding: 4px 9px; border-radius: 6px;
 }
+/* Bildgalleri (miniatyrer under hero) */
+.ps-gallery {
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+  padding: 10px 18px 2px; margin-top: -4px;
+}
+.ps-gallery::-webkit-scrollbar { display: none; }
+.ps-thumb {
+  flex: 0 0 auto; width: 56px; height: 42px; border-radius: 9px; cursor: pointer;
+  background-size: cover; background-position: center; border: 2px solid transparent;
+  padding: 0;
+}
+.ps-thumb.active { border-color: var(--brand-2); }
+
+.ps-admin-edit { width: 100%; margin-top: 12px; background: var(--brand) !important; color: #fff !important; }
+
+/* Bildhanterare i redigeringsarket */
+.pe-images { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+.pe-img { display: flex; align-items: center; gap: 12px; }
+.pe-img.is-hidden { opacity: .5; }
+.pe-img-thumb {
+  width: 84px; height: 60px; flex: 0 0 auto; border-radius: 10px;
+  background-size: cover; background-position: center; position: relative;
+  border: 1px solid var(--line);
+}
+.pe-img-tag {
+  position: absolute; bottom: 3px; left: 3px; font-size: 9px; font-weight: 700;
+  background: rgba(15,20,17,.7); color: #fff; padding: 2px 5px; border-radius: 5px;
+}
+.pe-img-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.pe-img-actions button {
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 9px; padding: 7px 11px; font-size: 12.5px; font-weight: 650; cursor: pointer;
+}
+.pe-img-actions .pe-del { color: #d1495b; border-color: color-mix(in srgb, #d1495b 40%, var(--line)); }
+#place-edit label span { display: block; }
+
 .ps-content { padding: 16px 18px 4px; }
 .ps-cat {
   display: inline-flex; align-items: center; gap: 6px;
@@ -512,7 +620,7 @@ svg.elev { width: 100%; height: 90px; display: block; }
 .splash.hide { opacity: 0; pointer-events: none; }
 .splash-bg {
   position: absolute; inset: 0; z-index: -2;
-  background: #14201a url("../images/kultsjon-winter.webp") center/cover no-repeat;
+  background: #14201a url("../images/kultsjon.webp") center/cover no-repeat;
   animation: splashZoom 16s ease-out forwards;
 }
 .splash::after {
