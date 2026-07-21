@@ -182,6 +182,7 @@ const state = {
   hubVillageId: null, // öppen byhub
   sharedRoutes: [],   // delade GPX-turer (Supabase)
   routeVillageId: null, // by som importerad rutt ska delas till
+  bgTarget: null,     // vilken bakgrund admin byter (_startpage / _splash)
 };
 
 // ===================================================================
@@ -745,31 +746,46 @@ function buildStartPage() {
 // Startsidans bakgrund (admin kan byta). Lagras som vik_place_images med
 // reserverat place_id "_startpage" — senaste synliga bilden används.
 const START_BG_ID = "_startpage";
+const SPLASH_BG_ID = "_splash";
+function isAdminNow() { return !!(Storage.auth && Storage.auth.isAdmin && Storage.auth.isAdmin()); }
+
 function applyStartHero() {
   const bg = document.querySelector("#view-start .start-hero-bg");
   const imgs = (state.placeImages[START_BG_ID] || []).filter((r) => !r.hidden);
   if (bg && imgs.length) bg.style.backgroundImage = `url('${imgs[imgs.length - 1].url}')`;
-  const btn = document.getElementById("start-bg-btn");
-  if (btn) btn.hidden = !(Storage.auth && Storage.auth.isAdmin && Storage.auth.isAdmin());
+  const admin = isAdminNow();
+  const b1 = document.getElementById("start-bg-btn");
+  const b2 = document.getElementById("splash-bg-btn");
+  if (b1) b1.hidden = !admin;
+  if (b2) b2.hidden = !admin;
+  applySplashBg();
 }
 
-function handleStartBgPhoto(e) {
+function applySplashBg() {
+  const bg = document.querySelector("#splash .splash-bg");
+  const imgs = (state.placeImages[SPLASH_BG_ID] || []).filter((r) => !r.hidden);
+  if (bg && imgs.length) bg.style.backgroundImage = `url('${imgs[imgs.length - 1].url}')`;
+}
+
+// Ladda upp bakgrund för startsidan (_startpage) eller välkomstbilden (_splash).
+function handleBgPhoto(e) {
   const file = e.target.files[0];
   e.target.value = "";
   if (!file) return;
   if (!(Storage.auth && Storage.auth.userId && Storage.auth.userId())) return toast("Logga in som admin.");
+  const target = state.bgTarget || START_BG_ID;
   toast("Förbereder foto…");
   compressImage(file).then(async (dataUrl) => {
     try {
       toast("Laddar upp foto…");
       const url = await Storage.uploadImage(dataUrl);
-      for (const r of (state.placeImages[START_BG_ID] || [])) {
+      for (const r of (state.placeImages[target] || [])) {
         if (!r.hidden) { try { await Storage.setPlaceImageHidden(r.id, true); } catch {} }
       }
-      await Storage.addPlaceImage(START_BG_ID, url, null);
+      await Storage.addPlaceImage(target, url, null);
       await loadPlaceData();
       applyStartHero();
-      toast("Startsidans bakgrund uppdaterad.");
+      toast(target === SPLASH_BG_ID ? "Välkomstbilden uppdaterad." : "Startsidans bakgrund uppdaterad.");
     } catch (err) { toast("Kunde inte ladda upp: " + err.message); }
   }).catch(() => toast("Kunde inte läsa bilden."));
 }
@@ -1228,8 +1244,9 @@ function wireControls() {
   document.getElementById("place-close").addEventListener("click", closePlaceSheet);
   document.getElementById("pe-cancel").addEventListener("click", () => closeSheet("place-edit"));
   document.getElementById("pe-photo").addEventListener("change", handlePlacePhoto);
-  document.getElementById("sp-photo").addEventListener("change", handleStartBgPhoto);
-  document.getElementById("start-bg-btn").addEventListener("click", () => document.getElementById("sp-photo").click());
+  document.getElementById("sp-photo").addEventListener("change", handleBgPhoto);
+  document.getElementById("start-bg-btn").addEventListener("click", () => { state.bgTarget = START_BG_ID; document.getElementById("sp-photo").click(); });
+  document.getElementById("splash-bg-btn").addEventListener("click", () => { state.bgTarget = SPLASH_BG_ID; document.getElementById("sp-photo").click(); });
 
   document.querySelectorAll("[data-close]").forEach((el) =>
     el.addEventListener("click", () => togglePanel(el.dataset.close, false)));
@@ -1362,8 +1379,10 @@ function wireAccount() {
 }
 function updateAccountUI(user) {
   document.getElementById("btn-account").classList.toggle("signed-in", !!user);
-  const spb = document.getElementById("start-bg-btn");
-  if (spb) spb.hidden = !(Storage.auth && Storage.auth.isAdmin && Storage.auth.isAdmin());
+  const admin = isAdminNow();
+  ["start-bg-btn", "splash-bg-btn"].forEach((id) => {
+    const el = document.getElementById(id); if (el) el.hidden = !admin;
+  });
   if (document.getElementById("account-sheet").classList.contains("open")) renderAccount(user);
 }
 function renderAccount(user) {

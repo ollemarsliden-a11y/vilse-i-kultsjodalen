@@ -212,6 +212,7 @@ const I18N = {
     "Ta bort bilden?": "Remove this image?",
     "Bild tillagd.": "Image added.",
     "Startsidans bakgrund uppdaterad.": "Start page background updated.",
+    "Välkomstbilden uppdaterad.": "Welcome image updated.",
     "Logga in som admin.": "Sign in as admin.",
 
     // Info & fjällvett
