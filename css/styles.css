@@ -66,14 +66,14 @@ button { font-family: inherit; }
 
 .icon-btn {
   border: none; background: var(--surface-2); color: var(--ink);
-  width: 42px; height: 42px; border-radius: 13px; cursor: pointer;
+  width: 44px; height: 44px; border-radius: 13px; cursor: pointer;
   display: grid; place-items: center; box-shadow: var(--shadow-s);
 }
 .icon-btn:active { transform: scale(.93); }
 
 .weather-pill {
   display: none; align-items: center; gap: 5px;
-  height: 42px; padding: 0 13px; border: none; cursor: pointer;
+  height: 44px; padding: 0 13px; border: none; cursor: pointer;
   background: var(--surface-2); color: var(--ink);
   border-radius: 13px; box-shadow: var(--shadow-s);
 }
@@ -152,7 +152,7 @@ button { font-family: inherit; }
 .start-hero-top { display: flex; align-items: center; justify-content: space-between; }
 .start-hero-actions { display: flex; align-items: center; gap: 8px; }
 .start-bg-btn {
-  border: none; cursor: pointer; width: 42px; height: 42px; border-radius: 13px;
+  border: none; cursor: pointer; width: 44px; height: 44px; border-radius: 13px;
   background: rgba(255,255,255,.18); color: #fff; display: grid; place-items: center;
   backdrop-filter: blur(6px);
 }
@@ -391,8 +391,8 @@ body.picking::after {
   margin: 9px auto 2px; position: sticky; top: 0;
 }
 .place-close {
-  position: absolute; top: 14px; right: 14px; z-index: 3;
-  width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
+  position: absolute; top: 12px; right: 12px; z-index: 3;
+  width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
   background: rgba(0,0,0,.35); color: #fff; font-size: 15px;
   backdrop-filter: blur(4px);
 }
@@ -594,8 +594,8 @@ svg.elev { width: 100%; height: 90px; display: block; }
 .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .panel-head h2 { margin: 0; font-size: 19px; }
 .panel-close {
-  border: none; background: var(--surface-2); width: 34px; height: 34px;
-  border-radius: 50%; font-size: 15px; cursor: pointer; color: var(--ink);
+  border: none; background: var(--surface-2); width: 44px; height: 44px;
+  border-radius: 50%; font-size: 16px; cursor: pointer; color: var(--ink);
 }
 .panel-hint { font-size: 12px; color: var(--ink-2); margin: 12px 0 0; }
 .panel-subhead {
@@ -608,7 +608,7 @@ svg.elev { width: 100%; height: 90px; display: block; }
   background: var(--surface-2);
 }
 .seg-btn {
-  flex: 1; padding: 11px 8px; border-radius: 11px; cursor: pointer; border: none;
+  flex: 1; min-height: 44px; padding: 12px 8px; border-radius: 11px; cursor: pointer; border: none;
   background: transparent; font-weight: 650; font-size: 13.5px; color: var(--ink-2);
   transition: background .15s, color .15s;
 }
@@ -742,6 +742,23 @@ svg.elev { width: 100%; height: 90px; display: block; }
 .svc-cat { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; margin-bottom: 2px; }
 .svc-row { font-size: 12.5px; margin-top: 3px; }
 .svc-row a { color: var(--accent); }
+
+/* ---- Tillgänglighet ---- */
+/* Synligt fokus för tangentbordsnavigering (visas inte vid musklick). */
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+/* Respektera systemets "minska rörelse"-inställning. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* ---- Leaflet ---- */
 .leaflet-popup-content-wrapper { border-radius: 14px; }
