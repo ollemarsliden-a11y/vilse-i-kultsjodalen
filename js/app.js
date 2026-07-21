@@ -715,8 +715,12 @@ function openCategoryList(key) {
   if (g.key === "utflykter" && typeof PEAKS !== "undefined") items = items.concat(PEAKS);
   const row = (p) => {
     const c = CATEGORIES[p.category] || CATEGORIES.sevart;
+    const img = (galleryFor(p)[0] || {}).url;
+    const lead = img
+      ? `<span class="vh-row-ic vh-row-thumb" style="background-image:url('${img}')"></span>`
+      : `<span class="vh-row-ic">${iconSvg(p.category, "currentColor", 20)}</span>`;
     return `<button class="vh-row" data-poi="${p.id}" style="--c:${c.color}">
-      <span class="vh-row-ic">${iconSvg(p.category, "currentColor", 20)}</span>
+      ${lead}
       <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(p.name)}</span>
         <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span></button>`;
   };
@@ -762,7 +766,13 @@ function buildStartPage() {
   const villages = VILLAGE_IDS.map((id) => byId[id]).filter(Boolean);
 
   document.getElementById("start-villages").innerHTML = villages.map(placeCardHtml).join("");
-  document.querySelectorAll("#start-villages [data-poi]").forEach((el) =>
+
+  // Sevärt & natur — platser med bild först, så foton syns direkt på startsidan.
+  const sights = SEED_POIS.filter((p) => !VILLAGE_IDS.includes(p.id))
+    .sort((a, b) => ((galleryFor(b)[0] ? 1 : 0) - (galleryFor(a)[0] ? 1 : 0)));
+  document.getElementById("start-sights").innerHTML = sights.map(placeCardHtml).join("");
+
+  document.querySelectorAll("#start-villages [data-poi], #start-sights [data-poi]").forEach((el) =>
     el.addEventListener("click", () => {
       const poi = byId[el.dataset.poi];
       if (poi) openPlaceOrHub(poi, state.markers[poi.id]);
@@ -951,8 +961,10 @@ function renderVillageHub(poi) {
   const poiRow = ({ p, d }, canHide) => {
     const c = CATEGORIES[p.category] || CATEGORIES.sevart;
     const x = canHide ? `<span class="vh-row-x" data-hide="${p.id}" title="${t("Dölj")}" role="button">✕</span>` : "";
+    const pimg = (galleryFor(p)[0] || {}).url;
     return `<button class="vh-row" data-poi="${p.id}" style="--c:${c.color}">
-      <span class="vh-row-ic">${iconSvg(p.category, "currentColor", 20)}</span>
+      ${pimg ? `<span class="vh-row-ic vh-row-thumb" style="background-image:url('${pimg}')"></span>`
+             : `<span class="vh-row-ic">${iconSvg(p.category, "currentColor", 20)}</span>`}
       <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(p.name)}</span>
         <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span>${x}</button>`;
   };
