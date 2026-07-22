@@ -196,20 +196,15 @@ button { font-family: inherit; }
 .start-title { font-size: 30px; margin: 14px 0 6px; letter-spacing: -.6px; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
 .start-sub { font-size: 14px; line-height: 1.5; margin: 0; opacity: .94; max-width: 30ch; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
 
-/* ---- Hero-strip: aktuell info (sol, vägstatus) ---- */
-.hero-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.hs-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 12px; border-radius: 20px; border: none; cursor: default;
-  font-size: 12.5px; font-weight: 650; color: #fff;
-  background: rgba(255,255,255,.16); backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+/* ---- Vägstatus (infosidan) ---- */
+.road-status {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px 12px; border-radius: 12px; background: var(--surface-2);
+  font-size: 13.5px; margin: 4px 0 10px;
 }
-.hs-chip.clickable { cursor: pointer; }
-.hs-chip.clickable:active { transform: scale(.95); }
-.hs-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
-.hs-dot.open { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
-.hs-dot.closed { background: var(--stop); box-shadow: 0 0 6px var(--stop); }
+.rs-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+.rs-dot.open { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+.rs-dot.closed { background: var(--stop); box-shadow: 0 0 6px var(--stop); }
 
 /* ---- Sök ---- */
 .search-wrap { position: relative; margin: 16px 0 2px; }

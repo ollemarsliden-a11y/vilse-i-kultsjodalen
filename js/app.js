@@ -233,7 +233,6 @@ async function init() {
   wireSplash();
   wireWeather();
   wireSearch();
-  updateHeroStrip();
   wireAccount();
   registerServiceWorker();
   state.map.on("zoomend", updatePeakVisibility);
@@ -885,33 +884,6 @@ function openSearchHit(e) {
   }
 }
 
-// ===================================================================
-//  Hero-strip — aktuell info på startsidan (sol + vägstatus)
-// ===================================================================
-async function updateHeroStrip() {
-  const strip = document.getElementById("hero-strip");
-  if (!strip) return;
-  const [lat, lon] = MAP_CENTER;
-  const sun = Sun.format(lat, lon);
-  const sunHtml = sun.rise
-    ? `<button class="hs-chip clickable" id="hs-sun" title="${t("Soluppgång och solnedgång idag")}">
-         🌅 ${sun.rise} · 🌇 ${sun.set}</button>`
-    : `<span class="hs-chip">${sun.emoji} ${escapeHtml(sun.text)}</span>`;
-  strip.innerHTML = sunHtml;
-  const sunBtn = document.getElementById("hs-sun");
-  if (sunBtn) sunBtn.addEventListener("click", openWeatherSheet);
-
-  try {
-    const road = await RoadStatus.get();
-    const chip = document.createElement("button");
-    chip.className = "hs-chip clickable";
-    chip.innerHTML = `<span class="hs-dot ${road.open ? "open" : "closed"}"></span>🛣️ ${escapeHtml(road.label)}`;
-    chip.title = road.detail;
-    chip.addEventListener("click", () => toast(road.detail));
-    strip.appendChild(chip);
-  } catch {}
-}
-
 // Startsidans bakgrund (admin kan byta). Lagras som vik_place_images med
 // reserverat place_id "_startpage" — senaste synliga bilden används.
 const START_BG_ID = "_startpage";
@@ -1281,6 +1253,19 @@ function buildInfoPage() {
   const ic = (name) => `<span class="ic">${iconSvg(name, "currentColor", 18)}</span>`;
   document.getElementById("info-body").innerHTML =
     LANG === "en" ? infoPageEn(ic) : infoPageSv(ic);
+  updateRoadStatus();
+}
+
+// Aktuell status för Stekenjokk-passagen i infokortet (säsong eller
+// live från Trafikverket om TRV_KEY är satt — se js/road.js).
+async function updateRoadStatus() {
+  const el = document.getElementById("road-status");
+  if (!el || typeof RoadStatus === "undefined") return;
+  try {
+    const road = await RoadStatus.get();
+    el.innerHTML = `<span class="rs-dot ${road.open ? "open" : "closed"}"></span>
+      <b>${escapeHtml(road.label)}</b> — ${escapeHtml(road.detail)}`;
+  } catch { el.remove(); }
 }
 
 function infoPageEn(ic) {
@@ -1299,6 +1284,19 @@ function infoPageEn(ic) {
         <li><b>Air:</b> populAir flies South Lapland Airport (Vilhelmina) ↔ Stockholm Arlanda, Mon–Fri and Sundays; continue by car. <a href="https://www.populair.com/en/destinations/south-lapland-airport-vilhelmina/" target="_blank" rel="noopener">Flights & booking ↗</a></li>
         <li><b>Bus:</b> Regional buses to Vilhelmina and into the valley — timetables at <a href="https://tabussen.nu/" target="_blank" rel="noopener">tabussen.nu ↗</a></li>
       </ul>
+    </div>
+
+    <div class="info-card">
+      <h3>${ic("sevart")} The Stekenjokk passage</h3>
+      <p id="road-status" class="road-status"></p>
+      <ul>
+        <li><b>Closed in winter:</b> the Klimpfjäll–Stekenjokk–Gäddede stretch is closed approx. <b>15 Oct–6 Jun</b>.</li>
+        <li><b>No stopping or parking 6 Jun–15 Jul:</b> along an approx. five-km stretch over Stekenjokk it is forbidden to stop or park — it is reindeer calving season and the animals need peace and quiet.</li>
+        <li>During that period, park only at the signposted <b>Stekenjokk</b> and <b>Tjåkkola</b> parking areas.</li>
+        <li>Do not approach reindeer or photograph calves up close — stay near the road and do not disturb.</li>
+        <li>Keep dogs leashed on the entire mountain plateau.</li>
+      </ul>
+      <p class="info-note">Source: the County Administrative Board of Västerbotten and the Swedish Transport Administration. Dates may vary slightly from year to year — <a href="https://www.trafikverket.se/resa-och-trafik/trafikinformation/" target="_blank" rel="noopener">current traffic info ↗</a></p>
     </div>
 
     <div class="info-card">
@@ -1350,6 +1348,19 @@ function infoPageSv(ic) {
         <li><b>Flyg:</b> populAir flyger South Lapland Airport (Vilhelmina) ↔ Stockholm Arlanda, mån–fre samt söndag; därifrån bil vidare. <a href="https://www.populair.com/destinationer/vilhelmina/" target="_blank" rel="noopener">Tidtabell &amp; bokning ↗</a></li>
         <li><b>Buss:</b> Regionbuss till Vilhelmina och vidare in i dalen — tidtabeller på <a href="https://tabussen.nu/" target="_blank" rel="noopener">tabussen.nu ↗</a></li>
       </ul>
+    </div>
+
+    <div class="info-card">
+      <h3>${ic("sevart")} Stekenjokk-passagen</h3>
+      <p id="road-status" class="road-status"></p>
+      <ul>
+        <li><b>Vinterstängt:</b> sträckan Klimpfjäll–Stekenjokk–Gäddede är stängd ca <b>15 okt–6 jun</b>.</li>
+        <li><b>Stopp- och parkeringsförbud 6 jun–15 jul:</b> på en ca fem km lång sträcka över Stekenjokk är det förbjudet att stanna och parkera — det är renkalvningstid och renarna behöver lugn och ro.</li>
+        <li>Parkera bara på de skyltade parkeringarna <b>Stekenjokk</b> och <b>Tjåkkola</b> under den perioden.</li>
+        <li>Gå inte fram till renar och fotografera inte kalvar på nära håll — håll dig nära vägen och stör inte.</li>
+        <li>Håll hunden kopplad på hela kalfjället.</li>
+      </ul>
+      <p class="info-note">Källa: Länsstyrelsen Västerbotten och Trafikverket. Datumen kan variera något år till år — <a href="https://www.trafikverket.se/resa-och-trafik/trafikinformation/" target="_blank" rel="noopener">aktuell trafikinfo ↗</a></p>
     </div>
 
     <div class="info-card">
@@ -1585,12 +1596,12 @@ function buildWinterLayer() {
 // ===================================================================
 //  Väder-pill (kartans mitt)
 // ===================================================================
+// Väder och prognos gäller alltid Saxnäs (byn nere i dalen) — kartans mitt
+// ligger uppe på kalfjället och gav missvisande låga temperaturer.
+const WEATHER_POINT = { lat: 64.9706, lng: 15.3516, name: "Saxnäs" };
+
 function wireWeather() {
   updateWeatherPill();
-  state.map.on("moveend", () => {
-    clearTimeout(state.weatherTimer);
-    state.weatherTimer = setTimeout(updateWeatherPill, 700);
-  });
   document.getElementById("weather-pill").addEventListener("click", openWeatherSheet);
   const sw = document.getElementById("start-weather");
   if (sw) sw.addEventListener("click", openWeatherSheet);
@@ -1606,7 +1617,7 @@ async function openWeatherSheet() {
   const body = document.getElementById("weather-body");
   body.innerHTML = `<p class="panel-hint">${t("Hämtar prognos…")}</p>`;
   openSheet("weather-sheet");
-  const c = state.map ? state.map.getCenter() : { lat: MAP_CENTER[0], lng: MAP_CENTER[1] };
+  const c = WEATHER_POINT;
   try {
     const days = await Weather.forecast(c.lat, c.lng);
     const sun = Sun.format(c.lat, c.lng);
@@ -1621,18 +1632,18 @@ async function openWeatherSheet() {
         <span class="wf-temp"><b>${d.tmax}°</b> <span class="wf-min">${d.tmin}°</span></span>
         <span class="wf-meta">🌬️ ${d.wind}${d.gust > d.wind ? ` (${d.gust})` : ""} m/s &nbsp;·&nbsp; 💧 ${d.precip} mm</span>
       </div>`;
-    }).join("") + `<p class="panel-hint">${t("Prognos från SMHI. Vindbyar inom parentes, nederbörd som dygnsmängd.")}</p>`;
+    }).join("") + `<p class="panel-hint">${t("Prognos för Saxnäs från SMHI. Vindbyar inom parentes, nederbörd som dygnsmängd.")}</p>`;
   } catch {
     body.innerHTML = `<p class="panel-hint">${t("Kunde inte hämta prognosen.")}</p>`;
   }
 }
 async function updateWeatherPill() {
   const pill = document.getElementById("weather-pill");
-  const c = state.map.getCenter();
+  const c = WEATHER_POINT;
   try {
     const w = await Weather.get(c.lat, c.lng);
     const html = `<span class="wp-emoji">${w.emoji}</span><span class="wp-temp">${w.temp}°</span>`;
-    const title = `${w.desc} · ${w.wind} m/s (SMHI)`;
+    const title = `${WEATHER_POINT.name}: ${w.desc} · ${w.wind} m/s (SMHI)`;
     [pill, document.getElementById("start-weather")].forEach((el) => {
       if (!el) return;
       el.innerHTML = html; el.title = title; el.classList.add("show");

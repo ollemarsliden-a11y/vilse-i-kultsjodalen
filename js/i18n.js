@@ -59,6 +59,9 @@ const I18N = {
     "Soluppgång och solnedgång idag": "Sunrise and sunset today",
     "Upp": "Rise",
     "Ned": "Set",
+    "Väderprognos — Saxnäs": "Weather forecast — Saxnäs",
+    "Prognos för Saxnäs från SMHI. Vindbyar inom parentes, nederbörd som dygnsmängd.":
+      "Forecast for Saxnäs from SMHI. Gusts in parentheses, precipitation as daily total.",
     "Stekenjokk: öppen": "Stekenjokk: open",
     "Stekenjokk: vinterstängd": "Stekenjokk: closed for winter",
     "Stekenjokk: avstängd": "Stekenjokk: closed",
