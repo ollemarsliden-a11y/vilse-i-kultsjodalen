@@ -31,7 +31,8 @@ const SEED_POIS = [
       "En av Sveriges mest särpräglade kyrkstäder, vackert belägen där Ransarån " +
       "möter Kultsjön med Marsfjället i fonden. Ett myller av kåtor, timmerstugor " +
       "och bodar kring den lilla fjällkyrkan — en plats där samisk kultur och " +
-      "nybyggarkultur möts tydligt sida vid sida.",
+      "nybyggarkultur möts tydligt sida vid sida. Sommartid erbjuds guidade " +
+      "turer i kyrkstaden (se Visit Vilhelmina för tider).",
     history:
       "Fatmomakke har varit en samisk mötesplats i generationer. Den första " +
       "gudstjänsten hölls den 8 juli 1781, sedan två kåtor och en bod rests på en " +
@@ -59,7 +60,9 @@ const SEED_POIS = [
     description:
       "Största byn vid Kultsjön och ett nav i dalen, med fjällhotell, butik och " +
       "service. Härifrån utgår fiske, vandring och turer längs Vildmarksvägen — " +
-      "omgiven av fjällkedjor och vidöppna vyer över sjön.",
+      "omgiven av fjällkedjor och vidöppna vyer över sjön. Vintertid är Saxnäs " +
+      "snösäkert med preparerade längdspår (skate och klassiskt, nov–maj), " +
+      "skoterleder och fina turer med snöskor.",
     history:
       "Det första nybygget i Saxnäs anlades 1824, och väg till Vilhelmina " +
       "(~85 km) kom på 1920-talet. Turismen växte fram från 1930-talet, dels " +
@@ -419,7 +422,10 @@ const SEED_POIS = [
     blurb: "Dalens stora reglerade fjällsjö",
     description:
       "Kultsjön sträcker sig som ett smalt band genom hela dalen — 542 m ö.h., " +
-      "53 km² stor och som djupast nära 130 m. Röding och öring; fiskekort krävs.",
+      "53 km² stor och som djupast nära 130 m. Röding och öring; fiskekort krävs. " +
+      "Vintertid lockar sjön med pimpelfiske, och vid rätt isförhållanden är den " +
+      "ett fint vatten för långfärdsskridsko — kontrollera alltid isen själv, " +
+      "sjön är reglerad och isen kan vara opålitlig nära in- och utlopp.",
     history:
       "Sjön regleras sedan 1960-talet för Stalons kraftverk och varierar mellan " +
       "537 och 542 m ö.h. Kultsjöån för vattnet vidare mot Ångermanälven.",
@@ -533,5 +539,112 @@ const SEED_POIS = [
       "Utsiktsplats i Kittelfjällsområdet nordost om Kultsjödalen, med vy över " +
       "de omgivande fjällen.",
     facts: [], image: "", source: "OpenStreetMap",
+  },
+  {
+    id: "norgefarargarden",
+    name: "Norgefarargården",
+    category: "kultur",
+    coord: [65.06241, 14.7956],
+    blurb: "Nybyggargård från 1832 i Klimpfjäll",
+    description:
+      "Hembygdsgård och museum i Klimpfjäll som berättar om norgefararna — " +
+      "handelsfärderna över fjället till Norge — och om nybyggarlivet i dalens " +
+      "västligaste by. Gården är från 1832. Härifrån utgår också Norgefararleden, " +
+      "vandringsleden som följer den gamla färdvägen mot gränsen.",
+    facts: [["Byggd", "1832"], ["Typ", "Hembygdsgård & museum"]],
+    image: "",
+    source: "Visit Vilhelmina, OpenStreetMap",
+  },
+  {
+    id: "grillkojan-trappstegsforsen",
+    name: "Grillkojan vid Trappstegsforsen",
+    category: "boende",
+    coord: [64.9575, 15.4655],
+    blurb: "Café & servering vid forsen",
+    description:
+      "Servering vid Trappstegsforsen — fika och enklare mat med Sveriges kanske " +
+      "mest fotograferade vattenfall som utsikt. Vid rastplatsen finns även " +
+      "turistinformation. Öppet sommartid.",
+    facts: [["Säsong", "Sommar"]],
+    image: "",
+    source: "Visit Vilhelmina",
+  },
+  {
+    id: "helikopterturer-klimpfjall",
+    name: "Helikopterturer Klimpfjäll",
+    category: "sevart",
+    coord: [65.06122, 14.80798],
+    blurb: "Fjällflyg & sightseeing från helikopterplattan",
+    description:
+      "Från helikopterplattan i Klimpfjäll flygs sightseeing- och fjällturer över " +
+      "Stekenjokk, Marsfjällen och gränsfjällen — även transport till fiskevatten " +
+      "och toppar. Norrhelikopter är baserade här; helikopterturer bokas även via " +
+      "Arctic Air (se Visit Vilhelmina).",
+    website: "http://norrhelikopter.se/",
+    facts: [["Bas", "Klimpfjäll"]],
+    image: "",
+    source: "Visit Vilhelmina, OpenStreetMap",
+  },
+  {
+    id: "mtb-stekenjokk",
+    name: "MTB på Stekenjokk",
+    category: "led",
+    coord: [65.093, 14.455],
+    blurb: "Sommarcykling på kalfjällsplatån",
+    description:
+      "Stekenjokkplatån bjuder på stigcykling i öppen kalfjällsterräng — grusvägar " +
+      "och stigar kring gruvområdet och platån, med vida vyer åt alla håll. " +
+      "Säsongen är kort (vägen öppnar ca 6 juni) och vädret slår om snabbt — " +
+      "packa vindskydd. Respektera stopp- och parkeringsförbudet 6 jun–15 jul, " +
+      "parkera vid Stekenjokk- eller Tjåkkolaparkeringen.",
+    facts: [["Säsong", "Jun–sep"], ["Terräng", "Kalfjäll & grus"]],
+    image: "",
+    source: "Visit Vilhelmina",
+  },
+  {
+    id: "satsfjallet",
+    name: "Satsfjället (1105 m)",
+    category: "led",
+    coord: [64.93811, 15.24535],
+    blurb: "Toppvandring med vy över Kultsjön",
+    description:
+      "Fjället söder om Kultsjön, mitt emot Saxnäs. En tacksam topptur med " +
+      "utsiktspunkt på toppen (1105 m) och vidsträckt vy över Kultsjön, " +
+      "Marsfjällen och dalen. Väster om toppen ligger Satsfjällets naturreservat " +
+      "med gammelskog.",
+    facts: [["Höjd", "1105 m"], ["Utgångspunkt", "Saxnäs-sidan"]],
+    image: "",
+    source: "OpenStreetMap",
+  },
+  {
+    id: "sagostigen-dikanas",
+    name: "Sagostigen i Dikanäs",
+    category: "led",
+    coord: [65.24706, 15.52225],
+    blurb: "Familjevandring med sagofigurer",
+    description:
+      "Kort och barnvänlig vandringsstig i Dikanäs där sagofigurer och " +
+      "berättelser kantar vägen — perfekt första fjällvandring för de minsta. " +
+      "Stigen hänger ihop med Vojmåstigen längs älven.",
+    facts: [["Passar", "Barnfamiljer"], ["Längd", "Kort slinga"]],
+    image: "",
+    source: "OpenStreetMap",
+  },
+  {
+    id: "bernhard-nordh-utstallningen",
+    name: "Bernhard Nordh-utställningen",
+    category: "kultur",
+    coord: [65.0298, 15.3705],
+    blurb: "Om författaren till 'I Marsfjällets skugga'",
+    description:
+      "Utställning i Marsliden om Bernhard Nordh, vars romaner 'I Marsfjällets " +
+      "skugga' (1937) och 'Fjällfolk' (1938) bygger på nybyggarlivet just här. " +
+      "Nordh bodde i Marsliden sommaren 1936 och samlade berättelser från byborna. " +
+      "Utställningen drivs av Marslidens intresseförening och håller öppet " +
+      "sommartid (ca juni–augusti).",
+    website: "https://marsliden.se/",
+    facts: [["Öppet", "Sommartid"], ["Arrangör", "Marslidens intresseförening"]],
+    image: "",
+    source: "Marslidens intresseförening, Visit Vilhelmina",
   },
 ];
