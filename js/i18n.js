@@ -72,6 +72,15 @@ const I18N = {
     "Inga trafikmeddelanden för väg 1067 just nu (Trafikverket).":
       "No traffic alerts for road 1067 right now (Trafikverket).",
 
+    // Gruppchips & lagerpanel
+    "Se & göra": "See & do",
+    "Bo & äta": "Stay & eat",
+    "Leder": "Trails",
+    "Leder på kartan": "Trails on the map",
+    "Markerade leder & stigar ritas ovanpå kartan": "Marked trails & paths drawn on top of the map",
+    "Statliga (Lst)": "Official (CAB)",
+    "Alla stigar (OSM)": "All paths (OSM)",
+
     // Kartlager-panel
     "Kartunderlag": "Base map",
     "Säsong": "Season",

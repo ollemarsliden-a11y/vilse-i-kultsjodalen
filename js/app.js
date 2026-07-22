@@ -502,7 +502,7 @@ function setBasemap(key) {
   if (state.currentBasemap) state.map.removeLayer(state.currentBasemap);
   state.currentBasemap = BASEMAPS[key].layer().addTo(state.map);
   state.currentBasemap.bringToBack();
-  document.querySelectorAll(".seg-btn").forEach((b) =>
+  document.querySelectorAll("#basemap-buttons [data-key]").forEach((b) =>
     b.classList.toggle("active", b.dataset.key === key)
   );
 }
@@ -1410,27 +1410,58 @@ function updatePeakVisibility() {
   else if (!want && on) state.map.removeLayer(layer);
 }
 
+// Gruppchips ovanpå kartan — 5 val i stället för 8. Varje chip styr en
+// grupp av underliggande kategorier; platskort, sök och kategorisidor
+// behåller den finkorniga indelningen.
+const CHIP_GROUPS = [
+  { key: "segora", label: "Se & göra", icon: "sevart", color: "#17a2a2",
+    cats: ["sevart", "smultron", "kultur"] },
+  { key: "led", label: "Leder", icon: "led", color: "#2f8f4e", cats: ["led"] },
+  { key: "fiske", label: "Fiske", icon: "fiske", color: "#2f6fb0", cats: ["fiske"] },
+  { key: "boata", label: "Bo & äta", icon: "boende", color: "#e0872b",
+    cats: ["boende", "service"] },
+  { key: "topp", label: "Toppar", icon: "topp", color: "#5f7488", cats: ["topp"] },
+];
+
 function buildCategoryChips() {
   const wrap = document.getElementById("category-chips");
-  for (const [key, c] of Object.entries(CATEGORIES)) {
-    const startOff = DEFAULT_OFF_CATEGORIES.has(key);
+  for (const g of CHIP_GROUPS) {
+    const startOff = g.cats.every((c) => DEFAULT_OFF_CATEGORIES.has(c));
     if (startOff) {
-      state.activeCategories.delete(key);
-      state.map.removeLayer(state.layers[key]);
+      for (const c of g.cats) {
+        state.activeCategories.delete(c);
+        state.map.removeLayer(state.layers[c]);
+      }
     }
     const chip = document.createElement("button");
     chip.className = "chip" + (startOff ? "" : " active");
-    chip.style.setProperty("--chip-color", c.color);
-    chip.innerHTML = `<span class="chip-ic">${iconSvg(key, "currentColor", 16)}</span>${t(c.label)}`;
+    chip.style.setProperty("--chip-color", g.color);
+    chip.innerHTML = `<span class="chip-ic">${iconSvg(g.icon, "currentColor", 16)}</span>${t(g.label)}`;
     chip.addEventListener("click", () => {
       const on = chip.classList.toggle("active");
-      if (on) { state.activeCategories.add(key); state.map.addLayer(state.layers[key]); }
-      else { state.activeCategories.delete(key); state.map.removeLayer(state.layers[key]); }
+      for (const c of g.cats) {
+        if (on) {
+          state.activeCategories.add(c);
+          if (c !== "topp") state.map.addLayer(state.layers[c]); // toppar styrs av zoom
+        } else {
+          state.activeCategories.delete(c);
+          state.map.removeLayer(state.layers[c]);
+        }
+      }
       updatePeakVisibility();
     });
     wrap.appendChild(chip);
   }
 }
+
+// Miniatyr per kartunderlag — en riktig kartruta över dalen (z8) säger
+// mer än en textknapp.
+const BM_THUMBS = {
+  enkel: "https://a.tile.openstreetmap.org/8/138/66.png",
+  topo: "https://a.tile.opentopomap.org/8/138/66.png",
+  satellit: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/8/66/138",
+  fjall: "tiles/topo/8/138/66.png",
+};
 
 function buildBasemapButtons() {
   const wrap = document.getElementById("basemap-buttons");
@@ -1438,9 +1469,10 @@ function buildBasemapButtons() {
     if (b.requiresToken && !CONFIG.LM_TOKEN) continue; // dölj tills token finns
     if (b.requiresLocal && !CONFIG.LOCAL_FJALL) continue; // dölj tills lokala rutor finns
     const btn = document.createElement("button");
-    btn.className = "seg-btn" + (key === (CONFIG.LOCAL_FJALL ? "fjall" : "topo") ? " active" : "");
+    btn.className = "bm-tile" + (key === (CONFIG.LOCAL_FJALL ? "fjall" : "topo") ? " active" : "");
     btn.dataset.key = key;
-    btn.textContent = t(b.label);
+    btn.innerHTML = `<span class="bm-img" style="background-image:url('${BM_THUMBS[key] || ""}')"></span>
+      <span class="bm-label">${t(b.label)}</span>`;
     btn.addEventListener("click", () => setBasemap(key));
     wrap.appendChild(btn);
   }
@@ -1448,7 +1480,48 @@ function buildBasemapButtons() {
 
 function buildOverlayToggles() {
   const wrap = document.getElementById("overlay-toggles");
+
+  // Led-lagren (Länsstyrelsen + OSM) samlas i EN rad med källväljare —
+  // samma funktioner, hälften så många rader i panelen.
+  const TRAIL_KEYS = ["statligaleder", "waymarked"];
+  state.trailSource = "statligaleder";
+  const trailRow = document.createElement("div");
+  trailRow.className = "overlay-row";
+  trailRow.innerHTML = `
+    <span class="overlay-ic">${iconSvg("led", "currentColor", 18)}</span>
+    <span class="overlay-text">
+      <span class="overlay-title">${t("Leder på kartan")}</span>
+      <span class="overlay-sub">${t("Markerade leder & stigar ritas ovanpå kartan")}</span>
+      <span class="overlay-src segmented" hidden>
+        <button class="seg-btn active" data-src="statligaleder">${t("Statliga (Lst)")}</button>
+        <button class="seg-btn" data-src="waymarked">${t("Alla stigar (OSM)")}</button>
+      </span>
+    </span>
+    <input type="checkbox" data-overlay="trails" />`;
+  const srcWrap = trailRow.querySelector(".overlay-src");
+  const trailCb = trailRow.querySelector("input");
+  function syncTrails() {
+    for (const k of TRAIL_KEYS) state.map.removeLayer(state.overlays[k]);
+    if (trailCb.checked) {
+      const layer = state.overlays[state.trailSource];
+      layer.addTo(state.map);
+      if (layer.bringToBack) layer.bringToBack();
+      toast(OVERLAYS[state.trailSource].toast);
+    }
+    srcWrap.hidden = !trailCb.checked;
+  }
+  trailCb.addEventListener("change", syncTrails);
+  srcWrap.querySelectorAll("[data-src]").forEach((b) =>
+    b.addEventListener("click", () => {
+      state.trailSource = b.dataset.src;
+      srcWrap.querySelectorAll("[data-src]").forEach((x) =>
+        x.classList.toggle("active", x === b));
+      syncTrails();
+    }));
+  wrap.appendChild(trailRow);
+
   for (const [key, o] of Object.entries(OVERLAYS)) {
+    if (TRAIL_KEYS.includes(key)) continue; // hanteras av samlingsraden ovan
     const row = document.createElement("label");
     row.className = "overlay-row";
     row.innerHTML = `
