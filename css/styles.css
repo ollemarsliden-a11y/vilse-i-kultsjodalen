@@ -2,7 +2,17 @@
    Vilse i Kultsjödalen — design (2026)
    Inspiration: AllTrails / Naturkartan / Komoot. Ljust + mörkt läge.
    =================================================================== */
+/* Fraunces (variabel 500–750) — självhostad, funkar offline. */
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 500 750;
+  font-display: swap;
+  src: url("../fonts/fraunces-latin.woff2") format("woff2");
+}
+
 :root {
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   --bg: #f5f4ef;
   --surface: #ffffff;
   --surface-2: #f2f1ea;
@@ -12,6 +22,9 @@
   --brand: #234b39;      /* mörk mossgrön */
   --brand-2: #2f8f4e;
   --accent: #2f6fb0;     /* sjöblå */
+  --warm: #c65d21;       /* bränd orange — för levande/aktuell info */
+  --ok: #2e8b57;         /* öppet/positivt */
+  --stop: #c0392b;       /* stängt/varning */
   --radius: 18px;
   --radius-lg: 28px;
   /* Tvålagers, diffusa skuggor ger en mjukare känsla än en hård skugga. */
@@ -32,6 +45,9 @@
     --ink-2: #a4b0a8;
     --line: #2b352e;
     --brand: #3f7d57;
+    --warm: #e8965a;
+    --ok: #4cbb87;
+    --stop: #e06a5c;
     --shadow-s: 0 1px 2px rgba(0,0,0,.25), 0 4px 14px rgba(0,0,0,.30);
     --shadow-m: 0 2px 6px rgba(0,0,0,.28), 0 14px 34px rgba(0,0,0,.38);
     --shadow-l: 0 -6px 24px rgba(0,0,0,.30), 0 -18px 56px rgba(0,0,0,.42);
@@ -46,6 +62,14 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 button { font-family: inherit; }
+
+/* Rubriker i display-typsnitt — ger appen karaktär utan att röra brödtexten. */
+.splash-title, .start-title, .vh-name, .section-h, .vh-sec-head h3,
+.panel-head h2, .brand-title, .ps-title {
+  font-family: var(--font-display);
+  font-weight: 620;
+  letter-spacing: 0;
+}
 
 /* ---- Toppbar (glasig) ---- */
 .topbar {
@@ -81,7 +105,8 @@ button { font-family: inherit; }
 }
 .weather-pill.show { display: inline-flex; }
 .wp-emoji { font-size: 17px; }
-.wp-temp { font-weight: 750; font-size: 15px; }
+.wp-temp { font-weight: 750; font-size: 15px; color: var(--warm); }
+.start-hero-top .weather-pill .wp-temp { color: #ffd9b8; }
 
 /* ---- Kategori-chips ---- */
 .category-chips {
@@ -170,6 +195,73 @@ button { font-family: inherit; }
 .start-hero-top .weather-pill { background: rgba(255,255,255,.18); color: #fff; box-shadow: none; backdrop-filter: blur(6px); }
 .start-title { font-size: 30px; margin: 14px 0 6px; letter-spacing: -.6px; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
 .start-sub { font-size: 14px; line-height: 1.5; margin: 0; opacity: .94; max-width: 30ch; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
+
+/* ---- Hero-strip: aktuell info (sol, vägstatus) ---- */
+.hero-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.hs-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border-radius: 20px; border: none; cursor: default;
+  font-size: 12.5px; font-weight: 650; color: #fff;
+  background: rgba(255,255,255,.16); backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.hs-chip.clickable { cursor: pointer; }
+.hs-chip.clickable:active { transform: scale(.95); }
+.hs-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+.hs-dot.open { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+.hs-dot.closed { background: var(--stop); box-shadow: 0 0 6px var(--stop); }
+
+/* ---- Sök ---- */
+.search-wrap { position: relative; margin: 16px 0 2px; }
+.search-input {
+  width: 100%; height: 48px; padding: 0 42px 0 44px;
+  border: 1.5px solid var(--line); border-radius: 16px;
+  background: var(--surface); color: var(--ink);
+  font-family: inherit; font-size: 15px; box-shadow: var(--shadow-s);
+  outline: none; transition: border-color .15s;
+}
+.search-input:focus { border-color: var(--brand-2); }
+.search-ic {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--ink-2); pointer-events: none; display: flex;
+}
+.search-clear {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 36px; height: 36px; border: none; border-radius: 50%;
+  background: none; color: var(--ink-2); font-size: 15px; cursor: pointer;
+  display: none; place-items: center;
+}
+.search-clear.show { display: grid; }
+.search-results {
+  margin-top: 8px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); box-shadow: var(--shadow-m); overflow: hidden;
+}
+.search-results:empty { display: none; }
+.sr-item {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 11px 14px; border: none; background: none; cursor: pointer;
+  color: var(--ink); border-bottom: 1px solid var(--line);
+}
+.sr-item:last-child { border-bottom: none; }
+.sr-item:active { background: var(--surface-2); }
+.sr-ic {
+  width: 34px; height: 34px; border-radius: 10px; flex: 0 0 auto;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--c, #888) 15%, var(--surface)); color: var(--c, #888);
+}
+.sr-main { flex: 1; min-width: 0; }
+.sr-name { font-weight: 700; font-size: 14px; }
+.sr-name mark { background: color-mix(in srgb, var(--warm) 28%, transparent); color: inherit; border-radius: 3px; }
+.sr-sub { font-size: 11.5px; color: var(--ink-2); }
+.sr-empty { padding: 14px; font-size: 13px; color: var(--ink-2); }
+
+/* ---- Solrad i väderprognosen ---- */
+.wf-sun {
+  display: flex; align-items: center; gap: 10px; padding: 10px 4px 12px;
+  font-size: 13.5px; color: var(--ink-2); border-bottom: 1px solid var(--line);
+  margin-bottom: 6px;
+}
+.wf-sun b { color: var(--warm); font-weight: 700; }
 
 .start-body { padding: 6px 16px 8px; }
 .start-body > .section-h:first-child { margin-top: 10px; }

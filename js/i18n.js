@@ -49,6 +49,26 @@ const I18N = {
     "Boende & mat": "Stay & eat",
     "Toppar": "Peaks",
 
+    // Sök
+    "Sök plats, led, boende…": "Search places, trails, lodging…",
+    "Inga träffar.": "No matches.",
+
+    // Sol & vägstatus
+    "Midnattssol": "Midnight sun",
+    "Polarnatt": "Polar night",
+    "Soluppgång och solnedgång idag": "Sunrise and sunset today",
+    "Upp": "Rise",
+    "Ned": "Set",
+    "Stekenjokk: öppen": "Stekenjokk: open",
+    "Stekenjokk: vinterstängd": "Stekenjokk: closed for winter",
+    "Stekenjokk: avstängd": "Stekenjokk: closed",
+    "Vildmarksvägen över Stekenjokk är öppen (stänger ca 15 okt).":
+      "The Wilderness Road over Stekenjokk is open (closes around Oct 15).",
+    "Vildmarksvägen över Stekenjokk är vinterstängd (öppnar ca 6 jun).":
+      "The Wilderness Road over Stekenjokk is closed for winter (opens around Jun 6).",
+    "Inga trafikmeddelanden för väg 1067 just nu (Trafikverket).":
+      "No traffic alerts for road 1067 right now (Trafikverket).",
+
     // Kartlager-panel
     "Kartunderlag": "Base map",
     "Säsong": "Season",

@@ -8,17 +8,18 @@
 //    saknas. Då fungerar kartan även UTAN TÄCKNING i fjället, och sparar data.
 //    Rutorna cachas allteftersom man tittar på områden (inte alla på en gång).
 //  - Allt annat = NETWORK-FIRST: alltid färskt online, cachad fallback offline.
-const CACHE = "vik-v5";
+const CACHE = "vik-v6";
 const SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./icons/icon.svg",
+  "./fonts/fraunces-latin.woff2",
 ];
 
 // Immutabla resurser som ska serveras cache-first.
 function isCacheFirst(url) {
-  return url.includes("/tiles/topo/") || url.includes("/images/");
+  return url.includes("/tiles/topo/") || url.includes("/images/") || url.includes("/fonts/");
 }
 
 self.addEventListener("install", (e) => {

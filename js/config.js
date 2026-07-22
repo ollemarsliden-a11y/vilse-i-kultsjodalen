@@ -15,6 +15,11 @@ const _isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
 // här så dyker "Fjällkarta" upp som kartunderlag. Registrering: se README.
 const LM_TOKEN = "";
 
+// Trafikverkets öppna API (vägstatus Stekenjokk, väg 1067). Gratis nyckel:
+// registrera på https://data.trafikverket.se/ och klistra in här. Utan nyckel
+// visas säsongsbaserad status (vinterstängd ca 15 okt–6 jun).
+const TRV_KEY = "";
+
 // Lantmäteriets fjällkarta som LOKALA rutor (nedladdade en gång, CC0).
 // Sätts till true när tiles/topo/ finns i projektet (scripts/fetch-lm-tiles.mjs).
 const LOCAL_FJALL = true;
@@ -29,6 +34,7 @@ const CONFIG = {
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
   LM_TOKEN,
+  TRV_KEY,
   LOCAL_FJALL,
   LOCAL_FJALL_MAXZOOM,
   ADMIN_EMAILS,

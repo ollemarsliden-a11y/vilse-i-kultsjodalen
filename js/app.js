@@ -232,6 +232,8 @@ async function init() {
   wireIdentify();
   wireSplash();
   wireWeather();
+  wireSearch();
+  updateHeroStrip();
   wireAccount();
   registerServiceWorker();
   state.map.on("zoomend", updatePeakVisibility);
@@ -797,6 +799,117 @@ function buildStartPage() {
     b.addEventListener("click", () => openCategoryList(b.dataset.cat)));
 
   applyStartHero();
+}
+
+// ===================================================================
+//  Sök (startsidan) — platser, toppar, leder, boende/mat/service
+// ===================================================================
+let SEARCH_INDEX = null;
+
+function buildSearchIndex() {
+  const ix = [];
+  for (const p of SEED_POIS)
+    ix.push({ name: p.name, sub: t((CATEGORIES[p.category] || {}).label || ""), icon: p.category,
+              color: (CATEGORIES[p.category] || {}).color, kind: "poi", ref: p });
+  if (typeof PEAKS !== "undefined")
+    for (const p of PEAKS)
+      ix.push({ name: p.name, sub: t("Toppar"), icon: "topp", color: CATEGORIES.topp.color, kind: "poi", ref: p });
+  if (typeof TRAILS !== "undefined") {
+    const seen = new Set();
+    for (const f of TRAILS.features) {
+      const n = (f.properties || {}).name;
+      if (!n || seen.has(n)) continue;
+      seen.add(n);
+      ix.push({ name: n, sub: t("Leder & turer"), icon: "led", color: CATEGORIES.led.color, kind: "trail", ref: f });
+    }
+  }
+  if (typeof SERVICES !== "undefined")
+    for (const s of SERVICES)
+      ix.push({ name: s.name, sub: t(SERVICE_SUB[s.sub] || s.kind), icon: "boende",
+                color: CATEGORIES.boende.color, kind: "service", ref: s });
+  return ix;
+}
+
+function wireSearch() {
+  const input = document.getElementById("search-input");
+  const clear = document.getElementById("search-clear");
+  const box = document.getElementById("search-results");
+  if (!input) return;
+
+  const norm = (s) => s.toLowerCase();
+  function run() {
+    const q = norm(input.value.trim());
+    clear.classList.toggle("show", !!q);
+    if (q.length < 2) { box.innerHTML = ""; return; }
+    if (!SEARCH_INDEX) SEARCH_INDEX = buildSearchIndex();
+    const hits = SEARCH_INDEX
+      .map((e) => ({ e, pos: norm(e.name).indexOf(q) }))
+      .filter((h) => h.pos >= 0)
+      .sort((a, b) => a.pos - b.pos || a.e.name.length - b.e.name.length)
+      .slice(0, 8);
+    if (!hits.length) {
+      box.innerHTML = `<div class="sr-empty">${t("Inga träffar.")}</div>`;
+      return;
+    }
+    box.innerHTML = hits.map(({ e, pos }, i) => {
+      const nm = escapeHtml(e.name.slice(0, pos)) + "<mark>" +
+        escapeHtml(e.name.slice(pos, pos + q.length)) + "</mark>" +
+        escapeHtml(e.name.slice(pos + q.length));
+      return `<button class="sr-item" data-i="${i}" style="--c:${e.color}">
+          <span class="sr-ic">${iconSvg(e.icon, "currentColor", 18)}</span>
+          <span class="sr-main"><span class="sr-name">${nm}</span><br>
+          <span class="sr-sub">${escapeHtml(e.sub)}</span></span>
+        </button>`;
+    }).join("");
+    box.querySelectorAll("[data-i]").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        openSearchHit(hits[+btn.dataset.i].e);
+        input.value = ""; box.innerHTML = ""; clear.classList.remove("show");
+      }));
+  }
+  input.addEventListener("input", run);
+  clear.addEventListener("click", () => { input.value = ""; run(); input.focus(); });
+}
+
+function openSearchHit(e) {
+  if (e.kind === "poi") {
+    openPlaceOrHub(e.ref, state.markers[e.ref.id]);
+  } else if (e.kind === "trail") {
+    showView("map");
+    try { state.map.fitBounds(L.geoJSON(e.ref).getBounds().pad(0.15)); } catch {}
+    toast(e.ref.properties.name);
+  } else if (e.kind === "service") {
+    showView("map");
+    state.map.flyTo([e.ref.lat, e.ref.lng], 15);
+    toast(e.ref.name);
+  }
+}
+
+// ===================================================================
+//  Hero-strip — aktuell info på startsidan (sol + vägstatus)
+// ===================================================================
+async function updateHeroStrip() {
+  const strip = document.getElementById("hero-strip");
+  if (!strip) return;
+  const [lat, lon] = MAP_CENTER;
+  const sun = Sun.format(lat, lon);
+  const sunHtml = sun.rise
+    ? `<button class="hs-chip clickable" id="hs-sun" title="${t("Soluppgång och solnedgång idag")}">
+         🌅 ${sun.rise} · 🌇 ${sun.set}</button>`
+    : `<span class="hs-chip">${sun.emoji} ${escapeHtml(sun.text)}</span>`;
+  strip.innerHTML = sunHtml;
+  const sunBtn = document.getElementById("hs-sun");
+  if (sunBtn) sunBtn.addEventListener("click", openWeatherSheet);
+
+  try {
+    const road = await RoadStatus.get();
+    const chip = document.createElement("button");
+    chip.className = "hs-chip clickable";
+    chip.innerHTML = `<span class="hs-dot ${road.open ? "open" : "closed"}"></span>🛣️ ${escapeHtml(road.label)}`;
+    chip.title = road.detail;
+    chip.addEventListener("click", () => toast(road.detail));
+    strip.appendChild(chip);
+  } catch {}
 }
 
 // Startsidans bakgrund (admin kan byta). Lagras som vik_place_images med
@@ -1496,7 +1609,11 @@ async function openWeatherSheet() {
   const c = state.map ? state.map.getCenter() : { lat: MAP_CENTER[0], lng: MAP_CENTER[1] };
   try {
     const days = await Weather.forecast(c.lat, c.lng);
-    body.innerHTML = days.map((d, i) => {
+    const sun = Sun.format(c.lat, c.lng);
+    const sunRow = sun.rise
+      ? `<div class="wf-sun">🌅 ${t("Upp")} <b>${sun.rise}</b> &nbsp;·&nbsp; 🌇 ${t("Ned")} <b>${sun.set}</b></div>`
+      : `<div class="wf-sun">${sun.emoji} <b>${escapeHtml(sun.text)}</b></div>`;
+    body.innerHTML = sunRow + days.map((d, i) => {
       const label = i === 0 ? t("Idag") : i === 1 ? t("Imorgon") : fcDayName(d.date);
       return `<div class="wf-row">
         <span class="wf-emoji">${d.emoji}</span>
