@@ -110,6 +110,7 @@ const Storage = (() => {
         if (patch.image != null) upd.image_url = patch.image;
         if (patch.season != null) upd.season = patch.season;
         if (patch.village_id !== undefined) upd.village_id = patch.village_id;
+        if (patch.coord) { upd.lat = patch.coord[0]; upd.lng = patch.coord[1]; }
         upd.edited_at = new Date().toISOString();
         const { data, error } = await sb.from("vik_tips").update(upd).eq("id", id).select().single();
         if (error) throw error;

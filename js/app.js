@@ -421,14 +421,12 @@ function wireImageManager(poi) {
 
 // Admin: flytta en grundplats genom att dra en nål på kartan.
 // Nya läget sparas som coord i override-patchen (följer med överallt).
-function startMovePlace(poi) {
-  closeSheet("place-edit");
-  closePlaceSheet();
-  if (document.getElementById("village-hub").classList.contains("active")) closeVillageHub();
+// Fast nål mitt på skärmen — flytta KARTAN under den (funkar med tummen,
+// till skillnad från dragbara markörer som krockar med panorering).
+// onSave får nya koordinaten; kastar den fel visas det som toast.
+function pickOnMap(startCoord, onSave) {
   showView("map");
-  state.map.setView(poi.coord, Math.max(state.map.getZoom(), 15));
-  // Fast nål mitt på skärmen — flytta KARTAN under den (funkar med tummen,
-  // till skillnad från dragbara markörer som krockar med panorering).
+  state.map.setView(startCoord, Math.max(state.map.getZoom(), 15));
   const pin = document.createElement("div");
   pin.className = "center-pin";
   pin.textContent = "📍";
@@ -443,17 +441,37 @@ function startMovePlace(poi) {
   bar.querySelector("#move-cancel").onclick = done;
   bar.querySelector("#move-save").onclick = async () => {
     const p = state.map.getCenter();
-    const patch = { ...(state.overrides[poi.id] || {}), coord: [p.lat, p.lng] };
     try {
-      await Storage.savePlaceOverride(poi.id, patch);
-      await loadPlaceData();
-      const m = state.markers[poi.id];
-      if (m && m.setLatLng) m.setLatLng([p.lat, p.lng]);
-      buildStartPage();
+      await onSave([p.lat, p.lng]);
       toast(t("Nytt läge sparat."));
       done();
     } catch (e) { toast("Kunde inte spara: " + e.message); }
   };
+}
+
+function startMovePlace(poi) {
+  closeSheet("place-edit");
+  closePlaceSheet();
+  if (document.getElementById("village-hub").classList.contains("active")) closeVillageHub();
+  pickOnMap(poi.coord, async (coord) => {
+    const patch = { ...(state.overrides[poi.id] || {}), coord };
+    await Storage.savePlaceOverride(poi.id, patch);
+    await loadPlaceData();
+    const m = state.markers[poi.id];
+    if (m && m.setLatLng) m.setLatLng(coord);
+    buildStartPage();
+  });
+}
+
+// Flytta ett eget tips (eller som admin: vilket tips som helst).
+function startMoveTip(poi) {
+  closePlaceSheet();
+  pickOnMap(poi.coord, async (coord) => {
+    await Storage.updateUserPoi(poi.id, { coord });
+    poi.coord = coord;
+    const m = state.markers[poi.id];
+    if (m && m.setLatLng) m.setLatLng(coord);
+  });
 }
 
 async function savePlaceEdit(poi) {
@@ -625,6 +643,7 @@ function openPlaceSheet(poi, marker) {
 
   const reactRow = community
     ? `<div class="ps-reactions" id="ps-reactions"></div>` : "";
+  const canMoveTip = poi.userAdded && (isOwner || isAdminNow());
   const ownerCtl = isOwner
     ? `<div class="ps-actions"><button class="ps-btn ps-btn-ghost" id="ps-edit">${t("Redigera")}</button>
          <button class="ps-btn ps-danger" id="ps-delete">${t("Ta bort")}</button></div>`
@@ -653,6 +672,7 @@ function openPlaceSheet(poi, marker) {
       </div>
       ${poi.website ? `<a class="ps-btn ps-web" href="${encodeURI(poi.website)}" target="_blank" rel="noopener">${poi.category === "fiske" ? t("Köp fiskekort ↗") : t("Hemsida ↗")}</a>` : ""}
       ${ownerCtl}
+      ${canMoveTip ? `<button class="ps-btn ps-btn-ghost" id="ps-move-tip">📍 ${t("Flytta på kartan")}</button>` : ""}
       ${canAdminEdit(poi) ? `<button class="ps-btn ps-admin-edit" id="ps-place-edit">${t("✏️ Redigera plats")}</button>` : ""}
       ${community ? `<div class="ps-comments" id="ps-comments"></div>` : ""}
       ${poi.source ? `<div class="ps-src">${t("Källa")}: ${escapeHtml(poi.source)}</div>` : ""}
@@ -692,6 +712,8 @@ function openPlaceSheet(poi, marker) {
   if (delOwner) delOwner.onclick = doDelete;
   const editBtn = document.getElementById("ps-edit");
   if (editBtn) editBtn.onclick = () => startEditFlow(poi);
+  const moveTipBtn = document.getElementById("ps-move-tip");
+  if (moveTipBtn) moveTipBtn.onclick = () => startMoveTip(poi);
   const reportBtnEl = document.getElementById("ps-report");
   if (reportBtnEl) reportBtnEl.onclick = () => reportTip(poi.id);
 

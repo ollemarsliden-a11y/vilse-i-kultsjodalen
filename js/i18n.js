@@ -245,6 +245,7 @@ const I18N = {
     "🗂️ Hantera konto & innehåll": "🗂️ Manage account & content",
     "Hantera konto": "Manage account",
     "Flytta plats på kartan": "Move place on the map",
+    "Flytta på kartan": "Move on the map",
     "Flytta kartan tills nålen står rätt": "Move the map until the pin is right",
     "Spara läge": "Save location",
     "Avbryt": "Cancel",
