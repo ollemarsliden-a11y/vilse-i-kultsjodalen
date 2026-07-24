@@ -507,6 +507,7 @@ body.picking::after {
 .privacy-text ul { padding-left: 20px; margin: 6px 0; }
 .privacy-text li { margin: 4px 0; }
 
+.add-choice[hidden] { display: none; }
 .add-choice {
   position: absolute; right: 76px; z-index: 901;
   bottom: calc(18px + var(--tabbar-h) + 52px);
