@@ -178,7 +178,7 @@ const SEED_POIS = [
     coord: [65.0296, 15.3701],
     blurb: "By vid fjällets fot — porten till Marsfjället",
     description:
-      "Marsliden ligger utmed Kultsjöns östra strand, tätt inpå Marsfjället, och " +
+      "Marsliden ligger vid Västra Marssjöns norra strand, tätt inpå Marsfjället, och " +
       "brukar kallas porten till Marsfjällets naturreservat. Byn är liten — ett " +
       "tjugotal fastboende men uppemot 200 fritidshus — och har kvar mycket av sin " +
       "gamla nybyggar- och fäbodmiljö. Härifrån utgår markerade leder mot toppar, " +
@@ -193,7 +193,7 @@ const SEED_POIS = [
       "café, som förutom fika också fungerar som informationspunkt och ett stycke " +
       "lokalt kuriosamuseum.",
     facts: [
-      ["Läge", "Kultsjöns östra strand"],
+      ["Läge", "Västra Marssjöns norra strand"],
       ["Fastboende", "ca 20–30"],
       ["Fritidshus", "ca 200"],
       ["Port till", "Marsfjället"],

@@ -175,6 +175,7 @@ const state = {
   pickingLocation: false,
   pendingCoord: null,
   pendingImage: null,
+  pendingMarker: null, // flyttbar nål när ett nytt tips placeras
   weatherTimer: null,
   overrides: {},      // place_id -> patch (admin-textändringar)
   placeImages: {},    // place_id -> [bildrader]
@@ -1019,6 +1020,25 @@ function addTodo(villageId, placeId) {
   saveTodoPatch(villageId, patch);
 }
 
+// Admin: samma sak för byns "Bo & äta"-lista (platser eller service-poster).
+function hideBo(villageId, key) {
+  const patch = { ...(state.overrides[villageId] || {}) };
+  patch.boHide = [...new Set([...(patch.boHide || []), key])];
+  patch.boAdd = (patch.boAdd || []).filter((x) => x !== key);
+  saveTodoPatch(villageId, patch);
+}
+function addBo(villageId, key) {
+  const patch = { ...(state.overrides[villageId] || {}) };
+  patch.boAdd = [...new Set([...(patch.boAdd || []), key])];
+  patch.boHide = (patch.boHide || []).filter((x) => x !== key);
+  saveTodoPatch(villageId, patch);
+}
+function removeLodging(villageId, idx) {
+  const patch = { ...(state.overrides[villageId] || {}) };
+  patch.lodging = (patch.lodging || []).filter((_, i) => i !== idx);
+  saveTodoPatch(villageId, patch);
+}
+
 function renderVillageHub(poi) {
   const cat = CATEGORIES[poi.category] || CATEGORIES.sevart;
   const imgs = galleryFor(poi);
@@ -1037,15 +1057,33 @@ function renderVillageHub(poi) {
   }
   todo = todo.sort((a, b) => a.d - b.d).slice(0, 14);
   const admin = canAdminEdit(poi);
-  const services = (typeof SERVICES !== "undefined" ? SERVICES : [])
-    .filter((s) => (s.kind === "boende" || s.kind === "mat") && listableService(s))
+  // Bo & äta: automatiska förslag ± admins tillägg/borttag (boAdd/boHide i patchen).
+  const boHide = new Set(vpatch.boHide || []);
+  const svcKey = (s) => "svc:" + s.name;
+  const allSvc = (typeof SERVICES !== "undefined" ? SERVICES : [])
+    .filter((s) => (s.kind === "boende" || s.kind === "mat") && listableService(s));
+  const services = allSvc
     .map((s) => ({ s, d: distMeters(poi.coord, [s.lat, s.lng]) }))
-    .filter((x) => x.d <= 9000).sort((a, b) => a.d - b.d).slice(0, 6);
+    .filter((x) => x.d <= 9000 && !boHide.has(svcKey(x.s)))
+    .sort((a, b) => a.d - b.d).slice(0, 6);
   // Egna boende-platser (t.ex. Kultsjögården) hör hemma under "Bo & äta".
   const seedLodging = SEED_POIS
-    .filter((p) => p.category === "boende" && !isVillage(p) && nearestVillageId(p.coord) === poi.id)
-    .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
-    .sort((a, b) => a.d - b.d);
+    .filter((p) => p.category === "boende" && !isVillage(p) && nearestVillageId(p.coord) === poi.id && !boHide.has(p.id))
+    .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }));
+  for (const key of (vpatch.boAdd || [])) {
+    if (boHide.has(key)) continue;
+    if (key.startsWith("svc:")) {
+      const s = allSvc.find((x) => svcKey(x) === key);
+      if (s && !services.some((x) => svcKey(x.s) === key))
+        services.push({ s, d: distMeters(poi.coord, [s.lat, s.lng]) });
+    } else {
+      const p = SEED_POIS.find((x) => x.id === key);
+      if (p && !seedLodging.some((x) => x.p.id === key))
+        seedLodging.push({ p, d: distMeters(poi.coord, p.coord) });
+    }
+  }
+  seedLodging.sort((a, b) => a.d - b.d);
+  services.sort((a, b) => a.d - b.d);
   const tips = Object.values(state.markers).map((m) => m.poi).filter((p) => p.userAdded)
     .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
     .filter((x) => x.p.village_id === poi.id || (!x.p.village_id && x.d <= 9000))
@@ -1056,9 +1094,12 @@ function renderVillageHub(poi) {
   const routes = collectVillageRoutes(poi);
   const loggedIn = !!(Storage.auth && Storage.auth.userId && Storage.auth.userId());
 
-  const poiRow = ({ p, d }, canHide) => {
+  const boX = (key) => admin
+    ? `<span class="vh-row-x" data-bohide="${escapeHtml(key)}" title="${t("Ta bort")}" role="button">✕</span>` : "";
+  const poiRow = ({ p, d }, canHide, xHtml) => {
     const c = CATEGORIES[p.category] || CATEGORIES.sevart;
-    const x = canHide ? `<span class="vh-row-x" data-hide="${p.id}" title="${t("Dölj")}" role="button">✕</span>` : "";
+    const x = xHtml != null ? xHtml
+      : canHide ? `<span class="vh-row-x" data-hide="${p.id}" title="${t("Dölj")}" role="button">✕</span>` : "";
     const pimg = (galleryFor(p)[0] || {}).url;
     return `<button class="vh-row" data-poi="${p.id}" style="--c:${c.color}">
       ${pimg ? `<span class="vh-row-ic vh-row-thumb" style="background-image:url('${pimg}')"></span>`
@@ -1070,12 +1111,13 @@ function renderVillageHub(poi) {
       <span class="vh-row-ic">${iconSvg(s.kind === "mat" ? "mat" : "boende", "currentColor", 20)}</span>
       <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(s.name)}</span>
         <span class="vh-row-sub">${escapeHtml(SERVICE_SUB[s.sub] || s.kind)}</span></span>
-      ${s.website ? `<span class="vh-row-link">${t("Boka ↗")}</span>` : ""}</button>`;
-  const lodgeRow = (l) => `<a class="vh-row" href="${l.url ? encodeURI(l.url) : "#"}" target="_blank" rel="noopener" style="--c:#e0872b; text-decoration:none;">
+      ${s.website ? `<span class="vh-row-link">${t("Boka ↗")}</span>` : ""}${boX(svcKey(s))}</button>`;
+  const lodgeRow = (l, i) => `<a class="vh-row" href="${l.url ? encodeURI(l.url) : "#"}" target="_blank" rel="noopener" style="--c:#e0872b; text-decoration:none;">
       <span class="vh-row-ic">${iconSvg("boende", "currentColor", 20)}</span>
       <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(l.name || "Boende")}</span>
         ${l.note ? `<span class="vh-row-sub">${escapeHtml(l.note)}</span>` : ""}</span>
-      ${l.url ? `<span class="vh-row-link">${t("Boka ↗")}</span>` : ""}</a>`;
+      ${l.url ? `<span class="vh-row-link">${t("Boka ↗")}</span>` : ""}
+      ${admin ? `<span class="vh-row-x" data-bolodge="${i}" title="${t("Ta bort")}" role="button">✕</span>` : ""}</a>`;
   const routeRow = (r) => `<button class="vh-row" data-route="${r.key}" style="--c:#d1495b">
       <span class="vh-row-ic">${iconSvg("led", "currentColor", 20)}</span>
       <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(r.name)}</span>
@@ -1101,6 +1143,7 @@ function renderVillageHub(poi) {
   document.getElementById("vh-body").innerHTML = `
     ${heroHtml}${thumbs}
     <div class="vh-section">
+      ${admin ? `<button class="vh-add vh-add-soft" id="vh-edit">✏️ ${t("Redigera by & bilder")}</button>` : ""}
       ${poi.description ? `<div class="vh-about"><p>${escapeHtml(poi.description)}</p>
         ${poi.history ? `<p class="vh-more" hidden>${escapeHtml(poi.history)}</p><button class="vh-readmore" id="vh-readmore">${t("Läs mer")}</button>` : ""}</div>` : ""}
 
@@ -1114,9 +1157,18 @@ function renderVillageHub(poi) {
 
       <div class="vh-sec-head"><h3>${t("Bo & äta")}</h3></div>
       ${lodging.map(lodgeRow).join("")}
-      ${seedLodging.map((x) => poiRow(x)).join("")}
+      ${seedLodging.map((x) => poiRow(x, false, boX(x.p.id))).join("")}
       ${services.length ? services.map(svcRow).join("")
         : (lodging.length || seedLodging.length ? "" : `<p class="vh-empty">${t("Inget boende registrerat nära byn än.")}</p>`)}
+      ${admin ? `<select class="vh-todo-add" id="vh-bo-add"><option value="">${t("+ Lägg till i Bo & äta")}</option>${
+        [
+          ...SEED_POIS.filter((p) => p.category === "boende" && !isVillage(p) && !seedLodging.some((x) => x.p.id === p.id))
+            .map((p) => ({ key: p.id, name: p.name, d: distMeters(poi.coord, p.coord) })),
+          ...allSvc.filter((s) => !services.some((x) => svcKey(x.s) === svcKey(s)))
+            .map((s) => ({ key: svcKey(s), name: s.name, d: distMeters(poi.coord, [s.lat, s.lng]) })),
+        ].sort((a, b) => a.d - b.d).slice(0, 60)
+          .map((c) => `<option value="${escapeHtml(c.key)}">${escapeHtml(c.name)} · ${fmtDistShort(c.d)}</option>`).join("")
+      }</select>` : ""}
 
       <div class="vh-sec-head"><h3>${t("Turer från byn")}</h3></div>
       ${routes.length ? routes.map(routeRow).join("") : `<p class="vh-empty">${t("Inga turer från byn än.")}</p>`}
@@ -1150,6 +1202,16 @@ function renderVillageHub(poi) {
   });
   const todoAddSel = document.getElementById("vh-todo-add");
   if (todoAddSel) todoAddSel.onchange = () => { if (todoAddSel.value) addTodo(poi.id, todoAddSel.value); };
+  const vhEdit = document.getElementById("vh-edit");
+  if (vhEdit) vhEdit.onclick = () => openPlaceEdit(poi);
+  document.querySelectorAll("#vh-body [data-bohide]").forEach((el) => el.onclick = (e) => {
+    e.stopPropagation(); e.preventDefault(); hideBo(poi.id, el.dataset.bohide);
+  });
+  document.querySelectorAll("#vh-body [data-bolodge]").forEach((el) => el.onclick = (e) => {
+    e.stopPropagation(); e.preventDefault(); removeLodging(poi.id, +el.dataset.bolodge);
+  });
+  const boAddSel = document.getElementById("vh-bo-add");
+  if (boAddSel) boAddSel.onchange = () => { if (boAddSel.value) addBo(poi.id, boAddSel.value); };
   document.querySelectorAll("#vh-body [data-svc]").forEach((el) => el.onclick = () => {
     const url = decodeURIComponent(el.dataset.svc);
     if (url) window.open(url, "_blank", "noopener");
@@ -1573,6 +1635,9 @@ function wireControls() {
   document.getElementById("btn-layers").addEventListener("click", () => togglePanel("panel-layers"));
   document.getElementById("btn-offline").addEventListener("click", downloadCurrentView);
   document.getElementById("btn-add").addEventListener("click", startAddFlow);
+  document.getElementById("add-here").addEventListener("click", () => { hideAddChoice(); startAddHere(); });
+  document.getElementById("add-pick").addEventListener("click", () => { hideAddChoice(); startAddPick(); });
+  state.map.on("click", hideAddChoice);
   document.getElementById("btn-gpx").addEventListener("click", openRoutesSheet);
   document.getElementById("gpx-input").addEventListener("change", importGpxFile);
   document.getElementById("routes-cancel").addEventListener("click", () => closeSheet("routes-sheet"));
@@ -2019,6 +2084,16 @@ function openFornSheet(features) {
 // ===================================================================
 function startAddFlow() {
   if (!requireLogin()) return;
+  const menu = document.getElementById("add-choice");
+  menu.hidden = !menu.hidden;
+}
+
+function hideAddChoice() {
+  document.getElementById("add-choice").hidden = true;
+}
+
+// Peka ut platsen på kartan (gamla flödet).
+function startAddPick() {
   state.editingId = null;
   state.pickingLocation = true;
   document.body.classList.add("picking");
@@ -2027,9 +2102,43 @@ function startAddFlow() {
     state.pendingCoord = [e.latlng.lat, e.latlng.lng];
     state.pickingLocation = false;
     document.body.classList.remove("picking");
+    placePendingMarker(state.pendingCoord);
     setAddFormMode(false);
     document.getElementById("add-form").classList.add("open");
   });
+}
+
+// Live-tips: hämta GPS-position och öppna formuläret direkt.
+function startAddHere() {
+  if (!navigator.geolocation) return toast("GPS stöds inte i den här webbläsaren.");
+  toast("Hämtar din position…");
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      state.editingId = null;
+      state.pendingCoord = [latitude, longitude];
+      placePendingMarker(state.pendingCoord);
+      state.map.setView(state.pendingCoord, Math.max(state.map.getZoom(), 14));
+      setAddFormMode(false);
+      document.getElementById("add-form").classList.add("open");
+      toast(`Position hämtad (±${Math.round(accuracy)} m). Dra nålen om den hamnat fel.`);
+    },
+    () => toast("Kunde inte hämta position. Tillåt platsåtkomst."),
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+// Flyttbar nål som visar var tipset hamnar; dra för att justera.
+function placePendingMarker(ll) {
+  removePendingMarker();
+  state.pendingMarker = L.marker(ll, { draggable: true }).addTo(state.map);
+  state.pendingMarker.on("dragend", () => {
+    const p = state.pendingMarker.getLatLng();
+    state.pendingCoord = [p.lat, p.lng];
+  });
+}
+function removePendingMarker() {
+  if (state.pendingMarker) { state.map.removeLayer(state.pendingMarker); state.pendingMarker = null; }
 }
 
 function startEditFlow(poi) {
@@ -2059,6 +2168,7 @@ function closeAddForm() {
   document.getElementById("add-village").value = "";
   state.pendingCoord = null;
   state.editingId = null;
+  removePendingMarker();
   setAddFormMode(false);
   clearPhoto();
 }

@@ -492,6 +492,19 @@ body.picking::after {
   bottom: calc(18px + var(--tabbar-h));
   display: flex; flex-direction: column; gap: 12px;
 }
+.add-choice {
+  position: absolute; right: 76px; z-index: 901;
+  bottom: calc(18px + var(--tabbar-h) + 52px);
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--surface); border-radius: 14px; padding: 8px;
+  box-shadow: var(--shadow-m);
+}
+.add-choice button {
+  border: none; background: none; color: inherit; cursor: pointer;
+  font: inherit; font-size: 0.95rem; padding: 10px 12px; border-radius: 10px;
+  text-align: left; white-space: nowrap;
+}
+.add-choice button:hover { background: rgba(0, 0, 0, 0.06); }
 .fab {
   width: 52px; height: 52px; border-radius: 16px; border: none;
   background: var(--surface); color: var(--brand); cursor: pointer;
