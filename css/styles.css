@@ -507,6 +507,14 @@ body.picking::after {
 .privacy-text ul { padding-left: 20px; margin: 6px 0; }
 .privacy-text li { margin: 4px 0; }
 
+.center-pin {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -92%);
+  font-size: 38px; line-height: 1; z-index: 650;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+
 .move-bar {
   position: fixed; left: 50%; transform: translateX(-50%);
   bottom: calc(18px + var(--tabbar-h)); z-index: 1200;

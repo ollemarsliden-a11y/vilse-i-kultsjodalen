@@ -426,18 +426,23 @@ function startMovePlace(poi) {
   closePlaceSheet();
   if (document.getElementById("village-hub").classList.contains("active")) closeVillageHub();
   showView("map");
-  state.map.setView(poi.coord, Math.max(state.map.getZoom(), 14));
-  const mk = L.marker(poi.coord, { draggable: true }).addTo(state.map);
+  state.map.setView(poi.coord, Math.max(state.map.getZoom(), 15));
+  // Fast nål mitt på skärmen — flytta KARTAN under den (funkar med tummen,
+  // till skillnad från dragbara markörer som krockar med panorering).
+  const pin = document.createElement("div");
+  pin.className = "center-pin";
+  pin.textContent = "📍";
+  document.getElementById("map").appendChild(pin);
   const bar = document.createElement("div");
   bar.className = "move-bar";
-  bar.innerHTML = `<span>${t("Dra nålen till rätt plats")}</span>
+  bar.innerHTML = `<span>${t("Flytta kartan tills nålen står rätt")}</span>
     <button id="move-save" class="btn-primary">${t("Spara läge")}</button>
     <button id="move-cancel">${t("Avbryt")}</button>`;
   document.body.appendChild(bar);
-  const done = () => { state.map.removeLayer(mk); bar.remove(); };
+  const done = () => { pin.remove(); bar.remove(); };
   bar.querySelector("#move-cancel").onclick = done;
   bar.querySelector("#move-save").onclick = async () => {
-    const p = mk.getLatLng();
+    const p = state.map.getCenter();
     const patch = { ...(state.overrides[poi.id] || {}), coord: [p.lat, p.lng] };
     try {
       await Storage.savePlaceOverride(poi.id, patch);
