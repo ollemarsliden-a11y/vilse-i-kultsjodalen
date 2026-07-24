@@ -723,6 +723,9 @@ function openCategoryList(key) {
   if (!g) return;
   let items = SEED_POIS.filter(g.match);
   if (g.key === "utflykter" && typeof PEAKS !== "undefined") items = items.concat(PEAKS);
+  // Toppar samlas i en hopfällbar grupp så de inte dränker listan.
+  const peaks = items.filter((p) => p.category === "topp");
+  items = items.filter((p) => p.category !== "topp");
   const row = (p) => {
     const c = CATEGORIES[p.category] || CATEGORIES.sevart;
     const img = (galleryFor(p)[0] || {}).url;
@@ -735,6 +738,14 @@ function openCategoryList(key) {
         <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span></button>`;
   };
   let html = items.map(row).join("");
+  if (peaks.length) {
+    html += `<button class="vh-row" id="cat-peaks-toggle" style="--c:${(CATEGORIES.topp || {}).color || "#5f7488"}">
+      <span class="vh-row-ic">${iconSvg("topp", "currentColor", 20)}</span>
+      <span class="vh-row-main"><span class="vh-row-name">${t("Toppar i området")}</span>
+        <span class="vh-row-sub">${peaks.length} ${t("toppar")} · ${t("tryck för lista")}</span></span>
+      <span class="vh-row-link" id="cat-peaks-chev">▾</span></button>
+    <div id="cat-peaks-list" hidden>${peaks.map(row).join("")}</div>`;
+  }
   if (g.services && typeof SERVICES !== "undefined") {
     html += SERVICES.filter((s) => (s.kind === "boende" || s.kind === "mat") && listableService(s)).map((s) =>
       `<a class="vh-row" ${s.website ? `href="${encodeURI(s.website)}" target="_blank" rel="noopener"` : ""} style="--c:#e0872b;text-decoration:none">
@@ -745,6 +756,12 @@ function openCategoryList(key) {
   }
   document.getElementById("cat-title").textContent = t(g.label);
   document.getElementById("cat-body").innerHTML = html || `<p class="panel-hint">${t("Inget här än.")}</p>`;
+  const pkToggle = document.getElementById("cat-peaks-toggle");
+  if (pkToggle) pkToggle.onclick = () => {
+    const list = document.getElementById("cat-peaks-list");
+    list.hidden = !list.hidden;
+    document.getElementById("cat-peaks-chev").textContent = list.hidden ? "▾" : "▴";
+  };
   document.querySelectorAll("#cat-body [data-poi]").forEach((el) => el.onclick = () => {
     const p = SEED_POIS.find((x) => x.id === el.dataset.poi)
       || (typeof PEAKS !== "undefined" ? PEAKS.find((x) => x.id === el.dataset.poi) : null);
@@ -1055,7 +1072,10 @@ function renderVillageHub(poi) {
     const p = pool.find((x) => x.id === id);
     if (p) todo.push({ p, d: distMeters(poi.coord, p.coord) });
   }
-  todo = todo.sort((a, b) => a.d - b.d).slice(0, 14);
+  todo = todo.sort((a, b) => a.d - b.d);
+  // Toppar tar mycket plats — samla dem i en hopfällbar grupp under listan.
+  const peaks = todo.filter((x) => x.p.category === "topp").slice(0, 12);
+  todo = todo.filter((x) => x.p.category !== "topp").slice(0, 14);
   const admin = canAdminEdit(poi);
   // Bo & äta: automatiska förslag ± admins tillägg/borttag (boAdd/boHide i patchen).
   const boHide = new Set(vpatch.boHide || []);
@@ -1149,8 +1169,14 @@ function renderVillageHub(poi) {
 
       <div class="vh-sec-head"><h3>${t("Att göra här")}</h3><span>${todo.length ? todo.length + " " + t("platser") : ""}</span></div>
       ${todo.length ? todo.map((x) => poiRow(x, admin)).join("") : `<p class="vh-empty">${t("Inga registrerade platser nära byn än.")}</p>`}
+      ${peaks.length ? `<button class="vh-row" id="vh-peaks-toggle" style="--c:${(CATEGORIES.topp || {}).color || "#5f7488"}">
+        <span class="vh-row-ic">${iconSvg("topp", "currentColor", 20)}</span>
+        <span class="vh-row-main"><span class="vh-row-name">${t("Toppar i området")}</span>
+          <span class="vh-row-sub">${peaks.length} ${t("toppar")} · ${t("tryck för lista")}</span></span>
+        <span class="vh-row-link" id="vh-peaks-chev">▾</span></button>
+      <div id="vh-peaks-list" hidden>${peaks.map((x) => poiRow(x, admin)).join("")}</div>` : ""}
       ${admin ? `<select class="vh-todo-add" id="vh-todo-add"><option value="">${t("+ Lägg till plats i listan")}</option>${
-        pool.filter((p) => !isVillage(p) && p.id !== poi.id && !todo.some((x) => x.p.id === p.id))
+        pool.filter((p) => !isVillage(p) && p.id !== poi.id && !todo.some((x) => x.p.id === p.id) && !peaks.some((x) => x.p.id === p.id))
           .map((p) => ({ p, d: distMeters(poi.coord, p.coord) })).sort((a, b) => a.d - b.d).slice(0, 80)
           .map(({ p, d }) => `<option value="${p.id}">${escapeHtml(p.name)} · ${fmtDistShort(d)}</option>`).join("")
       }</select>` : ""}
@@ -1202,6 +1228,12 @@ function renderVillageHub(poi) {
   });
   const todoAddSel = document.getElementById("vh-todo-add");
   if (todoAddSel) todoAddSel.onchange = () => { if (todoAddSel.value) addTodo(poi.id, todoAddSel.value); };
+  const peaksToggle = document.getElementById("vh-peaks-toggle");
+  if (peaksToggle) peaksToggle.onclick = () => {
+    const list = document.getElementById("vh-peaks-list");
+    list.hidden = !list.hidden;
+    document.getElementById("vh-peaks-chev").textContent = list.hidden ? "▾" : "▴";
+  };
   const vhEdit = document.getElementById("vh-edit");
   if (vhEdit) vhEdit.onclick = () => openPlaceEdit(poi);
   document.querySelectorAll("#vh-body [data-bohide]").forEach((el) => el.onclick = (e) => {
@@ -1315,6 +1347,8 @@ function buildInfoPage() {
   const ic = (name) => `<span class="ic">${iconSvg(name, "currentColor", 18)}</span>`;
   document.getElementById("info-body").innerHTML =
     LANG === "en" ? infoPageEn(ic) : infoPageSv(ic);
+  const pl = document.getElementById("info-privacy-link");
+  if (pl) pl.onclick = (e) => { e.preventDefault(); openPrivacySheet(); };
   updateRoadStatus();
 }
 
@@ -1391,6 +1425,11 @@ function infoPageEn(ic) {
       <p>A fishing permit is required in Lake Kultsjön, the Kultsjöån river and most mountain waters. The Kultsjöån is known for its Arctic char.</p>
     </div>
 
+    <div class="info-card">
+      <h3>${ic("sevart")} Privacy</h3>
+      <p>If you sign in and share tips or photos, your email address and shared content are processed. Read more in the <a href="#" id="info-privacy-link">privacy policy</a>.</p>
+    </div>
+
     <p class="info-foot">General mountain and safety information is based on the Swedish Mountain Safety Council and the Environmental Protection Agency.</p>`;
 }
 
@@ -1453,6 +1492,11 @@ function infoPageSv(ic) {
     <div class="info-card">
       <h3>${ic("fiske")} Fiske</h3>
       <p>Fiskekort krävs i Kultsjön, Kultsjöån och de flesta fjällvatten. Kultsjöån är känd för sitt rödingfiske.</p>
+    </div>
+
+    <div class="info-card">
+      <h3>${ic("sevart")} Integritet</h3>
+      <p>Loggar du in och delar tips eller foton behandlas din e-postadress och det du delar. Läs mer i <a href="#" id="info-privacy-link">integritetspolicyn</a>.</p>
     </div>
 
     <p class="info-foot">Allmän fjäll- och säkerhetsinfo bygger på Fjällsäkerhetsrådet och Naturvårdsverket.</p>`;
@@ -1798,6 +1842,9 @@ function openSheet(id) { document.getElementById(id).classList.add("open"); }
 function closeSheet(id) { document.getElementById(id).classList.remove("open"); }
 
 function wireAccount() {
+  document.querySelectorAll(".privacy-link").forEach((a) =>
+    a.addEventListener("click", (e) => { e.preventDefault(); openPrivacySheet(); }));
+  document.getElementById("privacy-cancel").addEventListener("click", () => closeSheet("privacy-sheet"));
   const btn = document.getElementById("btn-account");
   if (!Storage.auth || Storage.mode !== "supabase") {
     btn.style.display = "none";
@@ -1809,9 +1856,11 @@ function wireAccount() {
   document.getElementById("account-cancel").addEventListener("click", () => closeSheet("account-sheet"));
   document.getElementById("account-send").addEventListener("click", sendMagicLink);
   document.getElementById("account-google").addEventListener("click", async () => {
+    if (!hasConsent()) return;
     try { await Storage.auth.signInWithGoogle(); }
     catch (e) { toast("Kunde inte starta Google-inloggning: " + e.message); }
   });
+  document.getElementById("account-delete").addEventListener("click", deleteMyAccount);
   document.getElementById("account-signout").addEventListener("click", async () => {
     await Storage.auth.signOut(); toast("Utloggad."); closeSheet("account-sheet");
   });
@@ -1897,11 +1946,110 @@ function renderAdmin(reports, flagged) {
   });
 }
 function openAccountSheet() { renderAccount(Storage.auth.user()); openSheet("account-sheet"); }
+function hasConsent() {
+  const box = document.getElementById("account-consent");
+  if (box && !box.checked) {
+    toast(t("Kryssa i att du godkänner integritetspolicyn först."));
+    return false;
+  }
+  return true;
+}
+
 async function sendMagicLink() {
+  if (!hasConsent()) return;
   const email = document.getElementById("account-email").value.trim();
   if (!email || !email.includes("@")) return toast("Ange din e-post.");
   try { await Storage.auth.signIn(email); toast("Kolla mejlen — inloggningslänk skickad!"); }
   catch (e) { toast("Kunde inte skicka länk: " + e.message); }
+}
+
+// ===================================================================
+//  Integritetspolicy & kontoradering (GDPR)
+// ===================================================================
+const PRIVACY_CONTACT = "vilseikultsjodalen@gmail.com";
+const PRIVACY_OWNER = "Olof Larsson";
+const PRIVACY_UPDATED = "2026-07-24";
+
+function openPrivacySheet() {
+  document.getElementById("privacy-body").innerHTML =
+    LANG === "en" ? privacyEn() : privacySv();
+  openSheet("privacy-sheet");
+}
+
+function privacySv() {
+  return `
+    <div class="privacy-text">
+      <p><b>Personuppgiftsansvarig:</b> ${PRIVACY_OWNER}<br>
+         <b>Kontakt:</b> <a href="mailto:${PRIVACY_CONTACT}">${PRIVACY_CONTACT}</a></p>
+
+      <h3>Vilka uppgifter behandlas?</h3>
+      <ul>
+        <li><b>E-postadress</b> — när du loggar in (via inloggningslänk eller Google).</li>
+        <li><b>Innehåll du delar</b> — tips, kommentarer, reaktioner, GPX-turer och foton du laddar upp, kopplade till ditt konto.</li>
+        <li><b>Ingen platsspårning:</b> GPS-positionen används bara i din enhet (visa var du är, placera tips) och sparas aldrig hos oss.</li>
+      </ul>
+
+      <h3>Varför och med vilken laglig grund?</h3>
+      <p>Uppgifterna behövs för att kontot och delningsfunktionerna ska fungera (avtal, art. 6.1 b GDPR) och för att kunna moderera olämpligt innehåll (berättigat intresse, art. 6.1 f).</p>
+
+      <h3>Var lagras uppgifterna?</h3>
+      <p>Inloggning och databas drivs av <b>Supabase</b>. Loggar du in med Google behandlar <b>Google</b> inloggningen. Appen hämtar även öppna data från SMHI, Lantmäteriet, OpenStreetMap, Riksantikvarieämbetet och Trafikverket — inga personuppgifter skickas dit. Själva appen distribueras via GitHub Pages.</p>
+
+      <h3>Hur länge?</h3>
+      <p>Så länge du har ditt konto. Raderar du kontot försvinner dina uppgifter. Delat innehåll som raderats försvinner direkt ur appen.</p>
+
+      <h3>Dina rättigheter</h3>
+      <p>Du kan när som helst få ut, rätta eller radera dina uppgifter. Radera enskilda tips/kommentarer direkt i appen, eller hela kontot via <b>"Radera mitt konto &amp; mina data"</b> i kontovyn. Frågor eller begäran: mejla <a href="mailto:${PRIVACY_CONTACT}">${PRIVACY_CONTACT}</a>. Du kan också klaga hos Integritetsskyddsmyndigheten (imy.se).</p>
+
+      <p class="panel-hint">Uppdaterad ${PRIVACY_UPDATED}.</p>
+    </div>`;
+}
+
+function privacyEn() {
+  return `
+    <div class="privacy-text">
+      <p><b>Data controller:</b> ${PRIVACY_OWNER}<br>
+         <b>Contact:</b> <a href="mailto:${PRIVACY_CONTACT}">${PRIVACY_CONTACT}</a></p>
+
+      <h3>What data is processed?</h3>
+      <ul>
+        <li><b>Email address</b> — when you sign in (via magic link or Google).</li>
+        <li><b>Content you share</b> — tips, comments, reactions, GPX routes and photos you upload, linked to your account.</li>
+        <li><b>No location tracking:</b> GPS is only used on your device (showing where you are, placing tips) and is never stored by us.</li>
+      </ul>
+
+      <h3>Why, and on what legal basis?</h3>
+      <p>The data is needed for the account and sharing features to work (contract, Art. 6(1)(b) GDPR) and to moderate inappropriate content (legitimate interest, Art. 6(1)(f)).</p>
+
+      <h3>Where is it stored?</h3>
+      <p>Sign-in and database are provided by <b>Supabase</b>. If you sign in with Google, <b>Google</b> processes the sign-in. The app also fetches open data from SMHI, Lantmäteriet, OpenStreetMap, the Swedish National Heritage Board and the Swedish Transport Administration — no personal data is sent to them. The app itself is served via GitHub Pages.</p>
+
+      <h3>For how long?</h3>
+      <p>As long as you keep your account. If you delete your account, your data is removed. Deleted shared content disappears from the app immediately.</p>
+
+      <h3>Your rights</h3>
+      <p>You can access, correct or delete your data at any time. Delete individual tips/comments directly in the app, or your whole account via <b>"Delete my account &amp; my data"</b> in the account view. Questions or requests: email <a href="mailto:${PRIVACY_CONTACT}">${PRIVACY_CONTACT}</a>. You may also complain to the Swedish Authority for Privacy Protection (imy.se).</p>
+
+      <p class="panel-hint">Updated ${PRIVACY_UPDATED}.</p>
+    </div>`;
+}
+
+async function deleteMyAccount() {
+  const email = Storage.auth.email() || "";
+  if (!confirm(t("Radera ditt konto och ALLT du delat (tips, foton, kommentarer, turer)? Detta går inte att ångra."))) return;
+  const typed = prompt(t("Skriv din e-postadress för att bekräfta raderingen:"));
+  if ((typed || "").trim().toLowerCase() !== email.toLowerCase())
+    return toast(t("E-postadressen stämde inte — inget raderades."));
+  toast(t("Raderar konto…"));
+  try {
+    await Storage.deleteMyAccount();
+    closeSheet("account-sheet");
+    toast(t("Klart. Ditt konto och dina data är raderade."));
+    setTimeout(() => location.reload(), 1500);
+  } catch (e) {
+    toast(t("Kunde inte radera allt automatiskt. Mejla ") + PRIVACY_CONTACT + ".");
+    console.warn("deleteMyAccount:", e);
+  }
 }
 function requireLogin() {
   if (Storage.mode === "supabase" && !Storage.auth.userId()) {

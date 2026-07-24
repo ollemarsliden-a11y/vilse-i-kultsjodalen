@@ -133,6 +133,32 @@ const Storage = (() => {
         return sb.storage.from("vik-photos").getPublicUrl(path).data.publicUrl;
       },
 
+      // GDPR: radera allt användaren har skapat + kontot självt.
+      // Kräver RPC:n vik_delete_me (supabase/gdpr.sql) för själva kontoraderingen.
+      async deleteMyAccount() {
+        if (!currentUser) throw new Error("Inte inloggad");
+        const uid = currentUser.id;
+        // 1. Uppladdade foton i vik-photos/<uid>/
+        try {
+          const { data: files } = await sb.storage.from("vik-photos").list(uid, { limit: 1000 });
+          if (files && files.length)
+            await sb.storage.from("vik-photos").remove(files.map((f) => `${uid}/${f.name}`));
+        } catch (e) { console.warn("foto-radering:", e.message); }
+        // 2. Databasrader (RLS släpper bara igenom egna rader)
+        for (const [table, col] of [
+          ["vik_comments", "user_id"], ["vik_reactions", "user_id"],
+          ["vik_reports", "reporter_id"], ["vik_routes", "user_id"],
+          ["vik_tips", "user_id"],
+        ]) {
+          const { error } = await sb.from(table).delete().eq(col, uid);
+          if (error && error.code !== "42P01") console.warn(table + ":", error.message);
+        }
+        // 3. Själva kontot (SECURITY DEFINER-funktion) + utloggning
+        const { error } = await sb.rpc("vik_delete_me");
+        if (error) throw new Error("Kontoraderingen kräver supabase/gdpr.sql: " + error.message);
+        await sb.auth.signOut();
+      },
+
       // Reaktioner
       async react(tipId, kind) {
         if (!currentUser) throw new Error("Inte inloggad");
