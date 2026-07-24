@@ -20,8 +20,12 @@ create table if not exists public.vik_tips (
   lng  double precision not null,
   image_url text,
   season text not null default 'all'    check (season in ('all','summer','winter')),
-  status text not null default 'visible' check (status in ('visible','flagged','hidden'))
+  status text not null default 'visible' check (status in ('visible','flagged','hidden')),
+  village_id text
 );
+
+-- Fanns inte i tidiga installationer — lägg till i efterhand:
+alter table public.vik_tips add column if not exists village_id text;
 
 -- 2. KOMMENTARER
 create table if not exists public.vik_comments (
