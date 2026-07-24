@@ -371,6 +371,7 @@ function renderPlaceEdit(poi) {
     <label><span>${t("Boende & länkar (en per rad: Namn | länk | valfri notis)")}</span>
       <textarea id="pe-lodging" rows="3" placeholder="Saxnäsgården | https://saxnas.se | Hotell & restaurang">${escapeHtml(lodgingToText(patch.lodging))}</textarea></label>
     <div class="sheet-actions"><button id="pe-save" class="btn-primary">${t("Spara ändringar")}</button></div>
+    <button type="button" id="pe-move" class="photo-btn">📍 ${t("Flytta plats på kartan")}</button>
 
     <h3 class="panel-subhead">${t("Bilder")}</h3>
     <button type="button" id="pe-add-photo" class="photo-btn">${t("📷 Ladda upp bild")}</button>
@@ -378,6 +379,7 @@ function renderPlaceEdit(poi) {
     <p class="panel-hint">${t("Dölj eller ta bort bilder som inte passar. Bilder du laddar upp måste du ha rätt till.")}</p>`;
 
   document.getElementById("pe-save").onclick = () => savePlaceEdit(poi);
+  document.getElementById("pe-move").onclick = () => startMovePlace(poi);
   document.getElementById("pe-add-photo").onclick = () => document.getElementById("pe-photo").click();
   wireImageManager(poi);
 }
@@ -415,6 +417,38 @@ function wireImageManager(poi) {
       catch (e) { toast("Kunde inte ta bort: " + e.message); }
     };
   });
+}
+
+// Admin: flytta en grundplats genom att dra en nål på kartan.
+// Nya läget sparas som coord i override-patchen (följer med överallt).
+function startMovePlace(poi) {
+  closeSheet("place-edit");
+  closePlaceSheet();
+  if (document.getElementById("village-hub").classList.contains("active")) closeVillageHub();
+  showView("map");
+  state.map.setView(poi.coord, Math.max(state.map.getZoom(), 14));
+  const mk = L.marker(poi.coord, { draggable: true }).addTo(state.map);
+  const bar = document.createElement("div");
+  bar.className = "move-bar";
+  bar.innerHTML = `<span>${t("Dra nålen till rätt plats")}</span>
+    <button id="move-save" class="btn-primary">${t("Spara läge")}</button>
+    <button id="move-cancel">${t("Avbryt")}</button>`;
+  document.body.appendChild(bar);
+  const done = () => { state.map.removeLayer(mk); bar.remove(); };
+  bar.querySelector("#move-cancel").onclick = done;
+  bar.querySelector("#move-save").onclick = async () => {
+    const p = mk.getLatLng();
+    const patch = { ...(state.overrides[poi.id] || {}), coord: [p.lat, p.lng] };
+    try {
+      await Storage.savePlaceOverride(poi.id, patch);
+      await loadPlaceData();
+      const m = state.markers[poi.id];
+      if (m && m.setLatLng) m.setLatLng([p.lat, p.lng]);
+      buildStartPage();
+      toast(t("Nytt läge sparat."));
+      done();
+    } catch (e) { toast("Kunde inte spara: " + e.message); }
+  };
 }
 
 async function savePlaceEdit(poi) {
