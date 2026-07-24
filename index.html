@@ -13,7 +13,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=44" />
+  <link rel="stylesheet" href="css/styles.css?v=46" />
 </head>
 <body>
 
@@ -267,17 +267,29 @@
     <div id="account-signedin" hidden>
       <p class="account-lead"><span data-i18n="Inloggad som">Inloggad som</span> <b id="account-who"></b>.</p>
       <button id="account-admin" class="btn-primary btn-secondary" data-i18n="🛡️ Moderering" hidden>🛡️ Moderering</button>
+      <button id="account-manage" class="btn-primary btn-secondary" data-i18n="🗂️ Hantera konto & innehåll">🗂️ Hantera konto &amp; innehåll</button>
       <div class="sheet-actions">
         <button id="account-signout" class="btn-primary" data-i18n="Logga ut">Logga ut</button>
       </div>
       <p class="panel-hint"><a href="#" class="privacy-link" data-i18n="Integritetspolicy">Integritetspolicy</a></p>
-      <button id="account-delete" class="danger-link" data-i18n="Radera mitt konto & mina data">Radera mitt konto &amp; mina data</button>
     </div>
     <h3 class="panel-subhead" data-i18n="Språk / Language">Språk / Language</h3>
     <div id="lang-toggle" class="segmented">
       <button class="seg-btn" data-lang="sv">Svenska</button>
       <button class="seg-btn" data-lang="en">English</button>
     </div>
+  </div>
+
+  <!-- Hantera konto & innehåll -->
+  <div id="manage-sheet" class="sheet">
+    <div class="panel-head">
+      <h2 data-i18n="Hantera konto">Hantera konto</h2>
+      <button id="manage-cancel" class="panel-close" aria-label="Stäng">✕</button>
+    </div>
+    <div id="manage-body"></div>
+    <h3 class="panel-subhead" data-i18n="Mina uppgifter">Mina uppgifter</h3>
+    <button id="account-export" class="btn-primary btn-secondary" data-i18n="⬇️ Ladda ner mina data">⬇️ Ladda ner mina data</button>
+    <button id="account-delete" class="danger-link" data-i18n="Radera mitt konto & mina data">Radera mitt konto &amp; mina data</button>
   </div>
 
   <!-- Integritetspolicy -->
@@ -336,19 +348,19 @@
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=44"></script>
-  <script src="js/i18n.js?v=44"></script>
-  <script src="js/data.js?v=44"></script>
-  <script src="js/peaks.js?v=44"></script>
-  <script src="js/leder.js?v=44"></script>
-  <script src="js/services.js?v=44"></script>
-  <script src="js/routes.js?v=44"></script>
-  <script src="js/winter.js?v=44"></script>
-  <script src="js/icons.js?v=44"></script>
-  <script src="js/weather.js?v=44"></script>
-  <script src="js/sun.js?v=44"></script>
-  <script src="js/road.js?v=44"></script>
-  <script src="js/storage.js?v=44"></script>
-  <script src="js/app.js?v=44"></script>
+  <script src="js/config.js?v=46"></script>
+  <script src="js/i18n.js?v=46"></script>
+  <script src="js/data.js?v=46"></script>
+  <script src="js/peaks.js?v=46"></script>
+  <script src="js/leder.js?v=46"></script>
+  <script src="js/services.js?v=46"></script>
+  <script src="js/routes.js?v=46"></script>
+  <script src="js/winter.js?v=46"></script>
+  <script src="js/icons.js?v=46"></script>
+  <script src="js/weather.js?v=46"></script>
+  <script src="js/sun.js?v=46"></script>
+  <script src="js/road.js?v=46"></script>
+  <script src="js/storage.js?v=46"></script>
+  <script src="js/app.js?v=46"></script>
 </body>
 </html>

@@ -1861,6 +1861,9 @@ function wireAccount() {
     catch (e) { toast("Kunde inte starta Google-inloggning: " + e.message); }
   });
   document.getElementById("account-delete").addEventListener("click", deleteMyAccount);
+  document.getElementById("account-export").addEventListener("click", downloadMyData);
+  document.getElementById("account-manage").addEventListener("click", openManageSheet);
+  document.getElementById("manage-cancel").addEventListener("click", () => closeSheet("manage-sheet"));
   document.getElementById("account-signout").addEventListener("click", async () => {
     await Storage.auth.signOut(); toast("Utloggad."); closeSheet("account-sheet");
   });
@@ -1999,7 +2002,7 @@ function privacySv() {
       <p>Så länge du har ditt konto. Raderar du kontot försvinner dina uppgifter. Delat innehåll som raderats försvinner direkt ur appen.</p>
 
       <h3>Dina rättigheter</h3>
-      <p>Du kan när som helst få ut, rätta eller radera dina uppgifter. Radera enskilda tips/kommentarer direkt i appen, eller hela kontot via <b>"Radera mitt konto &amp; mina data"</b> i kontovyn. Frågor eller begäran: mejla <a href="mailto:${PRIVACY_CONTACT}">${PRIVACY_CONTACT}</a>. Du kan också klaga hos Integritetsskyddsmyndigheten (imy.se).</p>
+      <p>Du kan när som helst få ut, rätta eller radera dina uppgifter. Hämta en kopia av allt ditt innehåll via <b>"Ladda ner mina data"</b> i kontovyn, radera enskilda tips/kommentarer direkt i appen, eller hela kontot via <b>"Radera mitt konto &amp; mina data"</b> i kontovyn. Frågor eller begäran: mejla <a href="mailto:${PRIVACY_CONTACT}">${PRIVACY_CONTACT}</a>. Du kan också klaga hos Integritetsskyddsmyndigheten (imy.se).</p>
 
       <p class="panel-hint">Uppdaterad ${PRIVACY_UPDATED}.</p>
     </div>`;
@@ -2028,10 +2031,82 @@ function privacyEn() {
       <p>As long as you keep your account. If you delete your account, your data is removed. Deleted shared content disappears from the app immediately.</p>
 
       <h3>Your rights</h3>
-      <p>You can access, correct or delete your data at any time. Delete individual tips/comments directly in the app, or your whole account via <b>"Delete my account &amp; my data"</b> in the account view. Questions or requests: email <a href="mailto:${PRIVACY_CONTACT}">${PRIVACY_CONTACT}</a>. You may also complain to the Swedish Authority for Privacy Protection (imy.se).</p>
+      <p>You can access, correct or delete your data at any time. Download a copy of everything you have shared via <b>"Download my data"</b> in the account view, delete individual tips/comments directly in the app, or your whole account via <b>"Delete my account &amp; my data"</b> in the account view. Questions or requests: email <a href="mailto:${PRIVACY_CONTACT}">${PRIVACY_CONTACT}</a>. You may also complain to the Swedish Authority for Privacy Protection (imy.se).</p>
 
       <p class="panel-hint">Updated ${PRIVACY_UPDATED}.</p>
     </div>`;
+}
+
+// ===================================================================
+//  Hantera konto — eget innehåll med radering per rad
+// ===================================================================
+async function openManageSheet() {
+  closeSheet("account-sheet");
+  const body = document.getElementById("manage-body");
+  body.innerHTML = `<p class="panel-hint">${t("Laddar…")}</p>`;
+  openSheet("manage-sheet");
+  try { renderManage(await Storage.myContent()); }
+  catch (e) { body.innerHTML = `<p class="panel-hint">${t("Kunde inte hämta ditt innehåll: ")}${escapeHtml(e.message)}</p>`; }
+}
+
+function renderManage(c) {
+  const body = document.getElementById("manage-body");
+  const row = (kind, id, thumbHtml, name, sub) => `
+    <div class="mg-row">
+      ${thumbHtml}
+      <span class="mg-main"><span class="mg-name">${escapeHtml(name)}</span>
+        ${sub ? `<span class="mg-sub">${escapeHtml(sub)}</span>` : ""}</span>
+      <button class="mg-del" data-kind="${kind}" data-id="${id}">${t("Ta bort")}</button>
+    </div>`;
+  const thumb = (url, cat) => url
+    ? `<span class="vh-row-ic vh-row-thumb" style="background-image:url('${url}')"></span>`
+    : `<span class="vh-row-ic">${iconSvg(cat || "smultron", "currentColor", 20)}</span>`;
+  const placeName = (pid) => (SEED_POIS.find((p) => p.id === pid) || {}).name || pid;
+  const sec = (title, rows) =>
+    `<h3 class="panel-subhead">${title}</h3>` +
+    (rows.length ? rows.join("") : `<p class="panel-hint">${t("Inget här än.")}</p>`);
+
+  body.innerHTML =
+    sec(t("Mina tips"), c.tips.map((r) =>
+      row("tip", r.id, thumb(r.image_url, r.category), r.name, fmtDate(r.created_at)))) +
+    sec(t("Mina bilder på platser"), c.images.map((r) =>
+      row("image", r.id, thumb(r.url), placeName(r.place_id), fmtDate(r.created_at)))) +
+    sec(t("Mina kommentarer"), c.comments.map((r) =>
+      row("comment", r.id, thumb(null, "kultur"), r.body.length > 60 ? r.body.slice(0, 60) + "…" : r.body, fmtDate(r.created_at)))) +
+    sec(t("Mina delade turer"), c.routes.map((r) =>
+      row("route", r.id, thumb(null, "led"), r.name, (r.distance_km ? r.distance_km.toFixed(1) + " km · " : "") + fmtDate(r.created_at))));
+
+  body.querySelectorAll(".mg-del").forEach((b) => b.onclick = async () => {
+    if (!confirm(t("Ta bort? Detta går inte att ångra."))) return;
+    const { kind, id } = b.dataset;
+    try {
+      if (kind === "tip") {
+        await Storage.deleteUserPoi(id);
+        const m = state.markers[id];
+        if (m) { m.remove(); delete state.markers[id]; }
+      }
+      else if (kind === "comment") await Storage.deleteComment(id);
+      else if (kind === "route") await Storage.deleteSharedRoute(id);
+      else if (kind === "image") { await Storage.deletePlaceImage(id); await loadPlaceData(); buildStartPage(); }
+      toast(t("Borttaget."));
+      renderManage(await Storage.myContent());
+    } catch (e) { toast(t("Kunde inte ta bort: ") + e.message); }
+  });
+}
+
+// GDPR: registerutdrag/dataportabilitet — ladda ner allt eget som JSON-fil.
+async function downloadMyData() {
+  toast(t("Samlar ihop dina data…"));
+  try {
+    const data = await Storage.exportMyData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "vilse-i-kultsjodalen-mina-data.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast(t("Klart — filen är nedladdad."));
+  } catch (e) { toast(t("Kunde inte hämta data: ") + e.message); }
 }
 
 async function deleteMyAccount() {

@@ -133,6 +133,49 @@ const Storage = (() => {
         return sb.storage.from("vik-photos").getPublicUrl(path).data.publicUrl;
       },
 
+      // Hantera konto: allt eget innehåll, för list- och raderingsvyn.
+      async myContent() {
+        if (!currentUser) throw new Error("Inte inloggad");
+        const uid = currentUser.id;
+        const [tips, comments, routes, images] = await Promise.all([
+          sb.from("vik_tips").select("id,name,category,image_url,created_at").eq("user_id", uid).order("created_at", { ascending: false }),
+          sb.from("vik_comments").select("id,body,tip_id,created_at").eq("user_id", uid).order("created_at", { ascending: false }),
+          sb.from("vik_routes").select("id,name,distance_km,created_at").eq("user_id", uid).order("created_at", { ascending: false }),
+          sb.from("vik_place_images").select("id,place_id,url,created_at").eq("created_by", uid).order("created_at", { ascending: false }),
+        ]);
+        return {
+          tips: tips.data || [], comments: comments.data || [],
+          routes: routes.data || [], images: images.data || [],
+        };
+      },
+
+      // GDPR: registerutdrag — allt användaren har hos oss, som ett objekt.
+      async exportMyData() {
+        if (!currentUser) throw new Error("Inte inloggad");
+        const uid = currentUser.id;
+        const out = {
+          exported_at: new Date().toISOString(),
+          app: "Vilse i Kultsjödalen",
+          account: { id: uid, email: currentUser.email, created_at: currentUser.created_at },
+        };
+        for (const [key, table, col] of [
+          ["tips", "vik_tips", "user_id"],
+          ["comments", "vik_comments", "user_id"],
+          ["reactions", "vik_reactions", "user_id"],
+          ["reports", "vik_reports", "reporter_id"],
+          ["routes", "vik_routes", "user_id"],
+        ]) {
+          const { data, error } = await sb.from(table).select("*").eq(col, uid);
+          out[key] = error ? { error: error.message } : (data || []);
+        }
+        try {
+          const { data: files } = await sb.storage.from("vik-photos").list(uid, { limit: 1000 });
+          out.photos = (files || []).map((f) =>
+            sb.storage.from("vik-photos").getPublicUrl(`${uid}/${f.name}`).data.publicUrl);
+        } catch (e) { out.photos = { error: e.message }; }
+        return out;
+      },
+
       // GDPR: radera allt användaren har skapat + kontot självt.
       // Kräver RPC:n vik_delete_me (supabase/gdpr.sql) för själva kontoraderingen.
       async deleteMyAccount() {
