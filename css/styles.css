@@ -277,6 +277,16 @@ button { font-family: inherit; }
 
 .start-body { padding: 6px 16px 8px; }
 .start-body > .section-h:first-child { margin-top: 10px; }
+
+/* På stor skärm: håll ihop innehållet så textraderna inte blir orimligt
+   långa. Appen är byggd mobil-först, men öppnas ofta på laptop hemifrån. */
+@media (min-width: 760px) {
+  .start-body, #info-body, .start-hero-inner, .info-hero,
+  .vh-section, .village-hub .vh-hero-inner {
+    max-width: 720px; margin-left: auto; margin-right: auto;
+  }
+  .card-scroll .place-card { flex: 0 0 46%; }
+}
 .quick-row { display: flex; gap: 10px; margin-bottom: 8px; }
 .quick-btn {
   flex: 1; border: 1.5px solid var(--line); background: var(--surface);

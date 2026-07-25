@@ -289,6 +289,7 @@ async function loadPlaceData() {
     for (const im of images) (state.placeImages[im.place_id] ||= []).push(im);
     state.sharedRoutes = routes || [];
     applyOverridesToSeed();
+    invalidateSearchIndex(); // admin kan ha bytt namn på en plats
   } catch (e) { console.warn("Kunde inte läsa platsdata:", e.message); }
 }
 
@@ -595,6 +596,7 @@ function addPoiMarker(poi) {
   marker.on("click", () => openPlaceOrHub(poi, marker));
   (state.layers[cat] || state.layers.sevart).addLayer(marker);
   state.markers[poi.id] = marker;
+  invalidateSearchIndex();
   return marker;
 }
 
@@ -603,6 +605,7 @@ function removeMarkerById(id) {
   if (!m) return;
   (state.layers[m.poi.category] || state.layers.sevart).removeLayer(m);
   delete state.markers[id];
+  invalidateSearchIndex();
 }
 
 // ===================================================================
@@ -905,8 +908,28 @@ function buildSearchIndex() {
     for (const s of SERVICES)
       ix.push({ name: s.name, sub: t(SERVICE_SUB[s.sub] || s.kind), icon: "boende",
                 color: CATEGORIES.boende.color, kind: "service", ref: s });
+  // Besökartips (inkl. egna) — annars går de inte att söka fram.
+  for (const m of Object.values(state.markers)) {
+    const p = m.poi;
+    if (!p || !p.userAdded) continue;
+    ix.push({ name: p.name, sub: t("Från besökare"), icon: p.category,
+              color: (CATEGORIES[p.category] || CATEGORIES.sevart).color, kind: "poi", ref: p });
+  }
+  for (const e of ix) e.key = searchNorm(e.name);
   return ix;
 }
+
+// Sökningen ska funka utan svenska tecken: "saxnas" hittar "Saxnäs".
+// NFD delar upp å/ä/ö i bokstav + accenttecken, och accenterna plockas bort.
+// Teckenklassen nedan är Unicode-blocket "combining diacritical marks"
+// (U+0300–U+036F) — måste sparas som UTF-8 för att fungera.
+const SEARCH_FOLD = { "ø": "o", "æ": "ae", "ß": "ss", "đ": "d" };
+function searchNorm(s) {
+  return String(s).toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[øæßđ]/g, (c) => SEARCH_FOLD[c]);
+}
+function invalidateSearchIndex() { SEARCH_INDEX = null; }
 
 function wireSearch() {
   const input = document.getElementById("search-input");
@@ -914,14 +937,13 @@ function wireSearch() {
   const box = document.getElementById("search-results");
   if (!input) return;
 
-  const norm = (s) => s.toLowerCase();
   function run() {
-    const q = norm(input.value.trim());
+    const q = searchNorm(input.value.trim());
     clear.classList.toggle("show", !!q);
     if (q.length < 2) { box.innerHTML = ""; return; }
     if (!SEARCH_INDEX) SEARCH_INDEX = buildSearchIndex();
     const hits = SEARCH_INDEX
-      .map((e) => ({ e, pos: norm(e.name).indexOf(q) }))
+      .map((e) => ({ e, pos: e.key.indexOf(q) }))
       .filter((h) => h.pos >= 0)
       .sort((a, b) => a.pos - b.pos || a.e.name.length - b.e.name.length)
       .slice(0, 8);
@@ -1140,7 +1162,9 @@ function renderVillageHub(poi) {
   const admin = canAdminEdit(poi);
   // Bo & äta: automatiska förslag ± admins tillägg/borttag (boAdd/boHide i patchen).
   const boHide = new Set(vpatch.boHide || []);
-  const svcKey = (s) => "svc:" + s.name;
+  // Namnet ensamt räcker inte som nyckel — t.ex. Hotell Klimpfjäll finns både
+  // som hotell och restaurang på samma adress, och skulle annars döljas ihop.
+  const svcKey = (s) => `svc:${s.name}|${s.sub || s.kind}`;
   const allSvc = (typeof SERVICES !== "undefined" ? SERVICES : [])
     .filter((s) => (s.kind === "boende" || s.kind === "mat") && listableService(s));
   const services = allSvc

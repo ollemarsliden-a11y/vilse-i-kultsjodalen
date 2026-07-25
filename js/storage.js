@@ -165,6 +165,8 @@ const Storage = (() => {
           ["reactions", "vik_reactions", "user_id"],
           ["reports", "vik_reports", "reporter_id"],
           ["routes", "vik_routes", "user_id"],
+          ["place_images", "vik_place_images", "created_by"],
+          ["place_edits", "vik_place_overrides", "updated_by"],
         ]) {
           const { data, error } = await sb.from(table).select("*").eq(col, uid);
           out[key] = error ? { error: error.message } : (data || []);
@@ -188,11 +190,15 @@ const Storage = (() => {
           if (files && files.length)
             await sb.storage.from("vik-photos").remove(files.map((f) => `${uid}/${f.name}`));
         } catch (e) { console.warn("foto-radering:", e.message); }
-        // 2. Databasrader (RLS släpper bara igenom egna rader)
+        // 2. Databasrader (RLS släpper bara igenom egna rader).
+        //    vik_place_images måste med — annars blir raderna kvar och pekar
+        //    på foton som just raderats (trasiga bilder i appen).
+        //    vik_place_overrides röks INTE: det är bytexter som alla ser, och
+        //    kolumnen updated_by nollas ändå automatiskt (on delete set null).
         for (const [table, col] of [
           ["vik_comments", "user_id"], ["vik_reactions", "user_id"],
           ["vik_reports", "reporter_id"], ["vik_routes", "user_id"],
-          ["vik_tips", "user_id"],
+          ["vik_place_images", "created_by"], ["vik_tips", "user_id"],
         ]) {
           const { error } = await sb.from(table).delete().eq(col, uid);
           if (error && error.code !== "42P01") console.warn(table + ":", error.message);
