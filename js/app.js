@@ -293,9 +293,19 @@ async function loadPlaceData() {
   } catch (e) { console.warn("Kunde inte läsa platsdata:", e.message); }
 }
 
-// Lägg admins textändringar ovanpå grundplatserna (muterar SEED_POIS).
+// Alla redigerbara grundplatser — SEED_POIS och topparna. Topparna måste med,
+// annars sparas admins ändringar men syns aldrig (och foton hamnar i tomma
+// intet eftersom uppladdningen letar upp platsen via den här listan).
+function allSeedPlaces() {
+  return typeof PEAKS !== "undefined" ? SEED_POIS.concat(PEAKS) : SEED_POIS;
+}
+function findPlaceById(id) {
+  return allSeedPlaces().find((p) => p.id === id) || null;
+}
+
+// Lägg admins textändringar ovanpå grundplatserna (muterar objekten).
 function applyOverridesToSeed() {
-  for (const poi of SEED_POIS) {
+  for (const poi of allSeedPlaces()) {
     const patch = state.overrides[poi.id];
     if (patch) for (const k of Object.keys(patch)) poi[k] = patch[k];
   }
@@ -496,7 +506,7 @@ function handlePlacePhoto(e) {
   const file = e.target.files[0];
   e.target.value = "";
   if (!file || !state.editingPlaceId) return;
-  const poi = SEED_POIS.find((p) => p.id === state.editingPlaceId);
+  const poi = findPlaceById(state.editingPlaceId);
   if (!poi) return;
   toast("Förbereder foto…");
   compressImage(file).then(async (dataUrl) => {
@@ -514,7 +524,7 @@ function handlePlacePhoto(e) {
 // Ladda om platsdata och uppdatera vyer efter en admin-ändring.
 async function refreshAfterEdit(poi, keepEditOpen) {
   await loadPlaceData();
-  const fresh = SEED_POIS.find((p) => p.id === poi.id) || poi;
+  const fresh = findPlaceById(poi.id) || poi;
   buildStartPage();
   if (document.getElementById("place-sheet").classList.contains("open"))
     openPlaceSheet(fresh, state.markers[fresh.id]);
@@ -790,16 +800,20 @@ function openCategoryList(key) {
   // Toppar samlas i en hopfällbar grupp så de inte dränker listan.
   const peaks = items.filter((p) => p.category === "topp");
   items = items.filter((p) => p.category !== "topp");
+  const admin = isAdminNow();
   const row = (p) => {
     const c = CATEGORIES[p.category] || CATEGORIES.sevart;
     const img = (galleryFor(p)[0] || {}).url;
     const lead = img
       ? `<span class="vh-row-ic vh-row-thumb" style="background-image:url('${img}')"></span>`
       : `<span class="vh-row-ic">${iconSvg(p.category, "currentColor", 20)}</span>`;
-    return `<button class="vh-row" data-poi="${p.id}" style="--c:${c.color}">
-      ${lead}
-      <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(p.name)}</span>
-        <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span></button>`;
+    return `<div class="cat-row-wrap">
+      <button class="vh-row" data-poi="${p.id}" style="--c:${c.color}">
+        ${lead}
+        <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(p.name)}</span>
+          <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span></button>
+      ${admin ? `<button class="cat-row-edit" data-edit="${p.id}" title="${t("Redigera plats")}">✏️</button>` : ""}
+    </div>`;
   };
   let html = items.map(row).join("");
   if (peaks.length) {
@@ -827,9 +841,13 @@ function openCategoryList(key) {
     document.getElementById("cat-peaks-chev").textContent = list.hidden ? "▾" : "▴";
   };
   document.querySelectorAll("#cat-body [data-poi]").forEach((el) => el.onclick = () => {
-    const p = SEED_POIS.find((x) => x.id === el.dataset.poi)
-      || (typeof PEAKS !== "undefined" ? PEAKS.find((x) => x.id === el.dataset.poi) : null);
+    const p = findPlaceById(el.dataset.poi);
     if (p) { closeSheet("category-sheet"); openPlaceOrHub(p, state.markers[p.id]); }
+  });
+  document.querySelectorAll("#cat-body [data-edit]").forEach((el) => el.onclick = (e) => {
+    e.stopPropagation();
+    const p = findPlaceById(el.dataset.edit);
+    if (p) { closeSheet("category-sheet"); openPlaceEdit(p); }
   });
   openSheet("category-sheet");
 }

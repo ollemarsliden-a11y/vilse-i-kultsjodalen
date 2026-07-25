@@ -155,8 +155,13 @@ const SEED_POIS = [
     blurb: "Södra Lapplands högsta topp",
     description:
       "Marsfjället reser sig 1589 m över havet och är det högsta fjället mellan " +
-      "Sylarna och Norra Storfjället. Toppen nås via markerade leder från bland " +
-      "annat Marsliden och Fatmomakke — en rejäl dagstur genom naturreservatet.",
+      "Sylarna och Norra Storfjället — dalens signaturfjäll, det du ser i fonden " +
+      "från nästan hela Kultsjön. Toppen nås via markerade leder från bland annat " +
+      "Marsliden och Fatmomakke, och är en rejäl dagstur: räkna med tidig start, " +
+      "lång väg och drygt tusen höjdmeter från byn. Sista biten går över öppet " +
+      "kalfjäll där vädret slår om fort och dimma kan komma på minuterna. " +
+      "Från toppen ser man ut över hela fjällmassivet, Kultsjödalen i söder och " +
+      "gränsfjällen mot Norge i väster. Belöningen står i proportion till slitet.",
     history:
       "Hela Marsfjällsområdet är ett samiskt kulturlandskap och del av Vilhelmina " +
       "norra samebys renbetesland. Naturreservatet bildades 1988 och omfattar ca " +
@@ -608,10 +613,14 @@ const SEED_POIS = [
     coord: [64.93811, 15.24535],
     blurb: "Toppvandring med vy över Kultsjön",
     description:
-      "Fjället söder om Kultsjön, mitt emot Saxnäs. En tacksam topptur med " +
-      "utsiktspunkt på toppen (1105 m) och vidsträckt vy över Kultsjön, " +
-      "Marsfjällen och dalen. Väster om toppen ligger Satsfjällets naturreservat " +
-      "med gammelskog.",
+      "Fjället söder om Kultsjön, mitt emot Saxnäs — dalens mest tacksamma " +
+      "topptur för den som vill ha stor utsikt utan att göra en heldag av det. " +
+      "Från toppen på 1105 m ligger Kultsjön utbredd nedanför och Marsfjällen " +
+      "reser sig på andra sidan vattnet; i klart väder ser man långt både uppåt " +
+      "och nedåt dalen. Turen går från Saxnäs-sidan, först genom fjällbjörkskog " +
+      "och sedan ut på kalfjället. Väster om toppen ligger Satsfjällets " +
+      "naturreservat med gammelskog. Ett bra val för den som är ny i fjällen — " +
+      "men ta med vindkläder, det blåser nästan alltid däruppe.",
     facts: [["Höjd", "1105 m"], ["Utgångspunkt", "Saxnäs-sidan"]],
     image: "",
     source: "OpenStreetMap",

@@ -38,7 +38,6 @@ const PEAKS = [
   { id: "peak-tjaallinge-42", name: "Tjaallinge", category: "topp", coord: [65.06323, 14.52195], blurb: "1122 m ö.h.", facts: [["Höjd", "1122 m ö.h."]], source: "OpenStreetMap" },
   { id: "peak-kraejhpiesvaerie-43", name: "Kraejhpiesvaerie", category: "topp", coord: [65.1476, 15.09473], blurb: "1118 m ö.h.", facts: [["Höjd", "1118 m ö.h."]], source: "OpenStreetMap" },
   { id: "peak-ohtje-vaajjatj-hke-44", name: "Ohtje Vaajjatjåhke", category: "topp", coord: [65.40568, 15.79173], blurb: "1117 m ö.h.", facts: [["Höjd", "1117 m ö.h."]], source: "OpenStreetMap" },
-  { id: "peak-satsfj-llet-46", name: "Satsfjället", category: "topp", coord: [64.93811, 15.24535], blurb: "1105 m ö.h.", facts: [["Höjd", "1105 m ö.h."]], source: "OpenStreetMap" },
   { id: "peak-s-ttan-55", name: "Såttan", category: "topp", coord: [65.05418, 15.49356], blurb: "1067 m ö.h.", facts: [["Höjd", "1067 m ö.h."]], source: "OpenStreetMap" },
   { id: "peak-tjohkele-56", name: "Tjohkele", category: "topp", coord: [65.36329, 15.58155], blurb: "1066 m ö.h.", facts: [["Höjd", "1066 m ö.h."]], source: "OpenStreetMap" },
   { id: "peak-steavhketjahke-58", name: "Steavhketjahke", category: "topp", coord: [65.37642, 15.82875], blurb: "1060 m ö.h.", facts: [["Höjd", "1060 m ö.h."]], source: "OpenStreetMap" },
@@ -53,3 +52,80 @@ const PEAKS = [
   { id: "peak-st-ken-81", name: "Stöken", category: "topp", coord: [65.03249, 15.2549], blurb: "1005 m ö.h.", facts: [["Höjd", "1005 m ö.h."]], source: "OpenStreetMap" },
   { id: "peak-gumtiken-84", name: "Gumtiken", category: "topp", coord: [65.40407, 15.87039], blurb: "1000 m ö.h.", facts: [["Höjd", "1000 m ö.h."]], source: "OpenStreetMap" },
 ];
+
+// ===================================================================
+//  Handskrivna texter för topparna kring Marsliden
+// ===================================================================
+//  Listan ovan kommer från OSM och kan regenereras — den här delen är
+//  skriven för hand och ska INTE skrivas över. Nyckeln är toppens namn
+//  (inte id:t, som får ett löpnummer vid regenerering).
+//  Lägg gärna till fler toppar här efter hand.
+//
+//  OBS: höjder och lägen kommer från OSM. Terrängbeskrivningarna är
+//  allmänt hållna — det finns inga markerade leder till de här topparna,
+//  till skillnad från Marsfjället.
+// ===================================================================
+const PEAK_TEXT = {
+  "Rovpentjahke": {
+    blurb: "1148 m — närmaste fjället från Marsliden",
+    description:
+      "Fjället närmast byn, 2,5 km nordväst om Marsliden. Det är den här " +
+      "ryggen man ser resa sig direkt bakom husen. Kort väg men brant — det " +
+      "är drygt 600 höjdmeter upp från byn, först genom fjällbjörkskog och " +
+      "sedan ut på öppet kalfjäll. Uppifrån ligger Västra Marssjön och byn " +
+      "rakt nedanför, med Marsfjället i norr. En bra första topp för den som " +
+      "bor i byn och vill upp på fjället utan att göra en heldag av det.",
+  },
+  "Gahkagaejsie (sydtopp)": {
+    blurb: "1196 m — södra delen av ryggen mot Marsfjället",
+    description:
+      "Södra av de två Gahkagaejsie-topparna, 4,2 km norr om Marsliden. " +
+      "Tillsammans med nordtoppen bildar den fjällryggen mellan byn och " +
+      "Marsfjället, och ligger halvvägs däremellan. Öppet kalfjäll hela vägen " +
+      "från trädgränsen. Namnet är sydsamiskt, som de flesta fjällnamn här — " +
+      "hela området är renbetesland inom Vilhelmina norra sameby.",
+  },
+  "Gahkagaejsie (nordtopp)": {
+    blurb: "1449 m — områdets näst högsta topp",
+    description:
+      "Näst högsta toppen i trakten efter Marsfjället, och bara 2 km söder om " +
+      "själva huvudtoppen. Det gör att den går att ta med på samma tur för den " +
+      "som ändå är på väg upp mot Marsfjället. Från Marsliden är det 6,6 km " +
+      "rakt norrut och en rejäl stigning — högfjäll med allt vad det innebär " +
+      "av snöfläckar långt in på sommaren och väder som vänder snabbt.",
+  },
+  "Aajnantjahke": {
+    blurb: "1245 m — kalfjäll nordväst om byn",
+    description:
+      "Ligger 4,7 km nordväst om Marsliden, på västra sidan av fjällpartiet " +
+      "mellan byn och Marsfjället. Öppen och vidsträckt kalfjällsterräng utan " +
+      "markerad led — här går man på karta och kompass, eller efter GPS. " +
+      "Ta höjd för att sikten kan försvinna fort när dimman kommer in.",
+  },
+  "Ortsen": {
+    blurb: "1304 m — grannfjäll till Marsfjället",
+    description:
+      "Toppen ligger 2,6 km sydväst om Marsfjället och 6,7 km norr om " +
+      "Marsliden, alltså långt inne i fjällmassivet. Med 1304 m är det en av " +
+      "de högre topparna i området, och en naturlig avstickare för den som " +
+      "redan är uppe på fjället. Kalfjäll och blockterräng.",
+  },
+  "Såttan": {
+    blurb: "1067 m — åt Kittelfjällshållet",
+    description:
+      "Till skillnad från de andra topparna kring Marsliden ligger Såttan " +
+      "åt nordost, 6,4 km från byn och bort från Marsfjället. Lägre och " +
+      "mjukare terräng, med utsikt österut längs dalen mot Kittelfjäll.",
+  },
+  "Stöken": {
+    blurb: "1005 m — nätt och jämnt över tusenstrecket",
+    description:
+      "Den lägsta av topparna kring Marsliden, 5,4 km väster om byn och precis " +
+      "över tusen meter. Kortare stigning än grannfjällen och därmed ett " +
+      "rimligt mål en eftermiddag, med Kultsjön och Västra Marssjön i söder.",
+  },
+};
+for (const p of PEAKS) {
+  const extra = PEAK_TEXT[p.name];
+  if (extra) Object.assign(p, extra);
+}

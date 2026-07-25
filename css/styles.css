@@ -194,7 +194,7 @@ button { font-family: inherit; }
 .start-hero-top .brand-mark { font-size: 24px; color: #cfe3c9; }
 .start-hero-top .weather-pill { background: rgba(255,255,255,.18); color: #fff; box-shadow: none; backdrop-filter: blur(6px); }
 .start-title { font-size: 30px; margin: 14px 0 6px; letter-spacing: -.6px; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
-.start-sub { font-size: 14px; line-height: 1.5; margin: 0; opacity: .94; max-width: 30ch; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
+.start-sub { font-size: 14px; line-height: 1.5; margin: 0; opacity: .94; max-width: 42ch; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
 
 /* ---- Kartunderlag som miniatyrer ---- */
 .bm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -524,6 +524,15 @@ body.picking::after {
   pointer-events: none;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
+
+/* Rad i kategorilistan med admins redigera-knapp bredvid. */
+.cat-row-wrap { display: flex; align-items: stretch; gap: 6px; }
+.cat-row-wrap .vh-row { flex: 1; min-width: 0; }
+.cat-row-edit {
+  flex: none; width: 44px; border: none; background: none; cursor: pointer;
+  font-size: 17px; border-radius: 10px; opacity: .75;
+}
+.cat-row-edit:hover { background: rgba(0, 0, 0, .06); opacity: 1; }
 
 .move-bar {
   position: fixed; left: 50%; transform: translateX(-50%);

@@ -26,6 +26,8 @@ const I18N = {
     "Konto": "Account",
 
     // Startsida
+    "Din guide till dalen — som vi bygger tillsammans. Tipsa om dina bästa platser och sätt dem på kartan.":
+      "Your guide to the valley — built together. Share your favourite spots and put them on the map.",
     "Din guide till dalen — byar, leder, fiske, kultur och sevärdheter.":
       "Your guide to the valley — villages, trails, fishing, culture and sights.",
     "Byar & platser i dalen": "Villages & places in the valley",
