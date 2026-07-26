@@ -62,11 +62,15 @@ SERVICES.push(
     kind: "service", sub: "charging",
     lat: 65.06005, lng: 14.79886,
     website: "", phone: "", hours: "",
+    info: "Vid Klimpfjällsgården · uppgifter saknas",
+    source: "OpenStreetMap",
   },
   {
-    name: "InCharge Klimpfjäll (4 platser)",
+    name: "Vattenfall InCharge Klimpfjäll",
     kind: "service", sub: "charging",
     lat: 65.06297, lng: 14.80715,
-    website: "", phone: "", hours: "",
+    website: "https://incharge.vattenfall.se/", phone: "", hours: "",
+    info: "4 laddpunkter · upp till 150 kW · CCS & Type 2",
+    source: "Open Charge Map",
   }
 );

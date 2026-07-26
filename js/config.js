@@ -20,6 +20,12 @@ const LM_TOKEN = "";
 // visas säsongsbaserad status (vinterstängd ca 15 okt–6 jun).
 const TRV_KEY = "";
 
+// Open Charge Map (laddstationer, öppna data CC BY-SA). Nyckeln används av
+// scripts/fetch-charging.mjs för att uppdatera listan i js/services.js —
+// appen själv hämtar inget live, så laddstationerna finns kvar utan täckning.
+// Gratis nyckel: https://openchargemap.org/site/profile/applications
+const OCM_KEY = "714d8c57-b779-4be5-b387-48d5ca7ae77a";
+
 // Lantmäteriets fjällkarta som LOKALA rutor (nedladdade en gång, CC0).
 // Sätts till true när tiles/topo/ finns i projektet (scripts/fetch-lm-tiles.mjs).
 const LOCAL_FJALL = true;
@@ -35,6 +41,7 @@ const CONFIG = {
   SUPABASE_ANON_KEY,
   LM_TOKEN,
   TRV_KEY,
+  OCM_KEY,
   LOCAL_FJALL,
   LOCAL_FJALL_MAXZOOM,
   ADMIN_EMAILS,

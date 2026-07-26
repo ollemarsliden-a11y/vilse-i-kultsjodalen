@@ -124,6 +124,7 @@ function buildServiceLayer() {
     });
     const sub = SERVICE_SUB[s.sub] || s.sub || k.label;
     const rows = [];
+    if (s.info) rows.push(`<div class="svc-row">${escapeHtml(s.info)}</div>`);
     if (s.hours) rows.push(`<div class="svc-row">🕑 ${escapeHtml(s.hours)}</div>`);
     if (s.phone) rows.push(`<div class="svc-row">📞 <a href="tel:${escapeHtml(s.phone)}">${escapeHtml(s.phone)}</a></div>`);
     if (s.website) rows.push(`<div class="svc-row"><a href="${encodeURI(s.website)}" target="_blank" rel="noopener">Hemsida ↗</a></div>`);
@@ -134,7 +135,7 @@ function buildServiceLayer() {
              : `<div class="svc-cat" style="color:${SVC_COLOR[s.sub] || k.color}">${escapeHtml(sub)}</div>`}
            <b>${escapeHtml(s.name)}</b>
            ${rows.join("")}
-           <div class="mini-sub">Källa: OpenStreetMap</div>
+           <div class="mini-sub">${t("Källa")}: ${escapeHtml(s.source || "OpenStreetMap")}</div>
          </div>`,
         { maxWidth: 240 }
       )
@@ -937,7 +938,12 @@ function buildSearchIndex() {
     ix.push({ name: p.name, sub: t("Från besökare"), icon: p.category,
               color: (CATEGORIES[p.category] || CATEGORIES.sevart).color, kind: "poi", ref: p });
   }
-  for (const e of ix) e.key = searchNorm(e.name);
+  // key = namnet (används även för att markera träffen), altKey = typen, så
+  // "laddstation" och "drivmedel" hittar posterna även när namnet inte säger det.
+  for (const e of ix) {
+    e.key = searchNorm(e.name);
+    e.altKey = searchNorm(e.sub || "");
+  }
   return ix;
 }
 
@@ -966,17 +972,19 @@ function wireSearch() {
     if (!SEARCH_INDEX) SEARCH_INDEX = buildSearchIndex();
     const hits = SEARCH_INDEX
       .map((e) => ({ e, pos: e.key.indexOf(q) }))
-      .filter((h) => h.pos >= 0)
-      .sort((a, b) => a.pos - b.pos || a.e.name.length - b.e.name.length)
+      .filter((h) => h.pos >= 0 || (h.e.altKey && h.e.altKey.includes(q)))
+      .sort((a, b) => (a.pos < 0) - (b.pos < 0) || a.pos - b.pos ||
+                      a.e.name.length - b.e.name.length)
       .slice(0, 8);
     if (!hits.length) {
       box.innerHTML = `<div class="sr-empty">${t("Inga träffar.")}</div>`;
       return;
     }
     box.innerHTML = hits.map(({ e, pos }, i) => {
-      const nm = escapeHtml(e.name.slice(0, pos)) + "<mark>" +
-        escapeHtml(e.name.slice(pos, pos + q.length)) + "</mark>" +
-        escapeHtml(e.name.slice(pos + q.length));
+      const nm = pos < 0 ? escapeHtml(e.name) // träff på typ, inte på namnet
+        : escapeHtml(e.name.slice(0, pos)) + "<mark>" +
+          escapeHtml(e.name.slice(pos, pos + q.length)) + "</mark>" +
+          escapeHtml(e.name.slice(pos + q.length));
       return `<button class="sr-item" data-i="${i}" style="--c:${e.color}">
           <span class="sr-ic">${iconSvg(e.icon, "currentColor", 18)}</span>
           <span class="sr-main"><span class="sr-name">${nm}</span><br>
