@@ -56,8 +56,11 @@ const SERVICE_SUB = {
   motel: "Motell", apartment: "Lägenhet", camp_site: "Camping", caravan_site: "Ställplats",
   wilderness_hut: "Fjällstuga", alpine_hut: "Fjällstuga", cabin: "Stuga",
   restaurant: "Restaurang", cafe: "Café", fast_food: "Snabbmat", pub: "Pub", bar: "Bar",
-  fuel: "Drivmedel", butik: "Butik",
+  fuel: "Drivmedel", butik: "Butik", charging: "Laddstation",
 };
+// Undertyper som har egen ikon/färg på kartan (annars används kindens).
+const SVC_ICON = { fuel: "fuel", charging: "charging" };
+const SVC_COLOR = { fuel: "#5b6b7a", charging: "#2f8f4e" };
 
 const OVERLAYS = {
   statligaleder: {
@@ -115,7 +118,7 @@ function buildServiceLayer() {
     const k = SERVICE_KINDS[s.kind] || SERVICE_KINDS.service;
     const icon = L.divIcon({
       className: "svc-pin",
-      html: `<div class="svc-dot" style="--c:${k.color}">${iconSvg(s.kind, "#fff", 13)}</div>`,
+      html: `<div class="svc-dot" style="--c:${SVC_COLOR[s.sub] || k.color}">${iconSvg(SVC_ICON[s.sub] || s.kind, "#fff", 13)}</div>`,
       iconSize: [26, 26],
       iconAnchor: [13, 13],
     });
@@ -127,7 +130,8 @@ function buildServiceLayer() {
     L.marker([s.lat, s.lng], { icon })
       .bindPopup(
         `<div class="mini-pop">
-           <div class="svc-cat" style="color:${k.color}">${escapeHtml(sub)}</div>
+           ${s.name.toLowerCase().startsWith(sub.toLowerCase()) ? "" // undvik "Drivmedel Drivmedel Saxnäs"
+             : `<div class="svc-cat" style="color:${SVC_COLOR[s.sub] || k.color}">${escapeHtml(sub)}</div>`}
            <b>${escapeHtml(s.name)}</b>
            ${rows.join("")}
            <div class="mini-sub">Källa: OpenStreetMap</div>

@@ -12,9 +12,12 @@ const SERVICES = [{"name":"Saxnäsgården","kind":"boende","sub":"hotel","lat":6
 // ===================================================================
 const SERVICE_FIX = {
   // Heter Marsfjällshandlarn, inte "Marsfjälls Handelscenter" (egen sida).
+  // Sommartiderna på deras sida gäller bara 20/6–9/8 — resten av året är det
+  // mån–fre 9.30–17.30, lör 10–15, söndag stängt. Ingen obemannad öppning här.
   "Handlar'n Marsfjälls Handelscenter": {
     name: "Marsfjällshandlarn",
     website: "https://www.marsfjallshandlarn.se/",
+    hours: "Mån–fre 9.30–17.30, lör 10–15, sön stängt · sommar (20/6–9/8) alla dagar 9–18",
   },
   // OSM har butiken dubbelt på samma punkt: en tom post taggad som drivmedel
   // och en med uppgifter. Den tomma tas bort och den andra får rätt namn och
@@ -34,3 +37,36 @@ for (let i = SERVICES.length - 1; i >= 0; i--) {
   if (fix === null) SERVICES.splice(i, 1);
   else Object.assign(SERVICES[i], fix);
 }
+
+// Drivmedel och laddstationer — koordinater från OSM, men de saknade namn
+// (eller föll bort som dubbletter) och kommer därför in som egna poster.
+SERVICES.push(
+  {
+    name: "Drivmedel Saxnäs",
+    kind: "service", sub: "fuel",
+    lat: 64.97152, lng: 15.33822,
+    website: "https://www.marsfjallshandlarn.se/",
+    phone: "+46 940 70016",
+    hours: "Automat dygnet runt",
+  },
+  {
+    name: "Drivmedel Klimpfjäll",
+    kind: "service", sub: "fuel",
+    lat: 65.06071, lng: 14.79574,
+    website: "https://www.handlarn.se/butiker/klimpfjall/",
+    phone: "+46 940 71090",
+    hours: "",
+  },
+  {
+    name: "Laddstation Klimpfjäll",
+    kind: "service", sub: "charging",
+    lat: 65.06005, lng: 14.79886,
+    website: "", phone: "", hours: "",
+  },
+  {
+    name: "InCharge Klimpfjäll (4 platser)",
+    kind: "service", sub: "charging",
+    lat: 65.06297, lng: 14.80715,
+    website: "", phone: "", hours: "",
+  }
+);
