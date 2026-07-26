@@ -87,16 +87,16 @@ const I18N = {
     // Kartlager-panel
     "Kartunderlag": "Base map",
     "Säsong": "Season",
-    "☀️ Sommar": "☀️ Summer",
-    "❄️ Vinter": "❄️ Winter",
-    "❄️ Vinterinfo & säkerhet": "❄️ Winter info & safety",
+    "Sommar": "Summer",
+    "Vinter": "Winter",
+    "Vinterinfo & säkerhet": "Winter info & safety",
     "Lavinprognos — Södra Lapplandsfjällen ↗": "Avalanche forecast — Southern Lapland ↗",
     "Skoterledskarta — Vilhelmina ↗": "Snowmobile trail map — Vilhelmina ↗",
     "Vildmarksvägen över Stekenjokk är vinterstängd (ca 15 okt–6 jun). Kontrollera alltid väder och lavinläge före fjällfärd.":
       "The Wilderness Road over Stekenjokk is closed in winter (approx. 15 Oct–6 Jun). Always check weather and avalanche conditions before heading into the mountains.",
     "Datalager": "Data layers",
     "Offline": "Offline",
-    "⬇ Spara denna vy offline": "⬇ Save this view offline",
+    "Spara denna vy offline": "Save this view offline",
     "Sparar kartrutorna för det du ser nu, så de fungerar utan täckning.":
       "Saves the map tiles for what you see now, so they work without signal.",
     "Vyn sparad offline ✓": "View saved offline ✓",
@@ -130,15 +130,15 @@ const I18N = {
 
     // Platskort
     "Historia": "History",
-    "🧭 Vägbeskrivning": "🧭 Directions",
-    "📍 Visa i Google Maps": "📍 Show in Google Maps",
+    "Vägbeskrivning": "Directions",
+    "Visa i Google Maps": "Show in Google Maps",
     "Visa på kartan": "Show on map",
     "Hemsida ↗": "Website ↗",
     "Köp fiskekort ↗": "Buy fishing permit ↗",
     "Redigera": "Edit",
     "Ta bort": "Remove",
     "Ta bort tips": "Remove tip",
-    "⚑ Rapportera": "⚑ Report",
+    "Rapportera": "Report",
     "Hämtar väder…": "Fetching weather…",
     "Väderprognos": "Weather forecast",
     "Hämtar prognos…": "Fetching forecast…",
@@ -149,8 +149,8 @@ const I18N = {
     "Kunde inte hämta prognosen.": "Couldn't fetch the forecast.",
     "härifrån": "from here",
     "Stämningsbild": "Mood image",
-    "✓ Varit här": "✓ Been here",
-    "❤ Favorit": "❤ Favourite",
+    "Varit här": "Been here",
+    "Favorit": "Favourite",
     "Fornlämning": "Ancient site",
     "Källa: Riksantikvarieämbetet (Fornsök)": "Source: Swedish National Heritage Board",
     "Lämning": "Site",
@@ -178,8 +178,8 @@ const I18N = {
     "Beskrivning": "Description",
     "Berätta om platsen…": "Tell us about the place…",
     "Foto (valfritt)": "Photo (optional)",
-    "📷 Ta foto eller välj bild": "📷 Take a photo or choose an image",
-    "📷 Byt foto": "📷 Change photo",
+    "Ta foto eller välj bild": "Take a photo or choose an image",
+    "Byt foto": "Change photo",
     "Spara tips": "Save tip",
     "Spara ändringar": "Save changes",
     "Ditt tips delas med andra via molnet.": "Your tip is shared with others via the cloud.",
@@ -187,7 +187,7 @@ const I18N = {
     // Rutter
     "Rutter": "Routes",
     "Rutt": "Route",
-    "📥 Importera GPX-fil": "📥 Import GPX file",
+    "Importera GPX-fil": "Import GPX file",
     "Inga sparade rutter än. Importera en GPX-fil från din klocka eller telefon — t.ex. vägen upp på en topp.":
       "No saved routes yet. Import a GPX file from your watch or phone — e.g. the way up a peak.",
     "‹ Alla rutter": "‹ All routes",
@@ -213,18 +213,18 @@ const I18N = {
     "Genom att bidra godkänner du att bilder du laddar upp visas i appen, att du har rätt till dem, och att inga identifierbara personer syns utan medgivande.":
       "By contributing you agree that images you upload may be shown in the app, that you hold the rights to them, and that no identifiable people appear without consent.",
     "Inloggad som": "Signed in as",
-    "🛡️ Moderering": "🛡️ Moderation",
+    "Moderering": "Moderation",
     "Logga ut": "Sign out",
     "Konto": "Account",
     "Moderering": "Moderation",
 
     // Admin — redigera plats
     "Redigera plats": "Edit place",
-    "✏️ Redigera plats": "✏️ Edit place",
+    "Redigera plats": "Edit place",
     "Kort beskrivning": "Short description",
     "Fakta (en per rad: Rubrik: värde)": "Facts (one per line: Label: value)",
     "Bilder": "Images",
-    "📷 Ladda upp bild": "📷 Upload image",
+    "Ladda upp bild": "Upload image",
     "Inga bilder än.": "No images yet.",
     "Dölj eller ta bort bilder som inte passar. Bilder du laddar upp måste du ha rätt till.":
       "Hide or remove images that don't fit. You must hold the rights to images you upload.",
@@ -244,8 +244,8 @@ const I18N = {
     "integritetspolicyn": "the privacy policy",
     "Jag har läst och godkänner": "I have read and accept",
     "Radera mitt konto & mina data": "Delete my account & my data",
-    "⬇️ Ladda ner mina data": "⬇️ Download my data",
-    "🗂️ Hantera konto & innehåll": "🗂️ Manage account & content",
+    "Ladda ner mina data": "Download my data",
+    "Hantera konto & innehåll": "Manage account & content",
     "Hantera konto": "Manage account",
     "Flytta plats på kartan": "Move place on the map",
     "Flytta på kartan": "Move on the map",
@@ -275,8 +275,8 @@ const I18N = {
     "Klart. Ditt konto och dina data är raderade.": "Done. Your account and data have been deleted.",
     "Kunde inte radera allt automatiskt. Mejla ": "Could not delete everything automatically. Email ",
     "Redigera by & bilder": "Edit village & photos",
-    "📍 Tips härifrån (GPS)": "📍 Tip from here (GPS)",
-    "🗺️ Peka ut på kartan": "🗺️ Pick on the map",
+    "Tips härifrån (GPS)": "Tip from here (GPS)",
+    "Peka ut på kartan": "Pick on the map",
     "Bo & äta": "Stay & eat",
     "Boka ↗": "Book ↗",
     "Inget boende registrerat nära byn än.": "No accommodation registered near the village yet.",
@@ -377,6 +377,13 @@ function setLang(l) {
 function applyStaticI18n() {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     el.textContent = t(el.getAttribute("data-i18n"));
+    // data-ic="namn" sätter en ikon före texten. Ikonen ligger utanför
+    // översättningsnyckeln, så nycklarna förblir ren läsbar text.
+    const ic = el.getAttribute("data-ic");
+    if (ic && typeof iconSvg === "function") {
+      el.insertAdjacentHTML("afterbegin",
+        `<span class="btn-ic">${iconSvg(ic, "currentColor", 18)}</span>`);
+    }
   });
   document.querySelectorAll("[data-i18n-ph]").forEach((el) => {
     el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph")));

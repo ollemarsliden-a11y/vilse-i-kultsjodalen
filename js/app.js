@@ -130,8 +130,8 @@ function buildServiceLayer() {
     const sub = SERVICE_SUB[s.sub] || s.sub || k.label;
     const rows = [];
     if (s.info) rows.push(`<div class="svc-row">${escapeHtml(s.info)}</div>`);
-    if (s.hours) rows.push(`<div class="svc-row">🕑 ${escapeHtml(s.hours)}</div>`);
-    if (s.phone) rows.push(`<div class="svc-row">📞 <a href="tel:${escapeHtml(s.phone)}">${escapeHtml(s.phone)}</a></div>`);
+    if (s.hours) rows.push(`<div class="svc-row">${ic("klocka",15)}${escapeHtml(s.hours)}</div>`);
+    if (s.phone) rows.push(`<div class="svc-row">${ic("telefon",15)}<a href="tel:${escapeHtml(s.phone)}">${escapeHtml(s.phone)}</a></div>`);
     if (s.website) rows.push(`<div class="svc-row"><a href="${encodeURI(s.website)}" target="_blank" rel="noopener">Hemsida ↗</a></div>`);
     L.marker([s.lat, s.lng], { icon })
       .bindPopup(
@@ -392,10 +392,10 @@ function renderPlaceEdit(poi) {
     <label><span>${t("Boende & länkar (en per rad: Namn | länk | valfri notis)")}</span>
       <textarea id="pe-lodging" rows="3" placeholder="Saxnäsgården | https://saxnas.se | Hotell & restaurang">${escapeHtml(lodgingToText(patch.lodging))}</textarea></label>
     <div class="sheet-actions"><button id="pe-save" class="btn-primary">${t("Spara ändringar")}</button></div>
-    <button type="button" id="pe-move" class="photo-btn">📍 ${t("Flytta plats på kartan")}</button>
+    <button type="button" id="pe-move" class="photo-btn">${ic("nal")}${t("Flytta plats på kartan")}</button>
 
     <h3 class="panel-subhead">${t("Bilder")}</h3>
-    <button type="button" id="pe-add-photo" class="photo-btn">${t("📷 Ladda upp bild")}</button>
+    <button type="button" id="pe-add-photo" class="photo-btn">${ic("kamera")}${t("Ladda upp bild")}</button>
     <div class="pe-images">${imgList.map(imgManagerRow).join("") || `<p class="panel-hint">${t("Inga bilder än.")}</p>`}</div>
     <p class="panel-hint">${t("Dölj eller ta bort bilder som inte passar. Bilder du laddar upp måste du ha rätt till.")}</p>`;
 
@@ -450,7 +450,7 @@ function pickOnMap(startCoord, onSave) {
   state.map.setView(startCoord, Math.max(state.map.getZoom(), 15));
   const pin = document.createElement("div");
   pin.className = "center-pin";
-  pin.textContent = "📍";
+  pin.innerHTML = iconSvg("nal", "var(--stop)", 40);
   document.getElementById("map").appendChild(pin);
   const bar = document.createElement("div");
   bar.className = "move-bar";
@@ -568,7 +568,7 @@ async function downloadCurrentView() {
     await Promise.all(urls.slice(i, i + 6).map((u) => fetch(u, { mode: "no-cors" }).catch(() => { fail++; })));
     done += Math.min(6, urls.length - i);
   }
-  toast(fail ? `Sparade ${done - fail} av ${done} rutor offline.` : "Vyn sparad offline ✓");
+  toast(fail ? `Sparade ${done - fail} av ${done} rutor offline.` : t("Vyn sparad offline"));
 }
 
 // Slå på ett datalager (samma som att bocka i det i lagerpanelen).
@@ -674,7 +674,7 @@ function openPlaceSheet(poi, marker) {
     : poi.userAdded && Storage.mode !== "supabase"
       ? `<button class="ps-del" id="ps-delete-local">${t("Ta bort tips")}</button>` : "";
   const reportBtn = community && !isOwner
-    ? `<button class="ps-report" id="ps-report">${t("⚑ Rapportera")}</button>` : "";
+    ? `<button class="ps-report" id="ps-report">${ic("flagga")}${t("Rapportera")}</button>` : "";
 
   body.innerHTML = `
     ${header}
@@ -691,13 +691,13 @@ function openPlaceSheet(poi, marker) {
       ${poi.description ? `<div class="ps-section"><p>${escapeHtml(poi.description)}</p></div>` : ""}
       ${history}
       <div class="ps-actions">
-        <button class="ps-btn" id="ps-directions">${["topp", "led"].includes(poi.category) ? t("📍 Visa i Google Maps") : t("🧭 Vägbeskrivning")}</button>
+        <button class="ps-btn" id="ps-directions">${["topp", "led"].includes(poi.category) ? ic("nal") + t("Visa i Google Maps") : ic("nal") + t("Vägbeskrivning")}</button>
         <button class="ps-btn ps-btn-ghost" id="ps-center">${t("Visa på kartan")}</button>
       </div>
       ${poi.website ? `<a class="ps-btn ps-web" href="${encodeURI(poi.website)}" target="_blank" rel="noopener">${poi.category === "fiske" ? t("Köp fiskekort ↗") : t("Hemsida ↗")}</a>` : ""}
       ${ownerCtl}
-      ${canMoveTip ? `<button class="ps-btn ps-btn-ghost" id="ps-move-tip">📍 ${t("Flytta på kartan")}</button>` : ""}
-      ${canAdminEdit(poi) ? `<button class="ps-btn ps-admin-edit" id="ps-place-edit">${t("✏️ Redigera plats")}</button>` : ""}
+      ${canMoveTip ? `<button class="ps-btn ps-btn-ghost" id="ps-move-tip">${ic("nal")}${t("Flytta på kartan")}</button>` : ""}
+      ${canAdminEdit(poi) ? `<button class="ps-btn ps-admin-edit" id="ps-place-edit">${ic("penna")}${t("Redigera plats")}</button>` : ""}
       ${community ? `<div class="ps-comments" id="ps-comments"></div>` : ""}
       ${poi.source ? `<div class="ps-src">${t("Källa")}: ${escapeHtml(poi.source)}</div>` : ""}
       ${LANG === "en" && (poi.description || poi.history || poi.blurb)
@@ -823,7 +823,7 @@ function openCategoryList(key) {
         ${lead}
         <span class="vh-row-main"><span class="vh-row-name">${escapeHtml(p.name)}</span>
           <span class="vh-row-sub">${escapeHtml(p.blurb || t(c.label))}</span></span></button>
-      ${admin ? `<button class="cat-row-edit" data-edit="${p.id}" title="${t("Redigera plats")}">✏️</button>` : ""}
+      ${admin ? `<button class="cat-row-edit" data-edit="${p.id}" title="${t("Redigera plats")}">${iconSvg("penna","currentColor",17)}</button>` : ""}
     </div>`;
   };
   let html = items.map(row).join("");
@@ -1285,7 +1285,7 @@ function renderVillageHub(poi) {
   document.getElementById("vh-body").innerHTML = `
     ${heroHtml}${thumbs}
     <div class="vh-section">
-      ${admin ? `<button class="vh-add vh-add-soft" id="vh-edit">✏️ ${t("Redigera by & bilder")}</button>` : ""}
+      ${admin ? `<button class="vh-add vh-add-soft" id="vh-edit">${ic("penna")}${t("Redigera by & bilder")}</button>` : ""}
       ${poi.description ? `<div class="vh-about"><p>${escapeHtml(poi.description)}</p>
         ${poi.history ? `<p class="vh-more" hidden>${escapeHtml(poi.history)}</p><button class="vh-readmore" id="vh-readmore">${t("Läs mer")}</button>` : ""}</div>` : ""}
 
@@ -1949,7 +1949,7 @@ async function openWeatherSheet() {
     const days = await Weather.forecast(c.lat, c.lng);
     const sun = Sun.format(c.lat, c.lng);
     const sunRow = sun.rise
-      ? `<div class="wf-sun">🌅 ${t("Upp")} <b>${sun.rise}</b> &nbsp;·&nbsp; 🌇 ${t("Ned")} <b>${sun.set}</b></div>`
+      ? `<div class="wf-sun">${ic("sol",15)}${t("Upp")} <b>${sun.rise}</b> &nbsp;·&nbsp; ${t("Ned")} <b>${sun.set}</b></div>`
       : `<div class="wf-sun">${sun.emoji} <b>${escapeHtml(sun.text)}</b></div>`;
     body.innerHTML = sunRow + days.map((d, i) => {
       const label = i === 0 ? t("Idag") : i === 1 ? t("Imorgon") : fcDayName(d.date);
@@ -1957,7 +1957,7 @@ async function openWeatherSheet() {
         <span class="wf-emoji">${d.emoji}</span>
         <span class="wf-day">${escapeHtml(label)}</span>
         <span class="wf-temp"><b>${d.tmax}°</b> <span class="wf-min">${d.tmin}°</span></span>
-        <span class="wf-meta">🌬️ ${d.wind}${d.gust > d.wind ? ` (${d.gust})` : ""} m/s &nbsp;·&nbsp; 💧 ${d.precip} mm</span>
+        <span class="wf-meta">${t("Vind")} ${d.wind}${d.gust > d.wind ? ` (${d.gust})` : ""} m/s &nbsp;·&nbsp; ${d.precip} mm</span>
       </div>`;
     }).join("") + `<p class="panel-hint">${t("Prognos för Saxnäs från SMHI. Vindbyar inom parentes, nederbörd som dygnsmängd.")}</p>`;
   } catch {
@@ -2056,7 +2056,7 @@ function renderAdmin(reports, flagged) {
         return `<div class="adm-row" data-tip="${t.id}" data-lat="${t.lat}" data-lng="${t.lng}">
           <div class="adm-main">
             <div class="adm-name">${escapeHtml(t.name || "(borttaget tips)")} ${t.status && t.status !== "visible" ? `<span class="adm-flag">${t.status}</span>` : ""}</div>
-            <div class="adm-reason">⚑ ${escapeHtml(r.reason)}${r.note ? " — " + escapeHtml(r.note) : ""}</div>
+            <div class="adm-reason">${ic("flagga",14)}${escapeHtml(r.reason)}${r.note ? " — " + escapeHtml(r.note) : ""}</div>
           </div>
           <div class="adm-actions">
             ${t.id ? `<button data-act="hide" data-id="${t.id}">Dölj</button>
@@ -2066,7 +2066,7 @@ function renderAdmin(reports, flagged) {
           </div>
         </div>`;
       }).join("")
-    : `<p class="panel-hint">Inga öppna rapporter. 👍</p>`;
+    : `<p class="panel-hint">Inga öppna rapporter.</p>`;
 
   const flagHtml = flagged.length
     ? flagged.map((p) => `<div class="adm-row">
@@ -2287,11 +2287,11 @@ async function loadReactions(tipId) {
   let rows = [];
   try { rows = await Storage.reactionsFor(tipId); } catch { return; }
   const uid = Storage.auth.userId();
-  const kinds = [["been_here", "✓ Varit här"], ["favorite", "❤ Favorit"]];
-  el.innerHTML = kinds.map(([k, label]) => {
+  const kinds = [["been_here", "check", "Varit här"], ["favorite", "hjarta", "Favorit"]];
+  el.innerHTML = kinds.map(([k, icon, label]) => {
     const count = rows.filter((r) => r.kind === k).length;
     const mine = uid && rows.some((r) => r.kind === k && r.user_id === uid);
-    return `<button class="ps-react${mine ? " on" : ""}" data-k="${k}">${t(label)}${count ? ` <b>${count}</b>` : ""}</button>`;
+    return `<button class="ps-react${mine ? " on" : ""}" data-k="${k}">${ic(icon, 15)}${t(label)}${count ? ` <b>${count}</b>` : ""}</button>`;
   }).join("");
   el.querySelectorAll(".ps-react").forEach((btn) => {
     btn.onclick = async () => {
@@ -2551,7 +2551,7 @@ function handlePhotoPick(e) {
       state.pendingImage = dataUrl;
       document.getElementById("add-photo-img").src = dataUrl;
       document.getElementById("add-photo-preview").hidden = false;
-      document.getElementById("add-photo-btn").textContent = t("📷 Byt foto");
+      document.getElementById("add-photo-btn").textContent = ic("kamera") + t("Byt foto");
     })
     .catch(() => toast("Kunde inte läsa bilden."));
 }
@@ -2562,7 +2562,7 @@ function clearPhoto() {
   const img = document.getElementById("add-photo-img");
   if (img) img.removeAttribute("src");
   const btn = document.getElementById("add-photo-btn");
-  if (btn) btn.textContent = t("📷 Ta foto eller välj bild");
+  if (btn) btn.innerHTML = ic("kamera") + t("Ta foto eller välj bild");
 }
 function compressImage(file, maxDim = 1600, quality = 0.82) {
   return new Promise((resolve, reject) => {
@@ -2635,7 +2635,7 @@ function renderRoutesList() {
   const rows = saved.length
     ? saved.map((r) => `
         <button class="route-row" data-show="${r.id}">
-          <span class="route-ic">🥾</span>
+          <span class="route-ic">${iconSvg("led","currentColor",18)}</span>
           <span class="route-meta">
             <span class="route-name">${escapeHtml(r.name)}</span>
             <span class="route-sub">${r.stats.distanceKm.toFixed(1)} km${r.stats.ascent ? " · ↑" + r.stats.ascent + " m" : ""}</span>
@@ -2644,7 +2644,7 @@ function renderRoutesList() {
     : `<p class="panel-hint">${t("Inga sparade rutter än. Importera en GPX-fil från din klocka eller telefon — t.ex. vägen upp på en topp.")}</p>`;
 
   body.innerHTML = `
-    <button class="btn-primary" id="routes-import">${t("📥 Importera GPX-fil")}</button>
+    <button class="btn-primary" id="routes-import">${ic("ladda_upp")}${t("Importera GPX-fil")}</button>
     <div class="routes-list">${rows}</div>
     <p class="panel-hint">${t("Turer och GPX-rutter är tips — färd sker på egen risk. Se Info & fjällvett.")}</p>`;
   document.getElementById("routes-import").onclick = () => document.getElementById("gpx-input").click();
@@ -2760,6 +2760,12 @@ function wireSplash() {
 // ===================================================================
 //  Hjälpare
 // ===================================================================
+// Ikon före en knapptext. Ersätter emoji: ärver textfärgen, ritas likadant
+// på alla plattformar och skalar med texten.
+function ic(name, size = 18) {
+  return `<span class="btn-ic">${iconSvg(name, "currentColor", size)}</span>`;
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

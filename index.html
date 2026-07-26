@@ -13,7 +13,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=63" />
+  <link rel="stylesheet" href="css/styles.css?v=68" />
 </head>
 <body>
 
@@ -113,8 +113,8 @@
     </button>
   </div>
   <div id="add-choice" class="add-choice" hidden>
-    <button id="add-here" data-i18n="📍 Tips härifrån (GPS)">📍 Tips härifrån (GPS)</button>
-    <button id="add-pick" data-i18n="🗺️ Peka ut på kartan">🗺️ Peka ut på kartan</button>
+    <button id="add-here" data-ic="nal" data-i18n="Tips härifrån (GPS)">Tips härifrån (GPS)</button>
+    <button id="add-pick" data-ic="karta" data-i18n="Peka ut på kartan">Peka ut på kartan</button>
   </div>
   <input type="file" id="gpx-input" accept=".gpx,application/gpx+xml" hidden />
   </section>
@@ -168,12 +168,12 @@
     </div>
     <h3 class="panel-subhead" data-i18n="Säsong">Säsong</h3>
     <div id="season-toggle" class="segmented">
-      <button class="seg-btn" data-season="summer" data-i18n="☀️ Sommar">☀️ Sommar</button>
-      <button class="seg-btn" data-season="winter" data-i18n="❄️ Vinter">❄️ Vinter</button>
+      <button class="seg-btn" data-season="summer" data-ic="sol" data-i18n="Sommar">Sommar</button>
+      <button class="seg-btn" data-season="winter" data-ic="sno" data-i18n="Vinter">Vinter</button>
     </div>
 
     <div id="winter-card" class="winter-card" hidden>
-      <h4 data-i18n="❄️ Vinterinfo & säkerhet">❄️ Vinterinfo &amp; säkerhet</h4>
+      <h4 data-ic="sno" data-i18n="Vinterinfo & säkerhet">Vinterinfo &amp; säkerhet</h4>
       <a href="https://www.lavinprognoser.se/oversikt-alla-omraden/sodra_lapplandsfjallen/" target="_blank" rel="noopener" data-i18n="Lavinprognos — Södra Lapplandsfjällen ↗">Lavinprognos — Södra Lapplandsfjällen ↗</a>
       <a href="https://friak.se/guide/skoterleder-vilhelmina/" target="_blank" rel="noopener" data-i18n="Skoterledskarta — Vilhelmina ↗">Skoterledskarta — Vilhelmina ↗</a>
       <p data-i18n="Vildmarksvägen över Stekenjokk är vinterstängd (ca 15 okt–6 jun). Kontrollera alltid väder och lavinläge före fjällfärd.">Vildmarksvägen över Stekenjokk är vinterstängd (ca 15 okt–6 jun). Kontrollera alltid väder och lavinläge före fjällfärd.</p>
@@ -185,7 +185,7 @@
     <div id="overlay-toggles"></div>
 
     <h3 class="panel-subhead" data-i18n="Offline">Offline</h3>
-    <button id="btn-offline" class="btn-primary btn-secondary" data-i18n="⬇ Spara denna vy offline">⬇ Spara denna vy offline</button>
+    <button id="btn-offline" class="btn-primary btn-secondary" data-ic="ladda_ner" data-i18n="Spara denna vy offline">Spara denna vy offline</button>
     <p class="panel-hint" data-i18n="Sparar kartrutorna för det du ser nu, så de fungerar utan täckning.">Sparar kartrutorna för det du ser nu, så de fungerar utan täckning.</p>
 
   </div>
@@ -208,8 +208,8 @@
     <label><span data-i18n="Säsong">Säsong</span>
       <select id="add-season">
         <option value="all" data-i18n="Året runt">Året runt</option>
-        <option value="summer" data-i18n="☀️ Sommar">☀️ Sommar</option>
-        <option value="winter" data-i18n="❄️ Vinter">❄️ Vinter</option>
+        <option value="summer" data-ic="sol" data-i18n="Sommar">Sommar</option>
+        <option value="winter" data-ic="sno" data-i18n="Vinter">Vinter</option>
       </select>
     </label>
     <label><span data-i18n="Beskrivning">Beskrivning</span>
@@ -217,7 +217,7 @@
     </label>
     <label data-i18n="Foto (valfritt)">Foto (valfritt)</label>
     <div class="photo-picker">
-      <button type="button" id="add-photo-btn" class="photo-btn" data-i18n="📷 Ta foto eller välj bild">📷 Ta foto eller välj bild</button>
+      <button type="button" id="add-photo-btn" class="photo-btn" data-ic="kamera" data-i18n="Ta foto eller välj bild">Ta foto eller välj bild</button>
       <input id="add-photo" type="file" accept="image/*" hidden />
       <div id="add-photo-preview" class="photo-preview" hidden>
         <img id="add-photo-img" alt="Förhandsvisning" />
@@ -266,8 +266,8 @@
     </div>
     <div id="account-signedin" hidden>
       <p class="account-lead"><span data-i18n="Inloggad som">Inloggad som</span> <b id="account-who"></b>.</p>
-      <button id="account-admin" class="btn-primary btn-secondary" data-i18n="🛡️ Moderering" hidden>🛡️ Moderering</button>
-      <button id="account-manage" class="btn-primary btn-secondary" data-i18n="🗂️ Hantera konto & innehåll">🗂️ Hantera konto &amp; innehåll</button>
+      <button id="account-admin" class="btn-primary btn-secondary" data-ic="skold" data-i18n="Moderering" hidden>Moderering</button>
+      <button id="account-manage" class="btn-primary btn-secondary" data-ic="mapp" data-i18n="Hantera konto & innehåll">Hantera konto &amp; innehåll</button>
       <div class="sheet-actions">
         <button id="account-signout" class="btn-primary" data-i18n="Logga ut">Logga ut</button>
       </div>
@@ -288,7 +288,7 @@
     </div>
     <div id="manage-body"></div>
     <h3 class="panel-subhead" data-i18n="Mina uppgifter">Mina uppgifter</h3>
-    <button id="account-export" class="btn-primary btn-secondary" data-i18n="⬇️ Ladda ner mina data">⬇️ Ladda ner mina data</button>
+    <button id="account-export" class="btn-primary btn-secondary" data-ic="ladda_ner" data-i18n="Ladda ner mina data">Ladda ner mina data</button>
     <button id="account-delete" class="danger-link" data-i18n="Radera mitt konto & mina data">Radera mitt konto &amp; mina data</button>
   </div>
 
@@ -348,19 +348,19 @@
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=63"></script>
-  <script src="js/i18n.js?v=63"></script>
-  <script src="js/data.js?v=63"></script>
-  <script src="js/peaks.js?v=63"></script>
-  <script src="js/leder.js?v=63"></script>
-  <script src="js/services.js?v=63"></script>
-  <script src="js/routes.js?v=63"></script>
-  <script src="js/winter.js?v=63"></script>
-  <script src="js/icons.js?v=63"></script>
-  <script src="js/weather.js?v=63"></script>
-  <script src="js/sun.js?v=63"></script>
-  <script src="js/road.js?v=63"></script>
-  <script src="js/storage.js?v=63"></script>
-  <script src="js/app.js?v=63"></script>
+  <script src="js/config.js?v=68"></script>
+  <script src="js/i18n.js?v=68"></script>
+  <script src="js/data.js?v=68"></script>
+  <script src="js/peaks.js?v=68"></script>
+  <script src="js/leder.js?v=68"></script>
+  <script src="js/services.js?v=68"></script>
+  <script src="js/routes.js?v=68"></script>
+  <script src="js/winter.js?v=68"></script>
+  <script src="js/icons.js?v=68"></script>
+  <script src="js/weather.js?v=68"></script>
+  <script src="js/sun.js?v=68"></script>
+  <script src="js/road.js?v=68"></script>
+  <script src="js/storage.js?v=68"></script>
+  <script src="js/app.js?v=68"></script>
 </body>
 </html>
