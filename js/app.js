@@ -97,6 +97,18 @@ const OVERLAYS = {
     toast: "Laddar boende & service…",
     create: () => buildServiceLayer(),
   },
+  naturreservat: {
+    label: "Naturreservat",
+    icon: "smultron",
+    sub: "Reservatsgränser från Naturvårdsverket — Marsfjället, Satsfjället m.fl.",
+    toast: "Visar naturreservatens gränser…",
+    create: () =>
+      L.tileLayer.wms("https://geodata.naturvardsverket.se/naturvardsregistret/wms", {
+        layers: "Naturreservat,Nationalpark", format: "image/png", transparent: true,
+        version: "1.3.0", opacity: 0.55,
+        attribution: "Skyddad natur © Naturvårdsverket",
+      }),
+  },
   friluft: {
     label: "Stugor & rastskydd",
     icon: "boende",

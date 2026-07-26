@@ -130,6 +130,10 @@ const I18N = {
       "All marked trails & paths from OpenStreetMap (Waymarked Trails)",
     "Laddar leder & stigar…": "Loading trails & paths…",
     "Fornlämningar": "Ancient remains",
+    "Naturreservat": "Nature reserves",
+    "Reservatsgränser från Naturvårdsverket — Marsfjället, Satsfjället m.fl.":
+      "Reserve boundaries from the Swedish EPA — Marsfjället, Satsfjället and more.",
+    "Visar naturreservatens gränser…": "Showing nature reserve boundaries…",
     "Stugor & rastskydd": "Cabins & shelters",
     "Länsstyrelsens övernattningsstugor, rastskydd & vindskydd längs lederna":
       "The County Board's overnight cabins, shelters & windbreaks along the trails",
