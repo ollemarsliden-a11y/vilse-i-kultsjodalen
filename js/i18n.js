@@ -49,6 +49,7 @@ const I18N = {
     "Kultur & fornlämningar": "Culture & heritage",
     "Sevärt": "Sights",
     "Boende & mat": "Stay & eat",
+    "Service & laddning": "Services & charging",
     "Toppar": "Peaks",
 
     // Sök

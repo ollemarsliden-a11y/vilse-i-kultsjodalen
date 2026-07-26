@@ -6,6 +6,11 @@
    iconSvg, pinHtml, Weather */
 
 // ---- Bakgrundskartor ----------------------------------------------
+// Kartunderlag appen startar med. Ändra bara här — både kartan och den
+// markerade knappen i lagerpanelen läser den. "enkel" = vanliga OSM-kartan;
+// "fjall" är Lantmäteriets lokala rutor och den enda som funkar utan täckning.
+const DEFAULT_BASEMAP = "enkel";
+
 const BASEMAPS = {
   enkel: {
     label: "Karta",
@@ -211,7 +216,7 @@ async function init() {
   L.control.attribution({ position: "bottomleft", prefix: false }).addTo(state.map);
   L.control.zoom({ position: "bottomright" }).addTo(state.map);
 
-  setBasemap(CONFIG.LOCAL_FJALL ? "fjall" : "topo");
+  setBasemap(DEFAULT_BASEMAP);
   for (const key of Object.keys(CATEGORIES)) {
     state.layers[key] = L.layerGroup().addTo(state.map);
   }
@@ -575,6 +580,7 @@ function enableOverlay(key) {
 function setBasemap(key) {
   if (state.currentBasemap) state.map.removeLayer(state.currentBasemap);
   state.currentBasemap = BASEMAPS[key].layer().addTo(state.map);
+  state.basemapKey = key;
   state.currentBasemap.bringToBack();
   document.querySelectorAll("#basemap-buttons [data-key]").forEach((b) =>
     b.classList.toggle("active", b.dataset.key === key)
@@ -1177,7 +1183,8 @@ function renderVillageHub(poi) {
 
   const vpatch = state.overrides[poi.id] || {};
   const hideSet = new Set(vpatch.todoHide || []);
-  let todo = pool.filter((p) => p.id !== poi.id && !isVillage(p) && p.category !== "boende")
+  let todo = pool.filter((p) => p.id !== poi.id && !isVillage(p) &&
+      p.category !== "boende" && p.category !== "service")
     .map((p) => ({ p, d: distMeters(poi.coord, p.coord) }))
     .filter((x) => nearestVillageId(x.p.coord) === poi.id && x.d <= 15000 && !hideSet.has(x.p.id));
   for (const id of (vpatch.todoAdd || [])) {
@@ -1643,7 +1650,7 @@ const CHIP_GROUPS = [
   // därför styr chipet både boende-platserna och det lagret. Utan overlay:n
   // saknades Saxnäsgården, Marsfjäll Mountain Lodge, handlarna m.fl. på kartan.
   { key: "boata", label: "Bo & äta", icon: "boende", color: "#e0872b",
-    cats: ["boende"], overlay: "service" },
+    cats: ["boende", "service"], overlay: "service" },
   { key: "topp", label: "Toppar", icon: "topp", color: "#5f7488", cats: ["topp"] },
 ];
 
@@ -1710,7 +1717,7 @@ function buildBasemapButtons() {
     if (b.requiresToken && !CONFIG.LM_TOKEN) continue; // dölj tills token finns
     if (b.requiresLocal && !CONFIG.LOCAL_FJALL) continue; // dölj tills lokala rutor finns
     const btn = document.createElement("button");
-    btn.className = "bm-tile" + (key === (CONFIG.LOCAL_FJALL ? "fjall" : "topo") ? " active" : "");
+    btn.className = "bm-tile" + (key === state.basemapKey ? " active" : "");
     btn.dataset.key = key;
     btn.innerHTML = `<span class="bm-img" style="background-image:url('${BM_THUMBS[key] || ""}')"></span>
       <span class="bm-label">${t(b.label)}</span>`;

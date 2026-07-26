@@ -13,6 +13,10 @@ const CATEGORIES = {
   kultur:   { label: "Kultur & fornlämningar", color: "#9a6a3a" },
   sevart:   { label: "Sevärt",                 color: "#17a2a2" },
   boende:   { label: "Boende & mat",           color: "#e0872b" },
+  // För tips om praktiska saker: laddstolpar, drivmedel, dass, vatten…
+  // OBS: skilj den här POI-kategorin från kartlagret med samma namn
+  // (state.overlays.service), som är butiker/boende hämtade från OSM.
+  service:  { label: "Service & laddning",     color: "#4f8a8b" },
   topp:     { label: "Toppar",                 color: "#5f7488" },
 };
 
