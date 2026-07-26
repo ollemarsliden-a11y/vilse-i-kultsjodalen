@@ -627,12 +627,12 @@ const SEED_POIS = [
   },
   {
     id: "sagostigen-dikanas",
-    name: "Sagostigen i Dikanäs",
+    name: "Sagostigen i Kittelfjäll",
     category: "led",
     coord: [65.24706, 15.52225],
     blurb: "Familjevandring med sagofigurer",
     description:
-      "Kort och barnvänlig vandringsstig i Dikanäs där sagofigurer och " +
+      "Kort och barnvänlig vandringsstig i Kittelfjäll där sagofigurer och " +
       "berättelser kantar vägen — perfekt första fjällvandring för de minsta. " +
       "Stigen hänger ihop med Vojmåstigen längs älven.",
     facts: [["Passar", "Barnfamiljer"], ["Längd", "Kort slinga"]],
@@ -655,5 +655,115 @@ const SEED_POIS = [
     facts: [["Öppet", "Sommartid"], ["Arrangör", "Marslidens intresseförening"]],
     image: "",
     source: "Marslidens intresseförening, Visit Vilhelmina",
+  },
+  {
+    id: "marslidens-leder",
+    name: "Marslidens ledsystem",
+    category: "led",
+    coord: [65.0296, 15.3701],
+    blurb: "Över tio mil markerade leder från byn",
+    description:
+      "Marslidens intresseförening håller över tio mil leder öppna sommar som " +
+      "vinter — ett förvånansvärt stort nät för en by med ett tjugotal fastboende. " +
+      "Sommartid går Stöksjöleden (gul markering, 5,8 km och 200 höjdmeter mellan " +
+      "vägens vändplan och Stöktjärn), Byxbäcksleden (vit markering från bron över " +
+      "Ropenbäcken upp mot trädgränsen), Dammtjärnsstigen (röd markering fram till " +
+      "grillkåtan vid Dammtjärn), Kullenlederna med rundvandring och utsikt från " +
+      "toppen, samt Gevaliastigen/Vallenleden från Vallen upp till vindskyddet vid " +
+      "trädgränsen. Den stora turen är leden mot Marsfjället via Apelsinklyftan och " +
+      "Stora passet till Marsfjällskåtan. Vintertid prepareras skoterleder och ett " +
+      "skidspår vid Dammtjärn (4 km yttre slinga). Utgångspunkter är Byastugan och " +
+      "parkeringen på Enkronasvägen.",
+    website: "https://marsliden.se/leder/",
+    facts: [
+      ["Ledsystem", "Över 10 mil"],
+      ["Start", "Byastugan / Enkronasvägen"],
+      ["Säsong", "Sommar & vinter"],
+    ],
+    image: "",
+    source: "Marslidens intresseförening",
+  },
+  {
+    id: "marsfjallskatan",
+    name: "Marsfjällskåtan",
+    category: "led",
+    coord: [65.10182, 15.26419],
+    blurb: "Rastkåta från 1930-talet på väg mot toppen",
+    description:
+      "Rastkåta som STF lät bygga på 1930-talet, med vedbod och utedass. Den " +
+      "ligger 5,2 km från parkeringen i Marsliden och är ett naturligt mål i sig " +
+      "för den som inte vill gå hela vägen upp på Marsfjället. Hit går markerade " +
+      "leder från både Marsliden och Fatmomakke, och vidare mot Blerikstugan.",
+    facts: [
+      ["Byggd", "1930-talet (STF)"],
+      ["Från Marsliden", "5,2 km"],
+    ],
+    image: "",
+    source: "Marslidens intresseförening, Naturkartan, OpenStreetMap",
+  },
+  {
+    id: "apelsinklyftan",
+    name: "Apelsinklyftan",
+    category: "led",
+    coord: [65.04485, 15.36458],
+    blurb: "Vindskydd med utsikt över Marssjön",
+    description:
+      "Vindskydd med eldstad på en kulle längs leden från Marsliden mot " +
+      "Marsfjället. Ett självklart fikastopp — utsikten går söderut över Västra " +
+      "Marssjön och vidare mot Saxnäs. Passeras både av sommarleden mot " +
+      "Marsfjällskåtan och av skoterleden vintertid.",
+    facts: [["Typ", "Vindskydd & eldstad"], ["Längs", "Leden mot Marsfjället"]],
+    image: "",
+    source: "Marslidens intresseförening, OpenStreetMap",
+  },
+  {
+    id: "toppstugan-k2",
+    name: "Toppstugan (K2)",
+    category: "sevart",
+    coord: [65.06182, 14.78078],
+    blurb: "Rastkåta och utsiktsplats i Klimpfjäll",
+    description:
+      "Rastkåta med utsiktsplats ovanför Klimpfjäll, vid liftsystemet Klimpgubben " +
+      "K2. Härifrån ser man ut över Kultsjön och fjällen runt om — en av de " +
+      "enklaste utsikterna att nå i dalen eftersom man kommer en bra bit upp " +
+      "utan att behöva gå hela vägen.",
+    facts: [["Typ", "Rastkåta & utsikt"], ["By", "Klimpfjäll"]],
+    image: "",
+    source: "OpenStreetMap",
+  },
+  {
+    id: "klitvallens-sameviste",
+    name: "Klitvallens sameviste",
+    category: "kultur",
+    coord: [65.28745, 15.72834],
+    blurb: "Bevarat sameviste med torvkåtor och stolpbod",
+    description:
+      "Övergivet sameviste där granskogen övergår i fjällbjörkskog. Platsen var " +
+      "från början vår- och höstviste men blev med tiden åretruntboende, och " +
+      "användes ända in på 1950-talet. Här fanns ursprungligen fem kåtor; två " +
+      "torvkåtor och en timrad stolpbod finns bevarade och restaurerades 1998. " +
+      "Markerade leder går hit från Grönfjäll.",
+    facts: [
+      ["Använt till", "1950-talet"],
+      ["Restaurerat", "1998"],
+      ["Bevarat", "2 torvkåtor + stolpbod"],
+    ],
+    image: "",
+    source: "dikanas.eu, Naturkartan, OpenStreetMap",
+  },
+  {
+    id: "dikanas-kyrka",
+    name: "Dikanäs kyrka",
+    category: "kultur",
+    coord: [65.23588, 15.99634],
+    blurb: "Församlingens äldsta kyrka i bruk",
+    description:
+      "Timrad 1832 och färdig 1833, efter att nybyggarna i Vojmådalen vid en " +
+      "gudstjänst i Fatmomakke 1828 bett om hjälp att få ett eget kapell — vägen " +
+      "till kyrkan i Vilhelmina var lång. Kyrkan är en av församlingens äldsta " +
+      "bevarade och fortfarande i bruk.",
+    facts: [["Byggd", "1832–33"], ["By", "Dikanäs"]],
+    image: "",
+    source: "dikanas.eu, Vilhelmina församling",
   },
 ];
