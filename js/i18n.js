@@ -32,6 +32,11 @@ const I18N = {
       "Your guide to the valley — villages, trails, fishing, culture and sights.",
     "Byar & platser i dalen": "Villages & places in the valley",
     "Byar i dalen": "Villages in the valley",
+    "Dalens horisont": "The valley skyline",
+    "Dalens fjäll, väst till öst, i verklig höjd. Tryck på en by.":
+      "The valley's peaks, west to east, at true elevation. Tap a village.",
+    "Dalens fjäll från väster till öster, efter höjd över havet":
+      "The valley's peaks from west to east, by elevation above sea level",
     "Utflykter & vandringar": "Trips & hikes",
     "Sevärt & kultur": "Sights & culture",
     "Inget här än.": "Nothing here yet.",
