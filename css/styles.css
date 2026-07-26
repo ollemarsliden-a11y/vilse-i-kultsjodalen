@@ -1005,61 +1005,46 @@ svg.elev { width: 100%; height: 90px; display: block; }
 .ps-react .btn-ic, .svc-row .btn-ic, .adm-reason .btn-ic { margin-right: 6px; }
 .cat-row-edit svg { display: block; margin: 0 auto; }
 
-/* ---- Dalens horisont ---------------------------------------------
-   Profilen ritas ur riktiga höjddata, så den behöver inte dekoreras.
-   Formen ligger i SVG; all text ligger i HTML ovanpå, eftersom text inuti
-   en skalad viewBox krymper till oläsliga 5 px på en telefon. */
-.horizon {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 12px 0 8px;
-  box-shadow: var(--shadow-s);
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
+/* ---- Längs dalen --------------------------------------------------
+   Byarna som hållplatser på en linje, väst → öst. Linjen är vägen. */
+.vl-rad {
+  position: relative; display: flex; justify-content: space-between;
+  align-items: flex-start; padding: 14px 10px 4px; gap: 2px;
 }
-.horizon::-webkit-scrollbar { display: none; }
-/* Dalen är 12 mil lång — den får inte plats på en telefonskärm utan att
-   namnen skriver över varandra. Så man drar sig västerut i stället, vilket
-   är samma rörelse som att köra Vildmarksvägen. */
-.hz-canvas { position: relative; min-width: 760px; height: 202px; padding: 0 16px; }
-.hz-svg { display: block; width: 100%; height: 114px; }
-.hz-vatten { stroke: var(--accent); stroke-width: 2; stroke-linecap: round; opacity: .55; }
+.vl-linje {
+  position: absolute; left: 22px; right: 22px; top: 48px; height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--brand-2), var(--accent));
+  opacity: .55;
+}
+.vl-stopp {
+  position: relative; z-index: 1; flex: 1; min-width: 0;
+  display: grid; grid-template-rows: 16px 17px 16px; row-gap: 4px;
+  justify-items: center; align-items: center;
+  border: none; background: none; cursor: pointer; padding: 6px 1px;
+  min-height: 56px; color: var(--ink);
+}
+/* Namnet under linjen som standard; varannan by (vl-upp) ovanför. */
+.vl-stopp .vl-namn { grid-row: 3; }
+.vl-stopp .vl-prick { grid-row: 2; }
+.vl-stopp .vl-status { grid-row: 1; }
+.vl-upp .vl-namn { grid-row: 1; }
+.vl-upp .vl-status { grid-row: 3; }
+.vl-status.vl-tom { visibility: hidden; }
+.vl-prick {
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--surface); border: 3px solid var(--brand-2);
+}
+.vl-namn { font-size: 10.5px; font-weight: 650; line-height: 1.15; }
+.vl-stopp:active .vl-prick { background: var(--brand-2); }
+.vl-stopp:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
 
-/* Namn på de tre högsta topparna. */
-.hz-topp {
-  position: absolute; transform: translate(-50%, -125%);
-  font-size: 10.5px; line-height: 1.15; color: var(--ink-2);
-  white-space: nowrap; pointer-events: none; text-align: center;
-}
-.hz-topp b { color: var(--ink); font-weight: 700; }
-.hz-topp::after {
-  content: ""; display: block; width: 1px; height: 7px; margin: 2px auto 0;
-  background: var(--ink-2); opacity: .5;
-}
+/* Stekenjokk-grinden: statusfärgad prick + rad under namnet. */
+.vl-grind .vl-prick { border-color: var(--ink-2); }
+.vl-status { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--ink-2); }
+.vl-status.vl-oppen { color: var(--ok); }
+.vl-status.vl-stangd { color: var(--stop); }
+.vl-prick.vl-oppen { border-color: var(--ok); }
+.vl-prick.vl-stangd { border-color: var(--stop); }
 
-/* Byarna sitter på vattenlinjen och är riktiga knappar med rejäl tryckyta. */
-.hz-by {
-  position: absolute; top: 110px; transform: translateX(-50%);
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  border: none; background: none; cursor: pointer; padding: 4px 6px 0;
-  min-height: 44px; color: var(--ink);
-}
-/* Raderna ligger en hel tryckyta isär, annars äter knapparna varandra.
-   Andra radens by får ett streck upp till sin plats på vattenlinjen. */
-.hz-by-2 { top: 154px; }
-.hz-by-2::before {
-  content: ""; position: absolute; top: -40px; height: 40px; width: 1.5px;
-  background: var(--accent); opacity: .45;
-}
-.hz-prick {
-  width: 9px; height: 9px; border-radius: 50%;
-  background: var(--surface); border: 2.5px solid var(--accent);
-}
-.hz-bynamn { font-size: 11px; font-weight: 650; white-space: nowrap; }
-.hz-by:active .hz-prick { background: var(--accent); }
-.hz-by:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
-.hz-fot {
-  margin: 6px 14px 0; font-size: 11.5px; color: var(--ink-2); text-align: center;
-}
+.hz-fot { margin: 4px 10px 2px; font-size: 11.5px; color: var(--ink-2); text-align: center; }

@@ -882,113 +882,59 @@ function placeCardHtml(poi) {
 }
 
 // ===================================================================
-//  Dalens horisont
+//  Längs dalen
 // ===================================================================
-//  Ingen dekoration: en verklig profil av dalen, ritad ur appens egna
-//  data. Varje topp står på sin riktiga longitud (väst → öst) och sin
-//  riktiga höjd över havet, med Kultsjöns yta som nollinje och byarna
-//  utsatta där de faktiskt ligger längs vattnet. Två dalar i världen
-//  får samma bild bara om de har samma fjäll.
-const HORISONT = {
-  lngMin: 14.40, lngMax: 16.05,   // Stekenjokk i väster → Dikanäs i öster
-  hMin: 480, hMax: 1660,          // Kultsjön ligger på ca 540 m ö.h.
-  b: 1000, h: 200,                // viewBox
-};
-
-function peakHeight(p) {
-  const m = /(\d{3,4})\s*m/.exec(p.blurb || "");
-  return m ? +m[1] : null;
-}
-
-function buildHorizon() {
+//  Byarna som hållplatser i verklig ordning väst → öst längs
+//  Vildmarksvägen, med Stekenjokk-grinden i västra änden. Grindens
+//  status (öppen/vinterstängd) hämtas från RoadStatus — det enskilt
+//  viktigaste faktumet om dalen ligger därmed först på startsidan.
+async function buildValley() {
   const el = document.getElementById("start-horizon");
   if (!el) return;
-  const H = HORISONT;
-  const x = (lng) => 20 + ((lng - H.lngMin) / (H.lngMax - H.lngMin)) * (H.b - 40);
-  const y = (m) => H.h - 34 - ((m - H.hMin) / (H.hMax - H.hMin)) * (H.h - 60);
-
-  const toppar = [...(typeof PEAKS !== "undefined" ? PEAKS : []),
-                  ...SEED_POIS.filter((p) => /^Marsfjället/.test(p.name))]
-    .map((p) => ({ p, m: peakHeight(p) || peakHeight({ blurb: (p.facts || []).map((f) => f[1]).join(" ") }) }))
-    .filter((t) => t.m && t.p.coord[1] >= H.lngMin && t.p.coord[1] <= H.lngMax)
-    .sort((a, b) => a.p.coord[1] - b.p.coord[1]);
-  if (toppar.length < 3) return;
-
-  const golv = y(H.hMin);
-  // Ryggen: från vänster kant, upp och ner över varje topp, ut till höger.
-  const rygg = [`M ${x(H.lngMin)} ${golv}`];
-  toppar.forEach((t, i) => {
-    const px = x(t.p.coord[1]), py = y(t.m);
-    const forra = i ? x(toppar[i - 1].p.coord[1]) : x(H.lngMin);
-    const sadel = golv - (golv - Math.max(py, y(toppar[i - 1] ? toppar[i - 1].m : H.hMin))) * 0.45;
-    rygg.push(`L ${((forra + px) / 2).toFixed(1)} ${sadel.toFixed(1)}`);
-    rygg.push(`L ${px.toFixed(1)} ${py.toFixed(1)}`);
-  });
-  rygg.push(`L ${x(H.lngMax)} ${golv}`, "Z");
 
   const byar = VILLAGE_IDS.map((id) => SEED_POIS.find((p) => p.id === id))
-    .filter((v) => v && v.coord[1] >= H.lngMin && v.coord[1] <= H.lngMax)
-    .sort((a, b) => a.coord[1] - b.coord[1]);
+    .filter(Boolean).sort((a, b) => a.coord[1] - b.coord[1]);
+  const stek = SEED_POIS.find((p) => p.id === "stekenjokk");
 
-  // Namnge de högsta topparna, men hoppa över dem som skulle skriva över
-  // ett namn som redan satts ut. Höjd vinner över ordning.
-  const namngivna = [];
-  for (const t of [...toppar].sort((a, b) => b.m - a.m)) {
-    const px = ((t.p.coord[1] - H.lngMin) / (H.lngMax - H.lngMin)) * 100;
-    if (namngivna.every((n) => Math.abs(n.px - px) > 17)) namngivna.push({ ...t, px });
-    if (namngivna.length === 4) break;
-  }
-
-  // Text ligger i HTML ovanpå SVG:n, inte inuti den. Inuti skalas den med
-  // viewBoxen och hamnar på ~5 px på en telefon — oläsbart.
-  const pct = (lng) => (x(lng) / H.b) * 100;
-  const pctY = (m) => (y(m) / H.h) * 100;
-
-  // Byar som ligger nära varandra (Saxnäs/Marsliden) får varannan rad,
-  // annars skriver etiketterna över varandra.
-  let forraX = -99, rad = 0;
-  const byRader = byar.map((v) => {
-    const px = pct(v.coord[1]);
-    rad = px - forraX < 9 ? 1 - rad : 0;
-    forraX = px;
-    return { v, px, rad };
-  });
+  // Varannan by har namnet över linjen, varannan under — annars nuddar
+  // de långa namnen varandra i västra änden på en smal skärm.
+  const stopp = (p, i, extra = "") => `
+    <button class="vl-stopp${i % 2 ? "" : " vl-upp"}${extra}" data-poi="${p.id}">
+      <span class="vl-namn">${escapeHtml(p.name.replace(" kyrkstad", ""))}</span>
+      <span class="vl-prick"></span>
+      <span class="vl-status${extra ? "" : " vl-tom"}"${extra ? ' id="vl-vagstatus"' : ""}>${extra ? "…" : ""}</span>
+    </button>`;
 
   el.innerHTML = `
-    <div class="hz-canvas">
-      <svg viewBox="0 0 ${H.b} ${H.h}" class="hz-svg" role="img" preserveAspectRatio="none"
-           aria-label="${t("Dalens fjäll från väster till öster, efter höjd över havet")}">
-        <defs>
-          <linearGradient id="hz-fyll" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="var(--brand-2)" stop-opacity=".5"/>
-            <stop offset="100%" stop-color="var(--brand)" stop-opacity=".95"/>
-          </linearGradient>
-        </defs>
-        <path d="${rygg.join(" ")}" fill="url(#hz-fyll)"/>
-        <line x1="20" y1="${golv}" x2="${H.b - 20}" y2="${golv}" class="hz-vatten"
-              vector-effect="non-scaling-stroke"/>
-      </svg>
-      ${namngivna.map((tp) => `
-        <span class="hz-topp" style="left:${pct(tp.p.coord[1]).toFixed(2)}%;top:${pctY(tp.m).toFixed(2)}%">
-          <b>${escapeHtml(tp.p.name.replace(/\s*\(.*/, ""))}</b> ${tp.m}&nbsp;m</span>`).join("")}
-      ${byRader.map(({ v, px, rad }) => `
-        <button class="hz-by${rad ? " hz-by-2" : ""}" data-poi="${v.id}" style="left:${px.toFixed(2)}%">
-          <span class="hz-prick"></span>
-          <span class="hz-bynamn">${escapeHtml(v.name.replace(" kyrkstad", ""))}</span>
-        </button>`).join("")}
+    <div class="vl-rad">
+      <span class="vl-linje" aria-hidden="true"></span>
+      ${stek ? stopp(stek, 0, " vl-grind") : ""}
+      ${byar.map((v, i) => stopp(v, i + 1)).join("")}
     </div>
-    <p class="hz-fot">${t("Dalens fjäll, väst till öst, i verklig höjd. Tryck på en by.")}</p>`;
+    <p class="hz-fot">${t("Vildmarksvägen genom dalen, väst till öst. Tryck på en by.")}</p>`;
 
   el.querySelectorAll("[data-poi]").forEach((b) => b.addEventListener("click", () => {
     const v = SEED_POIS.find((p) => p.id === b.dataset.poi);
     if (v) openPlaceOrHub(v, state.markers[v.id]);
   }));
+
+  // Grindstatus: grönt = öppen, rött = vinterstängd.
+  const st = document.getElementById("vl-vagstatus");
+  if (st && typeof RoadStatus !== "undefined") {
+    try {
+      const road = await RoadStatus.get();
+      st.textContent = road.open ? t("öppen") : t("vinterstängd");
+      st.classList.add(road.open ? "vl-oppen" : "vl-stangd");
+      const prick = st.closest(".vl-stopp").querySelector(".vl-prick");
+      prick.classList.add(road.open ? "vl-oppen" : "vl-stangd");
+    } catch { st.remove(); }
+  }
 }
 
 function buildStartPage() {
   const byId = Object.fromEntries(SEED_POIS.map((p) => [p.id, p]));
   const villages = VILLAGE_IDS.map((id) => byId[id]).filter(Boolean);
-  buildHorizon();
+  buildValley();
 
   document.getElementById("start-villages").innerHTML = villages.map(placeCardHtml).join("");
 

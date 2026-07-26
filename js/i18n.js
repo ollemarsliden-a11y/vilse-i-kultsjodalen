@@ -32,11 +32,11 @@ const I18N = {
       "Your guide to the valley — villages, trails, fishing, culture and sights.",
     "Byar & platser i dalen": "Villages & places in the valley",
     "Byar i dalen": "Villages in the valley",
-    "Dalens horisont": "The valley skyline",
-    "Dalens fjäll, väst till öst, i verklig höjd. Tryck på en by.":
-      "The valley's peaks, west to east, at true elevation. Tap a village.",
-    "Dalens fjäll från väster till öster, efter höjd över havet":
-      "The valley's peaks from west to east, by elevation above sea level",
+    "Längs dalen": "Along the valley",
+    "Vildmarksvägen genom dalen, väst till öst. Tryck på en by.":
+      "The Wilderness Road through the valley, west to east. Tap a village.",
+    "öppen": "open",
+    "vinterstängd": "closed",
     "Utflykter & vandringar": "Trips & hikes",
     "Sevärt & kultur": "Sights & culture",
     "Inget här än.": "Nothing here yet.",
