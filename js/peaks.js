@@ -71,7 +71,7 @@ const PEAK_TEXT = {
     description:
       "Fjället närmast byn, 2,5 km nordväst om Marsliden. Det är den här " +
       "ryggen man ser resa sig direkt bakom husen. Kort väg men brant — det " +
-      "är drygt 600 höjdmeter upp från byn, först genom fjällbjörkskog och " +
+      "är knappt 600 höjdmeter upp från byn (byn ligger på ca 570 m), först genom fjällbjörkskog och " +
       "sedan ut på öppet kalfjäll. Uppifrån ligger Västra Marssjön och byn " +
       "rakt nedanför, med Marsfjället i norr. En bra första topp för den som " +
       "bor i byn och vill upp på fjället utan att göra en heldag av det.",

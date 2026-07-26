@@ -667,8 +667,10 @@ const SEED_POIS = [
     coord: [65.0296, 15.3701],
     blurb: "Över tio mil markerade leder från byn",
     description:
-      "Marslidens intresseförening håller över tio mil leder öppna sommar som " +
-      "vinter — ett förvånansvärt stort nät för en by med ett tjugotal fastboende. " +
+      "Marslidens intresseförening håller drygt sju mil leder öppna sommar som " +
+      "vinter — och eftersom vinterlederna körs fram och tillbaka blir den " +
+      "preparerade sträckan över tio mil. Ett förvånansvärt stort nät för en by " +
+      "med ett tjugotal fastboende. " +
       "Sommartid går Stöksjöleden (gul markering, 5,8 km och 200 höjdmeter mellan " +
       "vägens vändplan och Stöktjärn), Byxbäcksleden (vit markering från bron över " +
       "Ropenbäcken upp mot trädgränsen), Dammtjärnsstigen (röd markering fram till " +
@@ -676,11 +678,12 @@ const SEED_POIS = [
       "toppen, samt Gevaliastigen/Vallenleden från Vallen upp till vindskyddet vid " +
       "trädgränsen. Den stora turen är leden mot Marsfjället via Apelsinklyftan och " +
       "Stora passet till Marsfjällskåtan. Vintertid prepareras skoterleder och ett " +
-      "skidspår vid Dammtjärn (4 km yttre slinga). Utgångspunkter är Byastugan och " +
+      "skidspår på 4 km — eller 3 km om man väljer bort den övre slingan. " +
+      "Utgångspunkter är Byastugan och " +
       "parkeringen på Enkronasvägen.",
     website: "https://marsliden.se/leder/",
     facts: [
-      ["Ledsystem", "Över 10 mil"],
+      ["Ledsystem", "Drygt 7 mil"],
       ["Start", "Byastugan / Enkronasvägen"],
       ["Säsong", "Sommar & vinter"],
     ],
@@ -692,15 +695,17 @@ const SEED_POIS = [
     name: "Marsfjällskåtan",
     category: "led",
     coord: [65.10182, 15.26419],
-    blurb: "Rastkåta från 1930-talet på väg mot toppen",
+    blurb: "Rastkåta på väg upp mot Marsfjället",
     description:
-      "Rastkåta som STF lät bygga på 1930-talet, med vedbod och utedass. Den " +
-      "ligger 5,2 km från parkeringen i Marsliden och är ett naturligt mål i sig " +
-      "för den som inte vill gå hela vägen upp på Marsfjället. Hit går markerade " +
-      "leder från både Marsliden och Fatmomakke, och vidare mot Blerikstugan.",
+      "Rastkåta på 837 m ö.h. i Marsfjällets naturreservat, och ett naturligt " +
+      "mål i sig för den som inte vill gå hela vägen upp på toppen. Hit går " +
+      "markerade statliga leder från både Marsliden (AC 47) och Fatmomakke " +
+      "(AC 46), och vidare mot Blerikstugan. Räkna med en rejäl dagstur: bara " +
+      "fågelvägen från Marsliden är 9,4 km, och leden går längre än så.",
     facts: [
-      ["Byggd", "1930-talet (STF)"],
-      ["Från Marsliden", "5,2 km"],
+      ["Höjd", "ca 837 m ö.h."],
+      ["Från Marsliden", "9,4 km fågelvägen"],
+      ["Leder", "AC 46 & AC 47"],
     ],
     image: "",
     source: "Marslidens intresseförening, Naturkartan, OpenStreetMap",
