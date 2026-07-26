@@ -17,13 +17,15 @@ const SERVICE_FIX = {
     website: "https://www.marsfjallshandlarn.se/",
   },
   // OSM har butiken dubbelt på samma punkt: en tom post taggad som drivmedel
-  // och en med uppgifter. Den tomma tas bort och den andra får rätt namn,
-  // rätt länk och de obemannade öppettiderna (som inte står på kedjans sida).
+  // och en med uppgifter. Den tomma tas bort och den andra får rätt namn och
+  // rätt länk. Öppettiderna är avlästa från skylten i butiken (2026) — de
+  // stämmer varken med OSM eller med kedjans sida, som saknar de obemannade
+  // tiderna helt och dessutom anger stängt på söndagar.
   "Handlar'n Klimpfjäll": null,
   "Klimpfjällshandlarn": {
     name: "Klimpfjälls Handlar'n",
     website: "https://www.handlarn.se/butiker/klimpfjall/",
-    hours: "Obemannat 06:00–23:00 alla dagar",
+    hours: "Bemannat mån–fre 9.30–17.30, lör–sön 10–15 · obemannat 6–23",
   },
 };
 for (let i = SERVICES.length - 1; i >= 0; i--) {
