@@ -26,6 +26,8 @@ create table if not exists public.vik_tips (
 
 -- Fanns inte i tidiga installationer — lägg till i efterhand:
 alter table public.vik_tips add column if not exists village_id text;
+-- Egenskapstaggar (kommaskild text: barn,hund,gratis,eldstad,utsikt,rullstol):
+alter table public.vik_tips add column if not exists tags text;
 
 -- 2. KOMMENTARER
 create table if not exists public.vik_comments (

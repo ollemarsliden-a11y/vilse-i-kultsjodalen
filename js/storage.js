@@ -32,7 +32,7 @@ const Storage = (() => {
     return {
       id: r.id, name: r.name, category: r.category, description: r.description || "",
       image: r.image_url || "", coord: [r.lat, r.lng], season: r.season || "all",
-      village_id: r.village_id || null,
+      village_id: r.village_id || null, tags: r.tags || "",
       user_id: r.user_id, userAdded: true, createdAt: r.created_at, status: r.status,
     };
   }
@@ -92,12 +92,19 @@ const Storage = (() => {
 
       async addUserPoi(poi) {
         if (!currentUser) throw new Error("Inte inloggad");
-        const { data, error } = await sb.from("vik_tips").insert({
+        const rad = {
           user_id: currentUser.id, name: poi.name, category: poi.category,
           description: poi.description || null, lat: poi.coord[0], lng: poi.coord[1],
           image_url: poi.image || null, season: poi.season || "all",
-          village_id: poi.village_id || null,
-        }).select().single();
+          village_id: poi.village_id || null, tags: poi.tags || null,
+        };
+        let { data, error } = await sb.from("vik_tips").insert(rad).select().single();
+        // Saknas tags-kolumnen (schema.sql ej omkörd) ska tipset ändå sparas —
+        // vi tappade ett tips på exakt det här sättet när village_id var ny.
+        if (error && /tags/.test(error.message)) {
+          delete rad.tags;
+          ({ data, error } = await sb.from("vik_tips").insert(rad).select().single());
+        }
         if (error) throw error;
         return rowToPoi(data);
       },
@@ -110,9 +117,14 @@ const Storage = (() => {
         if (patch.image != null) upd.image_url = patch.image;
         if (patch.season != null) upd.season = patch.season;
         if (patch.village_id !== undefined) upd.village_id = patch.village_id;
+        if (patch.tags !== undefined) upd.tags = patch.tags || null;
         if (patch.coord) { upd.lat = patch.coord[0]; upd.lng = patch.coord[1]; }
         upd.edited_at = new Date().toISOString();
-        const { data, error } = await sb.from("vik_tips").update(upd).eq("id", id).select().single();
+        let { data, error } = await sb.from("vik_tips").update(upd).eq("id", id).select().single();
+        if (error && /tags/.test(error.message) && "tags" in upd) {
+          delete upd.tags; // kolumnen saknas — spara resten ändå
+          ({ data, error } = await sb.from("vik_tips").update(upd).eq("id", id).select().single());
+        }
         if (error) throw error;
         return rowToPoi(data);
       },

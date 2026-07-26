@@ -131,6 +131,12 @@ const I18N = {
     "Laddar leder & stigar…": "Loading trails & paths…",
     "Fornlämningar": "Ancient remains",
     "Naturreservat": "Nature reserves",
+    "Passar för (valfritt)": "Good for (optional)",
+    "Barnvänligt": "Family friendly",
+    "Hundvänligt": "Dog friendly",
+    "Gratis": "Free",
+    "Utsikt": "Viewpoint",
+    "Rullstolsvänligt": "Wheelchair friendly",
     "Reservatsgränser från Naturvårdsverket — Marsfjället, Satsfjället m.fl.":
       "Reserve boundaries from the Swedish EPA — Marsfjället, Satsfjället and more.",
     "Visar naturreservatens gränser…": "Showing nature reserve boundaries…",

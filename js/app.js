@@ -298,6 +298,7 @@ async function init() {
   buildBasemapButtons();
   buildOverlayToggles();
   fillCategorySelect();
+  buildTagRow();
   fillVillageSelect();
   applyStaticI18n();
   buildStartPage();
@@ -750,6 +751,9 @@ function openPlaceSheet(poi, marker) {
       </div>
       <h2 class="ps-title">${escapeHtml(poi.name)}</h2>
       ${poi.blurb ? `<p class="ps-blurb">${escapeHtml(poi.blurb)}</p>` : ""}
+      ${poi.tags ? `<div class="ps-tags">${String(poi.tags).split(",")
+        .map((k) => TIP_TAG_LABEL[k] ? `<span class="ps-tag">${t(TIP_TAG_LABEL[k])}</span>` : "")
+        .join("")}</div>` : ""}
       ${dist}
       <div class="ps-weather" id="ps-weather"><span class="ps-weather-load">${t("Hämtar väder…")}</span></div>
       ${reactRow}
@@ -1913,14 +1917,59 @@ function buildOverlayToggles() {
   }
 }
 
+// Kategorin väljs i ett rutnät av tryckytor i stället för operativsystemets
+// rullgardin — man ser alla val på en gång och träffar med tummen (eller
+// vantar). Den dolda <select>-en behålls som värdebärare så resten av
+// koden (redigering, sparande) inte behöver veta om rutnätet.
 function fillCategorySelect() {
   const sel = document.getElementById("add-category");
+  const grid = document.getElementById("add-category-grid");
   for (const [key, c] of Object.entries(CATEGORIES)) {
     const opt = document.createElement("option");
     opt.value = key;
     opt.textContent = t(c.label);
     sel.appendChild(opt);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "cp-btn";
+    btn.dataset.key = key;
+    btn.innerHTML = `<span class="cp-ic">${iconSvg(key, "currentColor", 22)}</span>
+      <span class="cp-label">${t(c.label)}</span>`;
+    btn.addEventListener("click", () => { sel.value = key; syncCategoryGrid(); });
+    grid.appendChild(btn);
   }
+  syncCategoryGrid();
+}
+function syncCategoryGrid() {
+  const val = document.getElementById("add-category").value;
+  document.querySelectorAll("#add-category-grid .cp-btn").forEach((b) =>
+    b.classList.toggle("on", b.dataset.key === val));
+}
+
+// Egenskapstaggar på tips — vad platsen passar för. Sparas som kommaskild
+// text i kolumnen tags (supabase/schema.sql).
+const TIP_TAGS = [
+  ["barn", "Barnvänligt"], ["hund", "Hundvänligt"], ["gratis", "Gratis"],
+  ["eldstad", "Eldstad"], ["utsikt", "Utsikt"], ["rullstol", "Rullstolsvänligt"],
+];
+const TIP_TAG_LABEL = Object.fromEntries(TIP_TAGS);
+
+function buildTagRow() {
+  const row = document.getElementById("add-tags");
+  if (!row) return;
+  row.innerHTML = TIP_TAGS.map(([k, label]) =>
+    `<button type="button" class="tag-btn" data-tag="${k}">${t(label)}</button>`).join("");
+  row.querySelectorAll(".tag-btn").forEach((b) =>
+    b.addEventListener("click", () => b.classList.toggle("on")));
+}
+function setTagRow(tags) {
+  const valda = new Set(String(tags || "").split(",").filter(Boolean));
+  document.querySelectorAll("#add-tags .tag-btn").forEach((b) =>
+    b.classList.toggle("on", valda.has(b.dataset.tag)));
+}
+function readTagRow() {
+  return [...document.querySelectorAll("#add-tags .tag-btn.on")]
+    .map((b) => b.dataset.tag).join(",");
 }
 
 // Ort-väljare i tips-formuläret (knyter tipset till en by).
@@ -2633,6 +2682,8 @@ function startEditFlow(poi) {
   document.getElementById("add-name").value = poi.name;
   document.getElementById("add-desc").value = poi.description || "";
   document.getElementById("add-category").value = poi.category;
+  syncCategoryGrid();
+  setTagRow(poi.tags);
   document.getElementById("add-season").value = poi.season || "all";
   document.getElementById("add-village").value = poi.village_id || "";
   setAddFormMode(true);
@@ -2651,6 +2702,8 @@ function closeAddForm() {
   document.getElementById("add-desc").value = "";
   document.getElementById("add-season").value = "all";
   document.getElementById("add-village").value = "";
+  syncCategoryGrid();
+  setTagRow("");
   state.pendingCoord = null;
   state.editingId = null;
   removePendingMarker();
@@ -2710,12 +2763,13 @@ async function saveNewPoi() {
   const season = document.getElementById("add-season").value;
   const village_id = document.getElementById("add-village").value || null;
   const description = document.getElementById("add-desc").value.trim();
+  const tags = readTagRow();
   try {
     let image;
     if (state.pendingImage) { toast("Laddar upp foto…"); image = await Storage.uploadImage(state.pendingImage); }
 
     if (state.editingId) {
-      const patch = { name, category, description, season, village_id };
+      const patch = { name, category, description, season, village_id, tags };
       if (image !== undefined) patch.image = image;
       const updated = await Storage.updateUserPoi(state.editingId, patch);
       removeMarkerById(state.editingId);
@@ -2727,7 +2781,8 @@ async function saveNewPoi() {
     }
 
     const saved = await Storage.addUserPoi({
-      name, category, description, season, village_id, image: image || "", coord: state.pendingCoord,
+      name, category, description, season, village_id, tags,
+      image: image || "", coord: state.pendingCoord,
     });
     addPoiMarker(saved);
     refreshHubIfOpen();

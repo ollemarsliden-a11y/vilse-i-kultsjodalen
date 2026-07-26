@@ -1048,3 +1048,47 @@ svg.elev { width: 100%; height: 90px; display: block; }
 .vl-prick.vl-stangd { border-color: var(--stop); }
 
 .hz-fot { margin: 4px 10px 2px; font-size: 11.5px; color: var(--ink-2); text-align: center; }
+
+/* ---- Kategorirutnät i tipsformuläret ------------------------------
+   Alla kategorier synliga på en gång som tryckytor, i stället för
+   operativsystemets rullgardin. Vald = fylld mossgrön. */
+.cat-pick {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin: 4px 0 12px;
+}
+.cp-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 10px 4px 8px; min-height: 62px; cursor: pointer;
+  border: 1.5px solid var(--line); border-radius: 13px;
+  background: var(--surface); color: var(--ink-2);
+  font-size: 10.5px; font-weight: 650; line-height: 1.15; text-align: center;
+}
+.cp-btn .cp-ic { display: inline-flex; opacity: .7; }
+.cp-btn:active { transform: scale(.96); }
+.cp-btn.on {
+  background: var(--brand); border-color: var(--brand); color: #fff;
+}
+.cp-btn.on .cp-ic { opacity: 1; }
+
+/* ---- Egenskapstaggar ---------------------------------------------- */
+.tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin: 4px 0 12px; }
+.tag-btn {
+  border: 1.5px solid var(--line); border-radius: 20px; cursor: pointer;
+  background: var(--surface); color: var(--ink-2);
+  padding: 8px 13px; font-size: 12.5px; font-weight: 650;
+}
+.tag-btn.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+.ps-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 2px; }
+.ps-tag {
+  border: 1px solid var(--line); border-radius: 14px; padding: 3px 10px;
+  font-size: 11.5px; font-weight: 650; color: var(--ink-2);
+  background: var(--surface-2);
+}
+
+/* ---- Färgstädning: chipsen på kartan ------------------------------
+   Kategorifärgerna hör hemma på kartnålarna, där de identifierar.
+   I chipraden slogs åtta färger om uppmärksamheten — nu är påslaget
+   chip alltid mossgrönt, och färgerna får tala på kartan i stället. */
+#category-chips .chip.active {
+  background: var(--brand); border-color: var(--brand);
+}
