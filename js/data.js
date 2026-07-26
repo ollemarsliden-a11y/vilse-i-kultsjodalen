@@ -731,39 +731,4 @@ const SEED_POIS = [
     image: "",
     source: "OpenStreetMap",
   },
-  {
-    id: "klitvallens-sameviste",
-    name: "Klitvallens sameviste",
-    category: "kultur",
-    coord: [65.28745, 15.72834],
-    blurb: "Bevarat sameviste med torvkåtor och stolpbod",
-    description:
-      "Övergivet sameviste där granskogen övergår i fjällbjörkskog. Platsen var " +
-      "från början vår- och höstviste men blev med tiden åretruntboende, och " +
-      "användes ända in på 1950-talet. Här fanns ursprungligen fem kåtor; två " +
-      "torvkåtor och en timrad stolpbod finns bevarade och restaurerades 1998. " +
-      "Markerade leder går hit från Grönfjäll.",
-    facts: [
-      ["Använt till", "1950-talet"],
-      ["Restaurerat", "1998"],
-      ["Bevarat", "2 torvkåtor + stolpbod"],
-    ],
-    image: "",
-    source: "dikanas.eu, Naturkartan, OpenStreetMap",
-  },
-  {
-    id: "dikanas-kyrka",
-    name: "Dikanäs kyrka",
-    category: "kultur",
-    coord: [65.23588, 15.99634],
-    blurb: "Församlingens äldsta kyrka i bruk",
-    description:
-      "Timrad 1832 och färdig 1833, efter att nybyggarna i Vojmådalen vid en " +
-      "gudstjänst i Fatmomakke 1828 bett om hjälp att få ett eget kapell — vägen " +
-      "till kyrkan i Vilhelmina var lång. Kyrkan är en av församlingens äldsta " +
-      "bevarade och fortfarande i bruk.",
-    facts: [["Byggd", "1832–33"], ["By", "Dikanäs"]],
-    image: "",
-    source: "dikanas.eu, Vilhelmina församling",
-  },
 ];

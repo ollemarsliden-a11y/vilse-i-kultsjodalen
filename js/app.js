@@ -1627,8 +1627,11 @@ const CHIP_GROUPS = [
     cats: ["sevart", "smultron", "kultur"] },
   { key: "led", label: "Leder", icon: "led", color: "#2f8f4e", cats: ["led"] },
   { key: "fiske", label: "Fiske", icon: "fiske", color: "#2f6fb0", cats: ["fiske"] },
+  // "service" är inget POI-kategori utan ett eget kartlager (SERVICES från OSM) —
+  // därför styr chipet både boende-platserna och det lagret. Utan overlay:n
+  // saknades Saxnäsgården, Marsfjäll Mountain Lodge, handlarna m.fl. på kartan.
   { key: "boata", label: "Bo & äta", icon: "boende", color: "#e0872b",
-    cats: ["boende", "service"] },
+    cats: ["boende"], overlay: "service" },
   { key: "topp", label: "Toppar", icon: "topp", color: "#5f7488", cats: ["topp"] },
 ];
 
@@ -1649,6 +1652,7 @@ function buildCategoryChips() {
     chip.addEventListener("click", () => {
       const on = chip.classList.toggle("active");
       for (const c of g.cats) {
+        if (!state.layers[c]) continue;
         if (on) {
           state.activeCategories.add(c);
           if (c !== "topp") state.map.addLayer(state.layers[c]); // toppar styrs av zoom
@@ -1657,10 +1661,26 @@ function buildCategoryChips() {
           state.map.removeLayer(state.layers[c]);
         }
       }
+      if (g.overlay) setOverlay(g.overlay, on);
       updatePeakVisibility();
     });
     wrap.appendChild(chip);
+    if (g.overlay && !startOff) setOverlay(g.overlay, true);
   }
+}
+
+// Slå på/av ett kartlager och håll kryssrutan i lagerpanelen i synk.
+function setOverlay(key, on) {
+  const layer = state.overlays[key];
+  if (!layer) return;
+  if (on) {
+    layer.addTo(state.map);
+    if (layer.bringToBack) layer.bringToBack();
+  } else {
+    state.map.removeLayer(layer);
+  }
+  const cb = document.querySelector(`#overlay-toggles [data-overlay="${key}"]`);
+  if (cb) cb.checked = on;
 }
 
 // Miniatyr per kartunderlag — en riktig kartruta över dalen (z8) säger
@@ -1740,6 +1760,9 @@ function buildOverlayToggles() {
         <span class="overlay-sub">${t(o.sub)}</span>
       </span>
       <input type="checkbox" data-overlay="${key}" />`;
+    // Kryssrutan speglar verkligt läge — chipraden kan ha slagit på lagret
+    // redan innan panelen byggdes (t.ex. "Bo & äta" → service).
+    row.querySelector("input").checked = state.map.hasLayer(state.overlays[key]);
     row.querySelector("input").addEventListener("change", (e) => {
       const layer = state.overlays[key];
       if (e.target.checked) {
