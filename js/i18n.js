@@ -130,6 +130,23 @@ const I18N = {
       "All marked trails & paths from OpenStreetMap (Waymarked Trails)",
     "Laddar leder & stigar…": "Loading trails & paths…",
     "Fornlämningar": "Ancient remains",
+    "Stugor & rastskydd": "Cabins & shelters",
+    "Länsstyrelsens övernattningsstugor, rastskydd & vindskydd längs lederna":
+      "The County Board's overnight cabins, shelters & windbreaks along the trails",
+    "Visar statens stugor & rastskydd…": "Showing state cabins & shelters…",
+    "Övernattningsstuga": "Overnight cabin",
+    "Raststuga": "Rest cabin",
+    "Koja": "Hut",
+    "Rastskydd": "Shelter",
+    "Vindskydd": "Windbreak",
+    "Eldstad": "Fireplace",
+    "Dass": "Outhouse",
+    "Hjälptelefon": "Emergency phone",
+    "Övernattning 200 kr/person och natt, barn 0–15 gratis. Betalas med Swish eller bankgiro.":
+      "Overnight stay 200 SEK/person per night, children 0–15 free. Pay by Swish or bank transfer.",
+    "Läs mer": "Read more",
+    "För rast och skydd vid oväder — inte planerad övernattning.":
+      "For breaks and shelter in bad weather — not planned overnight stays.",
     "Live från Riksantikvarieämbetet — tryck på en lämning för info":
       "Live from the Swedish National Heritage Board — tap a site for info",
 

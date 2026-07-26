@@ -97,6 +97,13 @@ const OVERLAYS = {
     toast: "Laddar boende & service…",
     create: () => buildServiceLayer(),
   },
+  friluft: {
+    label: "Stugor & rastskydd",
+    icon: "boende",
+    sub: "Länsstyrelsens övernattningsstugor, rastskydd & vindskydd längs lederna",
+    toast: "Visar statens stugor & rastskydd…",
+    create: () => buildFriluftLayer(),
+  },
   fornlamningar: {
     label: "Fornlämningar",
     icon: "kultur",
@@ -143,6 +150,53 @@ function buildServiceLayer() {
            <div class="mini-sub">${t("Källa")}: ${escapeHtml(s.source || "OpenStreetMap")}</div>
          </div>`,
         { maxWidth: 240 }
+      )
+      .addTo(group);
+  }
+  return group;
+}
+
+// Statens stugor & rastskydd (Länsstyrelsen via Naturvårdsverkets öppna
+// data, js/friluft.js). Övernattningsstugorna är de man betalar 200 kr/natt
+// för — popupen visar det, plus vilken led anordningen ligger längs.
+const FRILUFT_TYP = {
+  stuga:     { namn: "Övernattningsstuga", icon: "boende", color: "#7b4a97" },
+  raststuga: { namn: "Raststuga",          icon: "boende", color: "#7b4a97" },
+  koja:      { namn: "Koja",               icon: "boende", color: "#7b4a97" },
+  rastskydd: { namn: "Rastskydd",          icon: "skold",  color: "#5b6b7a" },
+  vindskydd: { namn: "Vindskydd",          icon: "skold",  color: "#5b6b7a" },
+  eldstad:   { namn: "Eldstad",            icon: "sol",    color: "#96591f" },
+  dass:      { namn: "Dass",               icon: "mapp",   color: "#5b6b7a" },
+  telefon:   { namn: "Hjälptelefon",       icon: "telefon", color: "#b23a2e" },
+};
+const LST_STUGOR_URL = "https://www.lansstyrelsen.se/vasterbotten/besoksmal/stugor.html";
+
+function buildFriluftLayer() {
+  if (typeof FRILUFT === "undefined") return L.layerGroup();
+  const group = L.layerGroup();
+  for (const a of FRILUFT) {
+    const k = FRILUFT_TYP[a.typ] || FRILUFT_TYP.rastskydd;
+    const icon = L.divIcon({
+      className: "svc-pin",
+      html: `<div class="svc-dot" style="--c:${k.color}">${iconSvg(k.icon, "#fff", 13)}</div>`,
+      iconSize: [26, 26], iconAnchor: [13, 13],
+    });
+    const rows = [];
+    if (a.typ === "stuga")
+      rows.push(`<div class="svc-row">${t("Övernattning 200 kr/person och natt, barn 0–15 gratis. Betalas med Swish eller bankgiro.")}
+        <a href="${LST_STUGOR_URL}" target="_blank" rel="noopener">${t("Läs mer")} ↗</a></div>`);
+    if (a.typ === "rastskydd" || a.typ === "vindskydd")
+      rows.push(`<div class="svc-row">${t("För rast och skydd vid oväder — inte planerad övernattning.")}</div>`);
+    if (a.led) rows.push(`<div class="svc-row">${ic("led", 14)}${escapeHtml(a.led)}</div>`);
+    L.marker([a.lat, a.lng], { icon })
+      .bindPopup(
+        `<div class="mini-pop">
+           <div class="svc-cat" style="color:${k.color}">${t(k.namn)}</div>
+           ${a.namn ? `<b>${escapeHtml(a.namn)}</b>` : ""}
+           ${rows.join("")}
+           <div class="mini-sub">${t("Källa")}: Naturvårdsverket/Länsstyrelsen</div>
+         </div>`,
+        { maxWidth: 260 }
       )
       .addTo(group);
   }
