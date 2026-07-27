@@ -1092,3 +1092,20 @@ svg.elev { width: 100%; height: 90px; display: block; }
 #category-chips .chip.active {
   background: var(--brand); border-color: var(--brand);
 }
+
+/* ---- Ortnamn på kartan --------------------------------------------
+   Ett ortnamn är en etikett på landskapet, inte ett besöksmål — därför
+   text direkt på kartan i stället för en nål. Vit kontur runt texten
+   så den går att läsa mot både snö, vatten och kalfjäll. */
+.ortnamn-wrap { background: none !important; border: none !important; }
+.ortnamn-txt {
+  display: block; text-align: center; cursor: pointer;
+  font-family: var(--font-display); font-style: italic;
+  font-size: 13px; font-weight: 600; line-height: 1.1;
+  color: var(--ink);
+  paint-order: stroke fill;
+  -webkit-text-stroke: 3px var(--surface);
+  text-shadow: 0 1px 2px color-mix(in srgb, var(--surface) 80%, transparent);
+}
+/* Sydsamiska namn får kopparfärg — språket ska synas i landskapet. */
+.ortnamn-sma { color: var(--warm); }

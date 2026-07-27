@@ -13,7 +13,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 
-  <link rel="stylesheet" href="css/styles.css?v=81" />
+  <link rel="stylesheet" href="css/styles.css?v=82" />
 </head>
 <body>
 
@@ -119,6 +119,7 @@
   <div id="add-choice" class="add-choice" hidden>
     <button id="add-here" data-ic="nal" data-i18n="Tips härifrån (GPS)">Tips härifrån (GPS)</button>
     <button id="add-pick" data-ic="karta" data-i18n="Peka ut på kartan">Peka ut på kartan</button>
+    <button id="add-namn" data-ic="penna" data-i18n="Namnge en plats">Namnge en plats</button>
   </div>
   <input type="file" id="gpx-input" accept=".gpx,application/gpx+xml" hidden />
   </section>
@@ -298,6 +299,37 @@
     <button id="account-delete" class="danger-link" data-i18n="Radera mitt konto & mina data">Radera mitt konto &amp; mina data</button>
   </div>
 
+  <!-- Ortnamn: sätt byns eget namn på en plats -->
+  <div id="ortnamn-form" class="sheet">
+    <div class="panel-head">
+      <h2 data-i18n="Namnge en plats">Namnge en plats</h2>
+      <button id="on-cancel" class="panel-close" aria-label="Stäng">✕</button>
+    </div>
+    <p class="panel-hint" data-i18n="Många vikar, myrar och älgpass har namn som bara används i byn och inte står på någon karta. Skriv in dem här så finns de kvar.">Många vikar, myrar och älgpass har namn som bara används i byn och inte står på någon karta. Skriv in dem här så finns de kvar.</p>
+    <label><span data-i18n="Namnet">Namnet</span>
+      <input id="on-namn" type="text" placeholder="T.ex. Lillviken" data-i18n-ph="T.ex. Lillviken" />
+    </label>
+    <label><span data-i18n="Vad är det?">Vad är det?</span>
+      <select id="on-typ"></select>
+    </label>
+    <label><span data-i18n="Språk">Språk</span>
+      <select id="on-sprak">
+        <option value="sv" data-i18n="Svenska">Svenska</option>
+        <option value="sma" data-i18n="Sydsamiska">Sydsamiska</option>
+      </select>
+    </label>
+    <label><span data-i18n="Bakgrund (valfritt)">Bakgrund (valfritt)</span>
+      <textarea id="on-berattelse" rows="4" placeholder="Varför heter den så? Vad har hänt här?" data-i18n-ph="Varför heter den så? Vad har hänt här?"></textarea>
+    </label>
+    <label><span data-i18n="Berättat av (valfritt)">Berättat av (valfritt)</span>
+      <input id="on-uppgiftslamnare" type="text" placeholder="T.ex. Erik Persson, f. 1938" data-i18n-ph="T.ex. Erik Persson, f. 1938" />
+    </label>
+    <p class="panel-hint" data-i18n="Fråga alltid personen först innan du skriver dit ett namn — det är en personuppgift.">Fråga alltid personen först innan du skriver dit ett namn — det är en personuppgift.</p>
+    <div class="sheet-actions">
+      <button id="on-save" class="btn-primary" data-i18n="Spara namnet">Spara namnet</button>
+    </div>
+  </div>
+
   <!-- Integritetspolicy -->
   <div id="privacy-sheet" class="sheet">
     <div class="panel-head">
@@ -354,20 +386,20 @@
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=81"></script>
-  <script src="js/i18n.js?v=81"></script>
-  <script src="js/data.js?v=81"></script>
-  <script src="js/peaks.js?v=81"></script>
-  <script src="js/leder.js?v=81"></script>
-  <script src="js/services.js?v=81"></script>
-  <script src="js/friluft.js?v=81"></script>
-  <script src="js/routes.js?v=81"></script>
-  <script src="js/winter.js?v=81"></script>
-  <script src="js/icons.js?v=81"></script>
-  <script src="js/weather.js?v=81"></script>
-  <script src="js/sun.js?v=81"></script>
-  <script src="js/road.js?v=81"></script>
-  <script src="js/storage.js?v=81"></script>
-  <script src="js/app.js?v=81"></script>
+  <script src="js/config.js?v=82"></script>
+  <script src="js/i18n.js?v=82"></script>
+  <script src="js/data.js?v=82"></script>
+  <script src="js/peaks.js?v=82"></script>
+  <script src="js/leder.js?v=82"></script>
+  <script src="js/services.js?v=82"></script>
+  <script src="js/friluft.js?v=82"></script>
+  <script src="js/routes.js?v=82"></script>
+  <script src="js/winter.js?v=82"></script>
+  <script src="js/icons.js?v=82"></script>
+  <script src="js/weather.js?v=82"></script>
+  <script src="js/sun.js?v=82"></script>
+  <script src="js/road.js?v=82"></script>
+  <script src="js/storage.js?v=82"></script>
+  <script src="js/app.js?v=82"></script>
 </body>
 </html>

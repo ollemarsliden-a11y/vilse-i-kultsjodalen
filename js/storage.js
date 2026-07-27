@@ -156,9 +156,13 @@ const Storage = (() => {
           sb.from("vik_routes").select("id,name,distance_km,created_at").eq("user_id", uid).order("created_at", { ascending: false }),
           sb.from("vik_place_images").select("id,place_id,url,created_at").eq("created_by", uid).order("created_at", { ascending: false }),
         ]);
+        const orter = await sb.from("vik_ortnamn")
+          .select("id,namn,typ,created_at").eq("user_id", uid)
+          .order("created_at", { ascending: false });
         return {
           tips: tips.data || [], comments: comments.data || [],
           routes: routes.data || [], images: images.data || [],
+          ortnamn: orter.data || [],
         };
       },
 
@@ -179,6 +183,7 @@ const Storage = (() => {
           ["routes", "vik_routes", "user_id"],
           ["place_images", "vik_place_images", "created_by"],
           ["place_edits", "vik_place_overrides", "updated_by"],
+          ["ortnamn", "vik_ortnamn", "user_id"],
         ]) {
           const { data, error } = await sb.from(table).select("*").eq(col, uid);
           out[key] = error ? { error: error.message } : (data || []);
@@ -210,7 +215,8 @@ const Storage = (() => {
         for (const [table, col] of [
           ["vik_comments", "user_id"], ["vik_reactions", "user_id"],
           ["vik_reports", "reporter_id"], ["vik_routes", "user_id"],
-          ["vik_place_images", "created_by"], ["vik_tips", "user_id"],
+          ["vik_place_images", "created_by"], ["vik_ortnamn", "user_id"],
+          ["vik_tips", "user_id"],
         ]) {
           const { error } = await sb.from(table).delete().eq(col, uid);
           if (error && error.code !== "42P01") console.warn(table + ":", error.message);
@@ -219,6 +225,30 @@ const Storage = (() => {
         const { error } = await sb.rpc("vik_delete_me");
         if (error) throw new Error("Kontoraderingen kräver supabase/gdpr.sql: " + error.message);
         await sb.auth.signOut();
+      },
+
+      // -------- Ortnamn (byns egna namn på landskapet) --------
+      async getOrtnamn() {
+        const { data, error } = await sb.from("vik_ortnamn")
+          .select("id,namn,typ,sprak,berattelse,uppgiftslamnare,lat,lng,user_id,created_at")
+          .order("created_at", { ascending: false });
+        if (error) { console.warn("vik_ortnamn:", error.message); return []; }
+        return data || [];
+      },
+      async addOrtnamn(o) {
+        if (!currentUser) throw new Error("Inte inloggad");
+        const { data, error } = await sb.from("vik_ortnamn").insert({
+          user_id: currentUser.id, namn: o.namn, typ: o.typ,
+          sprak: o.sprak || "sv", berattelse: o.berattelse || null,
+          uppgiftslamnare: o.uppgiftslamnare || null,
+          lat: o.coord[0], lng: o.coord[1],
+        }).select().single();
+        if (error) throw error;
+        return data;
+      },
+      async deleteOrtnamn(id) {
+        const { error } = await sb.from("vik_ortnamn").delete().eq("id", id);
+        if (error) throw error;
       },
 
       // Reaktioner

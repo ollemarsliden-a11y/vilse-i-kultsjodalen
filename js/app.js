@@ -97,6 +97,13 @@ const OVERLAYS = {
     toast: "Laddar boende & service…",
     create: () => buildServiceLayer(),
   },
+  ortnamn: {
+    label: "Ortnamn",
+    icon: "nal",
+    sub: "Byns egna namn på vikar, myrar, älgpass och ängar",
+    toast: "Visar ortnamn ur muntlig tradition…",
+    create: () => buildOrtnamnLayer(),
+  },
   naturreservat: {
     label: "Naturreservat",
     icon: "smultron",
@@ -215,6 +222,128 @@ function buildFriluftLayer() {
   return group;
 }
 
+// ===================================================================
+//  Ortnamn — byns egna namn på landskapet
+// ===================================================================
+//  Vikar, myrar, älgpass och slåtterängar som bara har namn i muntlig
+//  tradition. Ritas som text direkt på kartan, inte som nålar: ett
+//  ortnamn är en etikett på landskapet, inte ett besöksmål.
+const ORTNAMN_TYPER = [
+  ["vik", "Vik"], ["myr", "Myr"], ["holme", "Holme"], ["tjarn", "Tjärn"],
+  ["ang", "Äng"], ["slatterland", "Slåtterland"], ["fiskestalle", "Fiskeställe"],
+  ["algpass", "Älgpass"], ["annat", "Annat"],
+];
+const ORTNAMN_LABEL = Object.fromEntries(ORTNAMN_TYPER);
+const ORTNAMN_MINZOOM = 11;   // under det blir kartan en namnsoppa
+
+function buildOrtnamnLayer() {
+  const group = L.layerGroup();
+  group.rita = () => {
+    group.clearLayers();
+    if (state.map.getZoom() < ORTNAMN_MINZOOM) return;
+    for (const o of state.ortnamn) {
+      const icon = L.divIcon({
+        className: "ortnamn-wrap",
+        html: `<span class="ortnamn-txt${o.sprak === "sma" ? " ortnamn-sma" : ""}">${escapeHtml(o.namn)}</span>`,
+        iconSize: [140, 20], iconAnchor: [70, 10],
+      });
+      L.marker([o.lat, o.lng], { icon, keyboard: false })
+        .on("click", () => openOrtnamnSheet(o))
+        .addTo(group);
+    }
+  };
+  group.rita();
+  return group;
+}
+
+async function loadOrtnamn() {
+  if (Storage.mode !== "supabase" || !Storage.getOrtnamn) return;
+  try { state.ortnamn = await Storage.getOrtnamn(); }
+  catch (e) { console.warn("ortnamn:", e.message); return; }
+  if (state.overlays.ortnamn && state.overlays.ortnamn.rita) state.overlays.ortnamn.rita();
+}
+
+function openOrtnamnSheet(o) {
+  const body = document.getElementById("place-body");
+  const mitt = Storage.auth && Storage.auth.userId() === o.user_id;
+  body.innerHTML = `
+    <div class="ps-hero ps-hero-plain" style="--c:var(--brand)">
+      <span class="ps-hero-glyph">${iconSvg("nal", "rgba(255,255,255,.9)", 44)}</span>
+    </div>
+    <div class="ps-content">
+      <div class="ps-cat" style="--c:var(--brand)">${t("Ortnamn")} · ${t(ORTNAMN_LABEL[o.typ] || o.typ)}</div>
+      <h2 class="ps-title">${escapeHtml(o.namn)}</h2>
+      ${o.sprak === "sma" ? `<p class="ps-blurb">${t("Sydsamiskt namn")}</p>` : ""}
+      ${o.berattelse ? `<div class="ps-section"><p>${escapeHtml(o.berattelse)}</p></div>` : ""}
+      ${o.uppgiftslamnare
+        ? `<div class="ps-facts"><div class="ps-fact"><span>${t("Berättat av")}</span>
+             <b>${escapeHtml(o.uppgiftslamnare)}</b></div></div>` : ""}
+      ${mitt || isAdminNow()
+        ? `<button class="ps-btn ps-danger" id="ps-del-ortnamn">${t("Ta bort")}</button>` : ""}
+      <div class="ps-src">${t("Namn ur muntlig tradition i Kultsjödalen")}</div>
+    </div>`;
+  const del = document.getElementById("ps-del-ortnamn");
+  if (del) del.onclick = async () => {
+    if (!confirm(t("Ta bort namnet?"))) return;
+    try {
+      await Storage.deleteOrtnamn(o.id);
+      state.ortnamn = state.ortnamn.filter((x) => x.id !== o.id);
+      if (state.overlays.ortnamn.rita) state.overlays.ortnamn.rita();
+      closePlaceSheet(); toast(t("Borttaget."));
+    } catch (e) { toast("Kunde inte ta bort: " + e.message); }
+  };
+  document.getElementById("place-sheet").classList.add("open");
+}
+
+// Lägg till nytt ortnamn: peka ut platsen, fyll i namnet.
+function startAddOrtnamn() {
+  if (!requireLogin()) return;
+  pickOnMap(state.map.getCenter ? [state.map.getCenter().lat, state.map.getCenter().lng] : MAP_CENTER,
+    async (coord) => {
+      state.ortnamnCoord = coord;
+      openSheet("ortnamn-form");
+      document.getElementById("on-namn").focus();
+    });
+}
+
+function buildOrtnamnForm() {
+  const sel = document.getElementById("on-typ");
+  if (!sel) return;
+  sel.innerHTML = ORTNAMN_TYPER.map(([k, l]) => `<option value="${k}">${t(l)}</option>`).join("");
+}
+
+async function saveOrtnamn() {
+  const v = (id) => document.getElementById(id).value.trim();
+  const namn = v("on-namn");
+  if (!namn) return toast(t("Skriv namnet först."));
+  if (!state.ortnamnCoord) return toast(t("Platsen saknas — peka ut den på kartan."));
+  try {
+    const rad = await Storage.addOrtnamn({
+      namn, typ: v("on-typ"), sprak: v("on-sprak"),
+      berattelse: v("on-berattelse"), uppgiftslamnare: v("on-uppgiftslamnare"),
+      coord: state.ortnamnCoord,
+    });
+    state.ortnamn.unshift(rad);
+    setOverlay("ortnamn", true);
+    if (state.overlays.ortnamn.rita) state.overlays.ortnamn.rita();
+    closeOrtnamnForm();
+    toast(t("Namnet är sparat. Tack — det finns kvar nu."));
+  } catch (e) {
+    toast(/vik_ortnamn|relation/.test(e.message)
+      ? t("Databasen saknar tabellen — kör supabase/ortnamn.sql.")
+      : "Kunde inte spara: " + e.message);
+  }
+}
+
+function closeOrtnamnForm() {
+  closeSheet("ortnamn-form");
+  ["on-namn", "on-berattelse", "on-uppgiftslamnare"].forEach((id) => {
+    const el = document.getElementById(id); if (el) el.value = "";
+  });
+  state.ortnamnCoord = null;
+  removePendingMarker();
+}
+
 function buildTrailLayer() {
   if (typeof TRAILS === "undefined") return L.layerGroup();
   const routeLabel = { hiking: "Vandringsled", foot: "Gångled/fjälled", ski: "Skidled" };
@@ -252,6 +381,8 @@ const state = {
   pendingCoord: null,
   pendingImage: null,
   pendingMarker: null, // flyttbar nål när ett nytt tips placeras
+  ortnamn: [],         // byns egna namn på landskapet
+  ortnamnCoord: null,
   weatherTimer: null,
   overrides: {},      // place_id -> patch (admin-textändringar)
   placeImages: {},    // place_id -> [bildrader]
@@ -299,6 +430,7 @@ async function init() {
   buildOverlayToggles();
   fillCategorySelect();
   buildTagRow();
+  buildOrtnamnForm();
   fillVillageSelect();
   applyStaticI18n();
   buildStartPage();
@@ -314,6 +446,10 @@ async function init() {
   wireAccount();
   registerServiceWorker();
   state.map.on("zoomend", updatePeakVisibility);
+  state.map.on("zoomend", () => {
+    if (state.overlays.ortnamn && state.overlays.ortnamn.rita) state.overlays.ortnamn.rita();
+  });
+  loadOrtnamn();
   updatePeakVisibility();
 }
 
@@ -1992,6 +2128,9 @@ function wireControls() {
   document.getElementById("btn-add").addEventListener("click", startAddFlow);
   document.getElementById("add-here").addEventListener("click", () => { hideAddChoice(); startAddHere(); });
   document.getElementById("add-pick").addEventListener("click", () => { hideAddChoice(); startAddPick(); });
+  document.getElementById("add-namn").addEventListener("click", () => { hideAddChoice(); startAddOrtnamn(); });
+  document.getElementById("on-cancel").addEventListener("click", closeOrtnamnForm);
+  document.getElementById("on-save").addEventListener("click", saveOrtnamn);
   state.map.on("click", hideAddChoice);
   document.getElementById("btn-gpx").addEventListener("click", openRoutesSheet);
   document.getElementById("gpx-input").addEventListener("change", importGpxFile);
@@ -2300,6 +2439,7 @@ function privacySv() {
       <ul>
         <li><b>E-postadress</b> — när du loggar in (via inloggningslänk eller Google).</li>
         <li><b>Innehåll du delar</b> — tips, kommentarer, reaktioner, GPX-turer och foton du laddar upp, kopplade till ditt konto.</li>
+        <li><b>Ortnamn du skriver in</b> — namnet, platsen och eventuell bakgrund. Anger du vem som berättat namnet är det personuppgifter om den personen: fråga alltid först, och skriv bara dit namnet om hen sagt ja.</li>
         <li><b>Ingen platsspårning:</b> GPS-positionen används bara i din enhet (visa var du är, placera tips) och sparas aldrig hos oss.</li>
       </ul>
 
@@ -2329,6 +2469,7 @@ function privacyEn() {
       <ul>
         <li><b>Email address</b> — when you sign in (via magic link or Google).</li>
         <li><b>Content you share</b> — tips, comments, reactions, GPX routes and photos you upload, linked to your account.</li>
+        <li><b>Place names you record</b> — the name, location and any background. If you credit the person who told you, that is personal data about them: always ask first, and only add their name if they agree.</li>
         <li><b>No location tracking:</b> GPS is only used on your device (showing where you are, placing tips) and is never stored by us.</li>
       </ul>
 
@@ -2385,7 +2526,10 @@ function renderManage(c) {
     sec(t("Mina kommentarer"), c.comments.map((r) =>
       row("comment", r.id, thumb(null, "kultur"), r.body.length > 60 ? r.body.slice(0, 60) + "…" : r.body, fmtDate(r.created_at)))) +
     sec(t("Mina delade turer"), c.routes.map((r) =>
-      row("route", r.id, thumb(null, "led"), r.name, (r.distance_km ? r.distance_km.toFixed(1) + " km · " : "") + fmtDate(r.created_at))));
+      row("route", r.id, thumb(null, "led"), r.name, (r.distance_km ? r.distance_km.toFixed(1) + " km · " : "") + fmtDate(r.created_at)))) +
+    sec(t("Mina ortnamn"), (c.ortnamn || []).map((r) =>
+      row("ortnamn", r.id, thumb(null, "nal"), r.namn,
+          t(ORTNAMN_LABEL[r.typ] || r.typ) + " · " + fmtDate(r.created_at))));
 
   body.querySelectorAll(".mg-del").forEach((b) => b.onclick = async () => {
     if (!confirm(t("Ta bort? Detta går inte att ångra."))) return;
@@ -2398,6 +2542,11 @@ function renderManage(c) {
       }
       else if (kind === "comment") await Storage.deleteComment(id);
       else if (kind === "route") await Storage.deleteSharedRoute(id);
+      else if (kind === "ortnamn") {
+        await Storage.deleteOrtnamn(id);
+        state.ortnamn = state.ortnamn.filter((x) => x.id !== id);
+        if (state.overlays.ortnamn && state.overlays.ortnamn.rita) state.overlays.ortnamn.rita();
+      }
       else if (kind === "image") { await Storage.deletePlaceImage(id); await loadPlaceData(); buildStartPage(); }
       toast(t("Borttaget."));
       renderManage(await Storage.myContent());
