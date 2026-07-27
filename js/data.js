@@ -168,13 +168,14 @@ const SEED_POIS = [
       "gränsfjällen mot Norge i väster. Belöningen står i proportion till slitet.",
     history:
       "Hela Marsfjällsområdet är ett samiskt kulturlandskap och del av Vilhelmina " +
-      "norra samebys renbetesland. Naturreservatet bildades 1988 och omfattar ca " +
-      "114 000 hektar med kalfjäll, fjällbjörkskog, myrar och gammelskog. Här " +
-      "finns bland annat fjällräv och björn.",
+      "norra samebys renbetesland. Naturreservatet bildades 1995 och har utvidgats " +
+      "i flera etapper — i dag omfattar det ca 105 000 hektar med kalfjäll, " +
+      "fjällbjörkskog, myrar och gammelskog, vilket gör det till ett av Sveriges " +
+      "största. Här finns bland annat fjällräv och björn.",
     facts: [
       ["Höjd", "1589 m ö.h."],
-      ["Naturreservat", "1988"],
-      ["Areal", "~114 000 ha"],
+      ["Naturreservat", "1995 (utvidgat senare)"],
+      ["Areal", "~105 000 ha"],
     ],
     image: "images/marsfjallet.webp",
     imageCredit: "Foto: Lövberg / Wikimedia Commons (CC0)",
@@ -272,14 +273,15 @@ const SEED_POIS = [
       "Vidsträckt kalfjällsplatå nära norska gränsen. Renar, vidder och ofta snö " +
       "långt in på sommaren. Vägen över Stekenjokk är Sveriges högsta asfalterade.",
     history:
-      "Vildmarksvägen byggdes 1969 för att försörja koppargruvan i Stekenjokk. " +
-      "Gruvan var i drift till 1989 men blev aldrig något samhälle — arbetarna " +
+      "Vägen över fjället byggdes på 1960-talet för att nå malmfyndigheterna, " +
+      "och hette då Stekenjokkvägen — namnet Vildmarksvägen kom först 1987. " +
+      "Gruvan var i drift 1976–1988 men blev aldrig något samhälle — arbetarna " +
       "pendlade. Vägen över platån (876 m ö.h.) är stängd vintertid, ungefär " +
       "15 oktober–6 juni.",
     facts: [
       ["Höjd", "876 m ö.h."],
-      ["Väg byggd", "1969"],
-      ["Gruva", "1969–1989"],
+      ["Väg byggd", "1960-talet"],
+      ["Gruva", "1976–1988"],
       ["Öppen", "ca juni–okt"],
     ],
     image: "images/stekenjokk.webp",
@@ -461,9 +463,9 @@ const SEED_POIS = [
       "Rester efter koppargruvan uppe på Stekenjokks kalfjällsplatå. Det var för " +
       "gruvan som Vildmarksvägen en gång byggdes.",
     history:
-      "Gruvan bröt koppar och zink 1969–1988 men blev aldrig något samhälle — " +
+      "Gruvan bröt koppar, zink och silver 1976–1988 men blev aldrig något samhälle — " +
       "arbetarna pendlade. I dag återstår spår i landskapet nära norska gränsen.",
-    facts: [["Drift", "1969–1988"], ["Höjd", "ca 800 m ö.h."]],
+    facts: [["Drift", "1976–1988"], ["Höjd", "ca 820 m ö.h. — Sveriges högst belägna gruva"]],
     image: "", source: "OpenStreetMap",
   },
   {
