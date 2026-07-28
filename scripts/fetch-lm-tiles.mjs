@@ -24,6 +24,9 @@ import { mkdir, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 
 // ---- Inställningar ----
+// OBS: Lantmäteriets öppna data-konto har ett EGET användarnamn som valdes
+// vid registreringen — e-posten används bara för att aktivera kontot. Sätt
+// LM_USER om inloggningsnamnet inte är mejladressen (vanligaste 401-orsaken).
 const USER = process.env.LM_USER || "olle.marsliden@gmail.com";
 const PASS = process.env.LM_PASS || "";
 const LAYER = "topowebb";              // eller "topowebb_nedtonad"
@@ -76,7 +79,18 @@ async function fetchTile({ z, x, y }) {
   const file = path.join(OUT, String(z), String(x), `${y}.png`);
   if (await exists(file)) return "skip";
   const res = await fetch(url, { headers: { Authorization: authHeader, "User-Agent": "VilseIKultsjodalen/1.0" } });
-  if (res.status === 401) throw new Error("401 – fel användarnamn/lösenord (LM_PASS).");
+  if (res.status === 401) {
+    throw new Error(
+      `401 – Lantmäteriet nekade inloggningen.
+` +
+      `   Användarnamn som provades: ${USER}
+` +
+      `   Lösenord: ${PASS ? PASS.length + " tecken" : "SAKNAS (LM_PASS är tom)"}
+` +
+      `   Är inloggningsnamnet inte din mejl? Sätt då även LM_USER:
+` +
+      `      $env:LM_USER='ditt-anvandarnamn'`);
+  }
   if (!res.ok) return "fail:" + res.status;
   const buf = Buffer.from(await res.arrayBuffer());
   await mkdir(path.dirname(file), { recursive: true });
@@ -87,6 +101,7 @@ async function fetchTile({ z, x, y }) {
 async function run() {
   const all = [];
   console.log(`Område: ${BBOX.south}–${BBOX.north} N, ${BBOX.west}–${BBOX.east} Ö | lager: ${LAYER}`);
+  console.log(`Användarnamn: ${USER}   Lösenord: ${PASS ? PASS.length + " tecken" : "(inget satt)"}`);
   for (let z = ZMIN; z <= ZMAX; z++) {
     const t = tilesForZoom(z);
     all.push(...t);
