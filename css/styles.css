@@ -1109,3 +1109,7 @@ svg.elev { width: 100%; height: 90px; display: block; }
 }
 /* Sydsamiska namn får kopparfärg — språket ska synas i landskapet. */
 .ortnamn-sma { color: var(--warm); }
+
+/* Öppet ark ligger alltid över platskortet — redigeringsvyn ska inte
+   kunna hamna bakom kortet den redigerar. */
+.sheet.open, .panel.open { z-index: 1650; }

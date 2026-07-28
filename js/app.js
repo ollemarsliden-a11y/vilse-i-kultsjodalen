@@ -2305,6 +2305,13 @@ async function updateWeatherPill() {
 function openSheet(id) {
   const el = document.getElementById(id);
   if (!el) { toast(t("Den vyn saknas — starta om appen så hämtas den senaste versionen.")); return false; }
+  // Bara ETT ark åt gången. Alla ark ligger förankrade i skärmens nederkant
+  // med samma z-index, så två öppna samtidigt skjuter in i varandra och ser
+  // ut som att appen hängt sig. Platskortet (.place-sheet) är undantaget —
+  // redigeringsarket öppnas ovanpå det och man ska tillbaka dit efteråt.
+  document.querySelectorAll(".sheet.open, .panel.open").forEach((annat) => {
+    if (annat !== el) annat.classList.remove("open");
+  });
   el.classList.add("open");
   return true;
 }
