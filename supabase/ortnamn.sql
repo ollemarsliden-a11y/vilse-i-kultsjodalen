@@ -20,6 +20,7 @@ create table if not exists public.vik_ortnamn (
   sprak text not null default 'sv',         -- sv | sma (sydsamiska)
   berattelse      text check (char_length(berattelse) <= 2000),
   uppgiftslamnare text check (char_length(uppgiftslamnare) <= 160),
+  bild text,                                -- foto (publik URL i vik-photos)
   lat double precision not null,
   lng double precision not null,
   status text not null default 'visible' check (status in ('visible','flagged','hidden'))
@@ -47,3 +48,6 @@ create policy "ortnamn_radera" on public.vik_ortnamn
   for delete using (public.vik_is_admin() or auth.uid() = user_id);
 
 create index if not exists vik_ortnamn_pos on public.vik_ortnamn (lat, lng);
+
+-- Lades till i efterhand — kör den här raden om tabellen redan finns:
+alter table public.vik_ortnamn add column if not exists bild text;

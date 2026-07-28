@@ -267,9 +267,11 @@ function openOrtnamnSheet(o) {
   const body = document.getElementById("place-body");
   const mitt = Storage.auth && Storage.auth.userId() === o.user_id;
   body.innerHTML = `
-    <div class="ps-hero ps-hero-plain" style="--c:var(--brand)">
-      <span class="ps-hero-glyph">${iconSvg("nal", "rgba(255,255,255,.9)", 44)}</span>
-    </div>
+    ${o.bild
+      ? `<div class="ps-hero" style="background-image:url('${o.bild}')"></div>`
+      : `<div class="ps-hero ps-hero-plain" style="--c:var(--brand)">
+           <span class="ps-hero-glyph">${iconSvg("nal", "rgba(255,255,255,.9)", 44)}</span>
+         </div>`}
     <div class="ps-content">
       <div class="ps-cat" style="--c:var(--brand)">${t("Ortnamn")} · ${t(ORTNAMN_LABEL[o.typ] || o.typ)}</div>
       <h2 class="ps-title">${escapeHtml(o.namn)}</h2>
@@ -309,6 +311,28 @@ function startAddOrtnamn() {
   }, "Bra — skriv namnet nu.");
 }
 
+function handleOrtnamnPhoto(e) {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  toast(t("Förbereder foto…"));
+  compressImage(file).then((dataUrl) => {
+    state.ortnamnImage = dataUrl;
+    document.getElementById("on-photo-img").src = dataUrl;
+    document.getElementById("on-photo-preview").hidden = false;
+    document.getElementById("on-photo-btn").innerHTML = ic("kamera") + t("Byt foto");
+  }).catch(() => toast(t("Kunde inte läsa bilden.")));
+}
+function clearOrtnamnPhoto() {
+  state.ortnamnImage = null;
+  const prev = document.getElementById("on-photo-preview");
+  if (prev) prev.hidden = true;
+  const img = document.getElementById("on-photo-img");
+  if (img) img.removeAttribute("src");
+  const btn = document.getElementById("on-photo-btn");
+  if (btn) btn.innerHTML = ic("kamera") + t("Ta foto eller välj bild");
+}
+
 function buildOrtnamnForm() {
   const sel = document.getElementById("on-typ");
   if (!sel) return;
@@ -321,10 +345,15 @@ async function saveOrtnamn() {
   if (!namn) return toast(t("Skriv namnet först."));
   if (!state.ortnamnCoord) return toast(t("Platsen saknas — peka ut den på kartan."));
   try {
+    let bild = "";
+    if (state.ortnamnImage) {
+      toast(t("Laddar upp foto…"));
+      bild = await Storage.uploadImage(state.ortnamnImage);
+    }
     const rad = await Storage.addOrtnamn({
       namn, typ: v("on-typ"), sprak: v("on-sprak"),
       berattelse: v("on-berattelse"), uppgiftslamnare: v("on-uppgiftslamnare"),
-      coord: state.ortnamnCoord,
+      bild, coord: state.ortnamnCoord,
     });
     state.ortnamn.unshift(rad);
     setOverlay("ortnamn", true);
@@ -344,6 +373,7 @@ function closeOrtnamnForm() {
     const el = document.getElementById(id); if (el) el.value = "";
   });
   state.ortnamnCoord = null;
+  clearOrtnamnPhoto();
   removePendingMarker();
 }
 
@@ -386,6 +416,7 @@ const state = {
   pendingMarker: null, // flyttbar nål när ett nytt tips placeras
   ortnamn: [],         // byns egna namn på landskapet
   ortnamnCoord: null,
+  ortnamnImage: null,  // foto till ortnamnet (dataUrl innan uppladdning)
   weatherTimer: null,
   overrides: {},      // place_id -> patch (admin-textändringar)
   placeImages: {},    // place_id -> [bildrader]
@@ -2143,6 +2174,10 @@ function wireControls() {
   document.getElementById("add-namn").addEventListener("click", () => { hideAddChoice(); startAddOrtnamn(); });
   document.getElementById("on-cancel").addEventListener("click", closeOrtnamnForm);
   document.getElementById("on-save").addEventListener("click", saveOrtnamn);
+  document.getElementById("on-photo-btn").addEventListener("click", () =>
+    document.getElementById("on-photo").click());
+  document.getElementById("on-photo").addEventListener("change", handleOrtnamnPhoto);
+  document.getElementById("on-photo-clear").addEventListener("click", clearOrtnamnPhoto);
   state.map.on("click", hideAddChoice);
   document.getElementById("btn-gpx").addEventListener("click", openRoutesSheet);
   document.getElementById("gpx-input").addEventListener("change", importGpxFile);

@@ -241,12 +241,20 @@ const Storage = (() => {
       },
       async addOrtnamn(o) {
         if (!currentUser) throw new Error("Inte inloggad");
-        const { data, error } = await sb.from("vik_ortnamn").insert({
+        const rad = {
           user_id: currentUser.id, namn: o.namn, typ: o.typ,
           sprak: o.sprak || "sv", berattelse: o.berattelse || null,
           uppgiftslamnare: o.uppgiftslamnare || null,
+          bild: o.bild || null,
           lat: o.coord[0], lng: o.coord[1],
-        }).select().single();
+        };
+        let { data, error } = await sb.from("vik_ortnamn").insert(rad).select().single();
+        // Saknas bild-kolumnen ska namnet ändå sparas — det är namnet som är
+        // det viktiga, bilden är extra. Samma mönster som tags på vik_tips.
+        if (error && /bild/.test(error.message)) {
+          delete rad.bild;
+          ({ data, error } = await sb.from("vik_ortnamn").insert(rad).select().single());
+        }
         if (error) throw error;
         return data;
       },

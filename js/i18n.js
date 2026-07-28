@@ -153,6 +153,10 @@ const I18N = {
     "Fråga alltid personen först innan du skriver dit ett namn — det är en personuppgift.":
       "Always ask the person first before adding their name — it is personal data.",
     "Spara namnet": "Save the name",
+    "Förbereder foto…": "Preparing photo…",
+    "Laddar upp foto…": "Uploading photo…",
+    "Kunde inte läsa bilden.": "Couldn't read the image.",
+    "Byt foto": "Change photo",
     "Version": "Version",
     "Ny version av appen finns.": "A new version of the app is available.",
     "Uppdatera": "Update",
