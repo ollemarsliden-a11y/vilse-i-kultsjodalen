@@ -29,7 +29,13 @@ const OCM_KEY = "714d8c57-b779-4be5-b387-48d5ca7ae77a";
 // Lantmäteriets fjällkarta som LOKALA rutor (nedladdade en gång, CC0).
 // Sätts till true när tiles/topo/ finns i projektet (scripts/fetch-lm-tiles.mjs).
 const LOCAL_FJALL = true;
-const LOCAL_FJALL_MAXZOOM = 13; // sista nedladdade zoomnivån (skalas upp ovanför)
+// z13 finns över hela dalen. z14 finns BARA över kärnområdet (byarna och
+// Marsfjället) — hela dalen på z14 hade blivit ~364 MB. Appen lägger därför
+// z14 som ett extra lager ovanpå z13 inom de här gränserna; utanför visas
+// z13 uppskalat precis som förut, i stället för tomma rutor.
+const LOCAL_FJALL_MAXZOOM = 13;      // nedladdat överallt
+const LOCAL_FJALL_KARNA_MAXZOOM = 14; // nedladdat inom kärnområdet
+const LOCAL_FJALL_KARNA = { south: 64.92, north: 65.18, west: 15.00, east: 15.62 };
 
 // Moderatorer (matchar admin.sql). Endast för att visa admin-vyn i klienten —
 // den faktiska behörigheten styrs av säkerhetsreglerna i Supabase.
@@ -44,5 +50,7 @@ const CONFIG = {
   OCM_KEY,
   LOCAL_FJALL,
   LOCAL_FJALL_MAXZOOM,
+  LOCAL_FJALL_KARNA_MAXZOOM,
+  LOCAL_FJALL_KARNA,
   ADMIN_EMAILS,
 };

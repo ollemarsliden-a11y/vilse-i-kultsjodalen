@@ -39,11 +39,23 @@ const BASEMAPS = {
   fjall: {
     label: "Fjällkarta",
     requiresLocal: true,
-    layer: () =>
-      L.tileLayer("tiles/topo/{z}/{x}/{y}.png", {
-        maxNativeZoom: CONFIG.LOCAL_FJALL_MAXZOOM || 14, maxZoom: 18,
+    // Två lager: z13 under hela dalen, z14 ovanpå inom kärnområdet. Utan
+    // det andra lagret skulle Leaflet be om z14-rutor även där de inte är
+    // nedladdade och lämna hål i kartan (Klimpfjäll, Stalon, Dikanäs).
+    layer: () => {
+      const k = CONFIG.LOCAL_FJALL_KARNA;
+      const bas = L.tileLayer("tiles/topo/{z}/{x}/{y}.png", {
+        maxNativeZoom: CONFIG.LOCAL_FJALL_MAXZOOM || 13, maxZoom: 18,
         attribution: "© Lantmäteriet (CC0)",
-      }),
+      });
+      if (!k) return bas;
+      const karna = L.tileLayer("tiles/topo/{z}/{x}/{y}.png", {
+        minZoom: (CONFIG.LOCAL_FJALL_KARNA_MAXZOOM || 14),
+        maxNativeZoom: CONFIG.LOCAL_FJALL_KARNA_MAXZOOM || 14, maxZoom: 18,
+        bounds: L.latLngBounds([k.south, k.west], [k.north, k.east]),
+      });
+      return L.layerGroup([bas, karna]);
+    },
   },
 };
 
@@ -828,7 +840,7 @@ function enableOverlay(key) {
 // de bara. Säg det en gång i stället för att låta det se trasigt ut.
 let fjallTipsVisat = false;
 function fjallkartaTips() {
-  const nativ = CONFIG.LOCAL_FJALL_MAXZOOM || 13;
+  const nativ = CONFIG.LOCAL_FJALL_KARNA_MAXZOOM || CONFIG.LOCAL_FJALL_MAXZOOM || 13;
   if (state.basemapKey !== "fjall" || fjallTipsVisat) return;
   if (state.map.getZoom() <= nativ + 1) return;
   fjallTipsVisat = true;
@@ -840,7 +852,10 @@ function setBasemap(key) {
   state.currentBasemap = BASEMAPS[key].layer().addTo(state.map);
   state.basemapKey = key;
   fjallTipsVisat = false;
-  state.currentBasemap.bringToBack();
+  // LayerGroup saknar bringToBack — gå igenom delarna i så fall.
+  if (state.currentBasemap.bringToBack) state.currentBasemap.bringToBack();
+  else if (state.currentBasemap.eachLayer)
+    state.currentBasemap.eachLayer((l) => l.bringToBack && l.bringToBack());
   document.querySelectorAll("#basemap-buttons [data-key]").forEach((b) =>
     b.classList.toggle("active", b.dataset.key === key)
   );
