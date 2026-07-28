@@ -8,7 +8,7 @@
 //    saknas. Då fungerar kartan även UTAN TÄCKNING i fjället, och sparar data.
 //    Rutorna cachas allteftersom man tittar på områden (inte alla på en gång).
 //  - Allt annat = NETWORK-FIRST: alltid färskt online, cachad fallback offline.
-const CACHE = "vik-v6";
+const CACHE = "vik-v7";
 const SHELL = [
   "./",
   "./index.html",
@@ -21,6 +21,12 @@ const SHELL = [
 function isCacheFirst(url) {
   return url.includes("/tiles/topo/") || url.includes("/images/") || url.includes("/fonts/");
 }
+
+// Appen kan be den nya service workern ta över direkt, i stället för att
+// vänta tills alla flikar stängts (vilket i en PWA kan dröja i evighet).
+self.addEventListener("message", (e) => {
+  if (e.data && e.data.typ === "hoppa-over") self.skipWaiting();
+});
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => {}));

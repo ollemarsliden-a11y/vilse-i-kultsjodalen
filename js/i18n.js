@@ -153,6 +153,9 @@ const I18N = {
     "Fråga alltid personen först innan du skriver dit ett namn — det är en personuppgift.":
       "Always ask the person first before adding their name — it is personal data.",
     "Spara namnet": "Save the name",
+    "Version": "Version",
+    "Ny version av appen finns.": "A new version of the app is available.",
+    "Uppdatera": "Update",
     "Bra — skriv namnet nu.": "Good — now enter the name.",
     "Den vyn saknas — starta om appen så hämtas den senaste versionen.":
       "That view is missing — restart the app to get the latest version.",

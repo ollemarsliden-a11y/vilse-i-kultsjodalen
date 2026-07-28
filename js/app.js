@@ -2364,6 +2364,8 @@ function renderAccount(user) {
   document.getElementById("account-title").textContent = t(user ? "Konto" : "Logga in");
   if (user) document.getElementById("account-who").textContent = user.email || "inloggad";
   document.getElementById("account-admin").hidden = !(user && Storage.auth.isAdmin && Storage.auth.isAdmin());
+  const ver = document.getElementById("account-version");
+  if (ver) ver.textContent = t("Version") + " " + appVersion();
 }
 
 // ===================================================================
@@ -3128,6 +3130,15 @@ function toast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
 }
+// Vilken version som faktiskt körs — läses ur ?v= på appens egen
+// script-tagg. Visas i kontovyn så det går att se direkt i mobilen
+// i stället för att gissa om en gammal version ligger kvar i cachen.
+function appVersion() {
+  const sc = document.querySelector('script[src*="js/app.js"]');
+  const m = sc && /[?&]v=(\d+)/.exec(sc.getAttribute("src") || "");
+  return m ? m[1] : "?";
+}
+
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
@@ -3137,8 +3148,44 @@ function registerServiceWorker() {
     if (window.caches) caches.keys().then((ks) => ks.forEach((k) => caches.delete(k)));
   } else {
     // Produktion: installerbar PWA med offline-stöd.
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    navigator.serviceWorker.register("./sw.js").then((reg) => {
+      // Leta efter ny version varje gång appen öppnas, och säg till när en
+      // finns i stället för att låta användaren gå kvar på en gammal.
+      reg.update().catch(() => {});
+      reg.addEventListener("updatefound", () => {
+        const ny = reg.installing;
+        if (!ny) return;
+        ny.addEventListener("statechange", () => {
+          if (ny.state === "installed" && navigator.serviceWorker.controller) {
+            visaUppdatering();
+          }
+        });
+      });
+    }).catch(() => {});
+    // Nya service workern tog över — ladda om så sidan matchar den.
+    let laddarOm = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (laddarOm) return;
+      laddarOm = true;
+      location.reload();
+    });
   }
+}
+
+// Diskret rad längst ner: "Ny version finns — uppdatera".
+function visaUppdatering() {
+  if (document.getElementById("uppdatera-rad")) return;
+  const rad = document.createElement("div");
+  rad.id = "uppdatera-rad";
+  rad.className = "uppdatera-rad";
+  rad.innerHTML = `<span>${t("Ny version av appen finns.")}</span>
+    <button id="uppdatera-nu">${t("Uppdatera")}</button>`;
+  document.body.appendChild(rad);
+  rad.querySelector("#uppdatera-nu").onclick = async () => {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const r of regs) if (r.waiting) r.waiting.postMessage({ typ: "hoppa-over" });
+    setTimeout(() => location.reload(), 400);
+  };
 }
 
 init();
