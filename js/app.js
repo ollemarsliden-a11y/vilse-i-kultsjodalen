@@ -483,6 +483,7 @@ async function init() {
   wireAccount();
   registerServiceWorker();
   state.map.on("zoomend", updatePeakVisibility);
+  state.map.on("zoomend", fjallkartaTips);
   state.map.on("zoomend", () => {
     if (state.overlays.ortnamn && state.overlays.ortnamn.rita) state.overlays.ortnamn.rita();
   });
@@ -823,10 +824,22 @@ function enableOverlay(key) {
   if (cb && !cb.checked) { cb.checked = true; cb.dispatchEvent(new Event("change")); }
 }
 
+// Fjällkartan är nedladdade rutor till en viss nivå; ovanför den förstoras
+// de bara. Säg det en gång i stället för att låta det se trasigt ut.
+let fjallTipsVisat = false;
+function fjallkartaTips() {
+  const nativ = CONFIG.LOCAL_FJALL_MAXZOOM || 13;
+  if (state.basemapKey !== "fjall" || fjallTipsVisat) return;
+  if (state.map.getZoom() <= nativ + 1) return;
+  fjallTipsVisat = true;
+  toast(t("Fjällkartan har inte mer detalj här — byt underlag för skarpare bild."));
+}
+
 function setBasemap(key) {
   if (state.currentBasemap) state.map.removeLayer(state.currentBasemap);
   state.currentBasemap = BASEMAPS[key].layer().addTo(state.map);
   state.basemapKey = key;
+  fjallTipsVisat = false;
   state.currentBasemap.bringToBack();
   document.querySelectorAll("#basemap-buttons [data-key]").forEach((b) =>
     b.classList.toggle("active", b.dataset.key === key)

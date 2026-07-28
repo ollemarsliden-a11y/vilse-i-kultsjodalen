@@ -12,6 +12,11 @@
 //    $env:LM_PASS="ditt-losenord"; node scripts/fetch-lm-tiles.mjs         (dry run – räknar bara)
 //    $env:LM_PASS="ditt-losenord"; node scripts/fetch-lm-tiles.mjs --download   (hämtar på riktigt)
 //
+//  Skarpare karta där folk går (z14 över byarna, ca 33 MB):
+//    $env:LM_PASS="..."; node scripts/fetch-lm-tiles.mjs --omrade=karna --zmin=14 --zmax=14
+//    ...lägg sedan till --download när siffrorna ser rimliga ut.
+//  Höj LOCAL_FJALL_MAXZOOM i js/config.js till 14 efteråt.
+//
 //  Byt LAYER till "topowebb_nedtonad" om du vill ha den grå varianten.
 // ===================================================================
 
@@ -25,10 +30,23 @@ const LAYER = "topowebb";              // eller "topowebb_nedtonad"
 const OUT = path.resolve("tiles/topo");
 const BASE = "https://maps.lantmateriet.se/open/topowebb-ccby/v1/wmts/1.0.0";
 
-// Område: Kultsjödalen med omnejd (samma zon som appens maxBounds).
-const BBOX = { south: 64.75, north: 65.45, west: 14.05, east: 16.30 };
-const ZMIN = 8;
-const ZMAX = 13;   // ~68 MB. z14 fyrdubblar (~262 MB) – kräver PMTiles istället
+// Område. Två val, för hela dalen på hög zoom blir orimligt tungt:
+//   HELA   – samma zon som appens maxBounds (bra till och med z13)
+//   KARNA  – där folk faktiskt går: byarna och Marsfjället (tål z14)
+const OMRADEN = {
+  hela:  { south: 64.75, north: 65.45, west: 14.05, east: 16.30 },
+  karna: { south: 64.92, north: 65.18, west: 15.00, east: 15.62 },
+};
+const argOmrade = (process.argv.find((a) => a.startsWith("--omrade=")) || "").split("=")[1];
+const BBOX = OMRADEN[argOmrade] || OMRADEN.hela;
+
+const ZMIN = Number((process.argv.find((a) => a.startsWith("--zmin=")) || "").split("=")[1]) || 8;
+// Lantmäteriets cache går till z15 (4,8 m/pixel). Vi har z13 (19 m/pixel).
+// Mätt på befintliga rutor: ~47 kB per ruta.
+//   z14 hela dalen  ~7 900 rutor  ~364 MB   (för tungt för GitHub Pages)
+//   z14 kärnområdet   ~700 rutor   ~33 MB   (rimligt)
+//   z15 kärnområdet ~2 600 rutor  ~120 MB   (magnifierar mest, se README)
+const ZMAX = Number((process.argv.find((a) => a.startsWith("--zmax=")) || "").split("=")[1]) || 13;
 
 const DOWNLOAD = process.argv.includes("--download");
 const CONCURRENCY = 5;      // snällt mot LM:s server

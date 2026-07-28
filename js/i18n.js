@@ -153,6 +153,8 @@ const I18N = {
     "Fråga alltid personen först innan du skriver dit ett namn — det är en personuppgift.":
       "Always ask the person first before adding their name — it is personal data.",
     "Spara namnet": "Save the name",
+    "Fjällkartan har inte mer detalj här — byt underlag för skarpare bild.":
+      "The mountain map has no more detail here — switch base map for a sharper image.",
     "Förbereder foto…": "Preparing photo…",
     "Laddar upp foto…": "Uploading photo…",
     "Kunde inte läsa bilden.": "Couldn't read the image.",
