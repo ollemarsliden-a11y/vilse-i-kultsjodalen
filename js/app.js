@@ -298,12 +298,15 @@ function openOrtnamnSheet(o) {
 // Lägg till nytt ortnamn: peka ut platsen, fyll i namnet.
 function startAddOrtnamn() {
   if (!requireLogin()) return;
-  pickOnMap(state.map.getCenter ? [state.map.getCenter().lat, state.map.getCenter().lng] : MAP_CENTER,
-    async (coord) => {
-      state.ortnamnCoord = coord;
-      openSheet("ortnamn-form");
-      document.getElementById("on-namn").focus();
-    });
+  if (!document.getElementById("ortnamn-form")) {
+    toast(t("Den vyn saknas — starta om appen så hämtas den senaste versionen."));
+    return;
+  }
+  const c = state.map.getCenter();
+  pickOnMap([c.lat, c.lng], async (coord) => {
+    state.ortnamnCoord = coord;
+    if (openSheet("ortnamn-form")) document.getElementById("on-namn")?.focus();
+  }, "Bra — skriv namnet nu.");
 }
 
 function buildOrtnamnForm() {
@@ -417,6 +420,9 @@ async function init() {
   for (const key of Object.keys(CATEGORIES)) {
     state.layers[key] = L.layerGroup().addTo(state.map);
   }
+  // Vänta in inloggningen innan knapparna blir klickbara, annars kan
+  // requireLogin() felaktigt tro att man är utloggad de första sekunderna.
+  if (Storage.auth && Storage.auth.redo) await Storage.auth.redo.catch(() => {});
   await loadPlaceData(); // admins textändringar + bilder ovanpå grunddatan
   SEED_POIS.forEach(addPoiMarker);
   if (typeof PEAKS !== "undefined") PEAKS.forEach(addPoiMarker);
@@ -648,7 +654,7 @@ function wireImageManager(poi) {
 // Fast nål mitt på skärmen — flytta KARTAN under den (funkar med tummen,
 // till skillnad från dragbara markörer som krockar med panorering).
 // onSave får nya koordinaten; kastar den fel visas det som toast.
-function pickOnMap(startCoord, onSave) {
+function pickOnMap(startCoord, onSave, klarText = "Nytt läge sparat.") {
   showView("map");
   state.map.setView(startCoord, Math.max(state.map.getZoom(), 15));
   const pin = document.createElement("div");
@@ -665,11 +671,17 @@ function pickOnMap(startCoord, onSave) {
   bar.querySelector("#move-cancel").onclick = done;
   bar.querySelector("#move-save").onclick = async () => {
     const p = state.map.getCenter();
+    // done() ligger i finally: går något fel ska nålen ändå bort. Annars
+    // blir raden kvar över kartan och appen känns låst — man kommer inte
+    // vidare utan att starta om.
     try {
       await onSave([p.lat, p.lng]);
-      toast(t("Nytt läge sparat."));
+      toast(t(klarText));
+    } catch (e) {
+      toast("Kunde inte spara: " + e.message);
+    } finally {
       done();
-    } catch (e) { toast("Kunde inte spara: " + e.message); }
+    }
   };
 }
 
@@ -2288,8 +2300,18 @@ async function updateWeatherPill() {
 // ===================================================================
 //  Konto / inloggning (magic link)
 // ===================================================================
-function openSheet(id) { document.getElementById(id).classList.add("open"); }
-function closeSheet(id) { document.getElementById(id).classList.remove("open"); }
+// Saknas panelen (t.ex. gammal cachad index.html i mobilen) ska appen säga
+// till — inte kasta ett fel mitt i ett flöde och lämna användaren fast.
+function openSheet(id) {
+  const el = document.getElementById(id);
+  if (!el) { toast(t("Den vyn saknas — starta om appen så hämtas den senaste versionen.")); return false; }
+  el.classList.add("open");
+  return true;
+}
+function closeSheet(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove("open");
+}
 
 function wireAccount() {
   document.querySelectorAll(".privacy-link").forEach((a) =>

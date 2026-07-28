@@ -45,7 +45,10 @@ const Storage = (() => {
     let currentUser = null;
     const listeners = [];
 
-    sb.auth.getSession().then(({ data }) => {
+    // Sessionen hämtas asynkront. Innan den landat är currentUser null, och
+    // då tror appen att man är utloggad — trycker man på en knapp direkt vid
+    // start slog kontovyn upp i onödan. Därför ett löfte att vänta på.
+    const redo = sb.auth.getSession().then(({ data }) => {
       currentUser = data.session?.user || null;
       listeners.forEach((cb) => cb(currentUser));
     });
@@ -58,6 +61,7 @@ const Storage = (() => {
       mode: "supabase",
       sb,
       auth: {
+        redo,                       // väntar tills sessionen är läst
         user: () => currentUser,
         userId: () => currentUser?.id || null,
         email: () => currentUser?.email || null,
