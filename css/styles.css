@@ -593,8 +593,13 @@ body.picking::after {
 .fab-primary { background: var(--accent); color: #fff; }
 
 /* ---- Platskort (bottom sheet) ---- */
+/* position: FIXED, inte absolute. Arken göms genom att skjutas ner med
+   translateY(110%). Med absolute skjuts de under DOKUMENTET, inte under
+   skärmen — och så fort dokumentet scrollar (t.ex. när tangentbordet
+   öppnas och webbläsaren rullar fram ett textfält) åker alla gömda ark
+   upp i bild samtidigt. Fixed förankrar dem i skärmen i stället. */
 .place-sheet, .panel, .sheet {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 1600;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 1600;
   background: var(--surface);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-shadow: var(--shadow-l);

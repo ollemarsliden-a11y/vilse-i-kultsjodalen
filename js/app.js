@@ -2305,6 +2305,10 @@ async function updateWeatherPill() {
 function openSheet(id) {
   const el = document.getElementById(id);
   if (!el) { toast(t("Den vyn saknas — starta om appen så hämtas den senaste versionen.")); return false; }
+  // Appen ska aldrig rulla som ett dokument — har något (t.ex. ett fält som
+  // fått fokus) råkat scrolla den, nollställ innan arket öppnas.
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
   // Bara ETT ark åt gången. Alla ark ligger förankrade i skärmens nederkant
   // med samma z-index, så två öppna samtidigt skjuter in i varandra och ser
   // ut som att appen hängt sig. Platskortet (.place-sheet) är undantaget —
