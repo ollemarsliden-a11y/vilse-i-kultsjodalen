@@ -37,6 +37,11 @@ const LOCAL_FJALL_MAXZOOM = 13;      // nedladdat överallt
 const LOCAL_FJALL_KARNA_MAXZOOM = 14; // nedladdat inom kärnområdet
 const LOCAL_FJALL_KARNA = { south: 64.92, north: 65.18, west: 15.00, east: 15.62 };
 
+// Appens publika adress — används av QR-koden och delningsknappen i
+// infovyn. Hårdkodad så koden pekar på den skarpa sidan även när appen
+// körs lokalt under utveckling.
+const APP_URL = "https://ollemarsliden-a11y.github.io/vilse-i-kultsjodalen/";
+
 // Moderatorer (matchar admin.sql). Endast för att visa admin-vyn i klienten —
 // den faktiska behörigheten styrs av säkerhetsreglerna i Supabase.
 const ADMIN_EMAILS = ["olle.marsliden@gmail.com"];
@@ -53,4 +58,5 @@ const CONFIG = {
   LOCAL_FJALL_KARNA_MAXZOOM,
   LOCAL_FJALL_KARNA,
   ADMIN_EMAILS,
+  APP_URL,
 };

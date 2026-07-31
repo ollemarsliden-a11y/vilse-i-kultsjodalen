@@ -372,6 +372,13 @@ const I18N = {
     "Lägg till bild": "Add photo",
     "Dela till byn": "Share to village",
     "Turen delad till byn!": "Tour shared to the village!",
+
+    // Dela appen (QR-kod i infovyn)
+    "QR-kod till appen": "QR code for the app",
+    "Karta och guide för Kultsjödalen.": "Map and guide for the Kultsjön valley.",
+    "Länken är kopierad.": "Link copied.",
+    "Markera och kopiera adressen.": "Select and copy the address.",
+
     "Turen saknar spårdata.": "The tour has no track data.",
     "Boende & länkar (en per rad: Namn | länk | valfri notis)":
       "Lodging & links (one per line: Name | link | optional note)",

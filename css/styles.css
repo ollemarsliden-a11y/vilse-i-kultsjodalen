@@ -471,6 +471,23 @@ button { font-family: inherit; }
 .info-tel { display: inline-block; font-size: 22px; font-weight: 800; color: #d1495b; letter-spacing: 1px; margin: 2px 0; text-decoration: none; }
 .info-note { font-size: 12px; color: var(--ink-2); font-style: italic; }
 
+/* Dela appen — QR-koden ritas lokalt (js/qr.js). Vit platta bakom koden
+   även i mörkt läge, annars går den inte att scanna. */
+.share-card { text-align: center; }
+.share-card h3 { justify-content: center; }
+.share-qr {
+  width: 190px; max-width: 70vw; margin: 12px auto 8px; padding: 10px;
+  background: #fff; border-radius: 16px; box-shadow: var(--shadow-s);
+  cursor: zoom-in; line-height: 0;
+}
+.share-qr svg { width: 100%; height: auto; display: block; }
+.share-url {
+  font-size: 12.5px; color: var(--ink-2); word-break: break-all;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.share-actions { display: flex; gap: 8px; margin: 12px 0 2px; }
+.share-actions .btn-primary { margin: 0; }
+
 /* ---- Karta ---- */
 #map { position: absolute; inset: 0 0 var(--tabbar-h) 0; z-index: 1; background: var(--surface-2); }
 body.picking #map { cursor: crosshair; }
@@ -922,6 +939,9 @@ svg.elev { width: 100%; height: 90px; display: block; }
   max-width: 96vw; max-height: 90vh; object-fit: contain;
   border-radius: 6px; box-shadow: 0 8px 40px rgba(0,0,0,.6);
 }
+/* QR-koden är en SVG utan egen storlek — utan detta visas den pyttiten
+   i stället för att fylla skärmen när man ska hålla fram den att scanna. */
+#lightbox-img[src^="data:image/svg"] { width: min(88vw, 70vh); height: auto; }
 .lightbox-close {
   position: absolute; top: calc(12px + var(--safe-t)); right: 14px;
   width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer;

@@ -1799,7 +1799,80 @@ function buildInfoPage() {
     LANG === "en" ? infoPageEn(ic) : infoPageSv(ic);
   const pl = document.getElementById("info-privacy-link");
   if (pl) pl.onclick = (e) => { e.preventDefault(); openPrivacySheet(); };
+  buildShareCard();
   updateRoadStatus();
+}
+
+// Appens publika adress — QR-koden ska peka på den skarpa sidan även när
+// appen körs lokalt.
+function appShareUrl() {
+  return CONFIG.APP_URL || location.origin + location.pathname.replace(/index\.html$/, "");
+}
+
+// QR-koden ritas i webbläsaren (js/qr.js) — ingen extern tjänst behövs,
+// så den funkar även utan täckning uppe i fjället.
+function shareCardHtml(ic, s) {
+  return `
+    <div class="info-card share-card">
+      <h3>${ic("ladda_ner")} ${s.title}</h3>
+      <p>${s.body}</p>
+      <div id="share-qr" class="share-qr" role="button" tabindex="0" aria-label="${s.zoom}"></div>
+      <div class="share-url">${escapeHtml(appShareUrl().replace(/^https?:\/\//, ""))}</div>
+      <div class="share-actions">
+        <button id="share-btn" class="btn-primary">${s.share}</button>
+        <button id="share-copy" class="btn-primary btn-secondary">${s.copy}</button>
+      </div>
+      <p class="info-note">${s.note}</p>
+    </div>`;
+}
+
+function buildShareCard() {
+  const box = document.getElementById("share-qr");
+  const url = appShareUrl();
+  if (box) {
+    try {
+      box.innerHTML = QR.svg(url, { quiet: 2, dark: "#10352e", light: "#ffffff", title: t("QR-kod till appen") });
+      const big = () => openLightbox("data:image/svg+xml;charset=utf-8," +
+        encodeURIComponent(QR.svg(url, { quiet: 4, dark: "#10352e", light: "#ffffff" })));
+      box.onclick = big;
+      box.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); big(); } };
+    } catch { box.remove(); }
+  }
+  const sb = document.getElementById("share-btn");
+  if (sb) sb.onclick = shareAppLink;
+  const cb = document.getElementById("share-copy");
+  if (cb) cb.onclick = copyAppLink;
+}
+
+async function shareAppLink() {
+  const url = appShareUrl();
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "Vilse i Kultsjödalen", text: t("Karta och guide för Kultsjödalen."), url });
+      return;
+    } catch { return; }   // användaren avbröt
+  }
+  copyAppLink();
+}
+
+async function copyAppLink() {
+  const url = appShareUrl();
+  try {
+    await navigator.clipboard.writeText(url);
+    toast("Länken är kopierad.");
+  } catch {
+    // Urklipp kan vara blockerat (t.ex. utan https) — markera adressen
+    // i stället så den går att kopiera för hand.
+    const el = document.querySelector(".share-url");
+    if (el) {
+      const r = document.createRange();
+      r.selectNodeContents(el);
+      const sel = getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+    }
+    toast("Markera och kopiera adressen.");
+  }
 }
 
 // Aktuell status för Stekenjokk-passagen i infokortet (säsong eller
@@ -1822,6 +1895,15 @@ function infoPageEn(ic) {
       <a class="info-tel" href="tel:112">112</a>
       <p class="info-note">No signal? Move to higher ground or a road, try SMS, or ask someone else to call.</p>
     </div>
+
+    ${shareCardHtml(ic, {
+      title: "Share the app",
+      body: "Let someone scan the code with their phone camera — the app opens right away. It can be saved to the home screen and then works even without coverage.",
+      zoom: "Show the QR code larger",
+      share: "Share the link",
+      copy: "Copy link",
+      note: "No app store needed — the app opens in the browser and is added with “Add to Home Screen”.",
+    })}
 
     <div class="info-card">
       <h3>${ic("led")} Getting here</h3>
@@ -1891,6 +1973,15 @@ function infoPageSv(ic) {
       <a class="info-tel" href="tel:112">112</a>
       <p class="info-note">Har du ingen täckning: gå mot högre terräng eller väg, prova sms, eller be någon annan larma.</p>
     </div>
+
+    ${shareCardHtml(ic, {
+      title: "Dela appen",
+      body: "Låt någon scanna koden med mobilkameran — appen öppnas direkt. Den kan sparas på hemskärmen och funkar sedan även utan täckning.",
+      zoom: "Visa QR-koden större",
+      share: "Dela länken",
+      copy: "Kopiera länk",
+      note: "Ingen appbutik behövs — appen öppnas i webbläsaren och läggs till med ”Lägg till på hemskärmen”.",
+    })}
 
     <div class="info-card">
       <h3>${ic("led")} Hitta hit</h3>
